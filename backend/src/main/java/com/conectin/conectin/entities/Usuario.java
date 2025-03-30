@@ -2,17 +2,13 @@ package com.conectin.conectin.entities;
 
 import java.time.LocalDateTime;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
 
+
+import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -40,10 +36,35 @@ public class Usuario {
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
-        @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // Mapeamento para tipos de usuário (enum)
+    @ElementCollection(targetClass = TipoUsuario.class, fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING) // Armazena os valores como strings no banco de dados
+    private Set<TipoUsuario> tipos = new HashSet<>();
+
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Prestador prestador;
 
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Cliente cliente;
-    
+
+    @PrePersist
+    public void preencherDataCadastro() {
+        this.dataCadastro = LocalDateTime.now();
+    }
+
+
+    // Método para verificar se o usuário é um PRESTADOR
+    public boolean isPrestador() {
+        return tipos.contains(TipoUsuario.PRESTADOR);
+    }
+
+    // Método para verificar se o usuário é um CLIENTE
+    public boolean isCliente() {
+        return tipos.contains(TipoUsuario.CLIENTE);
+    }
+
+    // Método para adicionar um tipo ao usuário
+    public void addTipo(TipoUsuario tipo) {
+        tipos.add(tipo);
+    }
 }

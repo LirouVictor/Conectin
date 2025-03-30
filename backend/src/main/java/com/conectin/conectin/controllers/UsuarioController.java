@@ -30,7 +30,7 @@ public class UsuarioController {
             Usuario usuario = usuarioService.cadastrarUsuario(usuarioDto);
             return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body( null);
     }
 }
 }

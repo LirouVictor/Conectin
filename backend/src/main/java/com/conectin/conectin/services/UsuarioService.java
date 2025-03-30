@@ -17,18 +17,33 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     public Usuario cadastrarUsuario(UsuarioDto usuarioDto) {
-        if (!usuarioDto.getSenha().equals(usuarioDto.getConfirmarSenha())) {
+        // Validação de senhas
+        if (!usuarioDto.isSenhasCoincidem()) {
             throw new IllegalArgumentException("As senhas não coincidem");
         }
 
+        // Verifica se o email já está cadastrado
+        if (usuarioRepository.existsByEmail(usuarioDto.getEmail())) {
+            throw new IllegalArgumentException("Email já cadastrado");
+        }
+
+        // Cria um novo usuário
         Usuario usuario = new Usuario();
         usuario.setNome(usuarioDto.getNome());
         usuario.setEndereco(usuarioDto.getEndereco());
         usuario.setEmail(usuarioDto.getEmail());
         usuario.setSenha(usuarioDto.getSenha());
 
-        // Verificar se o usuário é prestador
-        if (TipoUsuario.PRESTADOR.equals(usuarioDto.getTipoUsuario())) {
+        // Define os tipos de usuário
+        if (usuarioDto.isPrestador()) {
+            usuario.addTipo(TipoUsuario.PRESTADOR);
+        }
+        if (usuarioDto.isCliente()) {
+            usuario.addTipo(TipoUsuario.CLIENTE);
+        }
+
+        // Relacionamentos com Prestador e Cliente
+        if (usuario.isPrestador()) {
             Prestador prestador = new Prestador();
             prestador.setUsuario(usuario);
             prestador.setServicosOferecidos("Serviços iniciais"); // Preencha conforme necessário
@@ -36,15 +51,14 @@ public class UsuarioService {
             usuario.setPrestador(prestador);
         }
 
-        // Verificar se o usuário é cliente
-        if (TipoUsuario.PRESTADOR.equals(usuarioDto.getTipoUsuario())) {
+        if (usuario.isCliente()) {
             Cliente cliente = new Cliente();
             cliente.setUsuario(usuario);
             cliente.setHistoricoContratacoes("Histórico inicial"); // Preencha conforme necessário
             usuario.setCliente(cliente);
         }
 
+        // Salva o usuário no banco de dados
         return usuarioRepository.save(usuario);
     }
-    
 }
