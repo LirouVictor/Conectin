@@ -1,6 +1,5 @@
 <template>
   <div class="home-container">
-
     <!-- Seção Principal -->
     <div class="header-section">
       <div class="header-text">
@@ -30,18 +29,27 @@
       </div>
     </div>
 
-    <!-- Modal para inserção da região -->
+    <!-- Modal para escolha da cidade -->
     <div v-if="showRegionModal" class="modal-overlay">
       <div class="modal-content">
-        <h2>Qual é a sua região?</h2>
+        <h2>Selecione sua cidade</h2>
         <input
-          v-model="selectedRegion"
+          v-model="searchCity"
           type="text"
-          placeholder="Digite sua cidade ou região"
+          placeholder="Digite para filtrar cidades..."
           class="region-input"
         />
+        <div class="cities-list">
+          <div
+            v-for="city in filteredCities"
+            :key="city"
+            class="city-option"
+            @click="selectCity(city)"
+          >
+            {{ city }}
+          </div>
+        </div>
         <div class="modal-buttons">
-          <button @click="confirmRegion" class="confirm-btn">Confirmar</button>
           <button @click="closeRegionModal" class="cancel-btn">Cancelar</button>
         </div>
       </div>
@@ -56,15 +64,33 @@ export default {
     return {
       searchCategory: '',
       categories: [
-        { id: 1, name: 'Jardineiro', image: '/images/jardineiro.jpg' },
-        { id: 2, name: 'Ar Condicionado', image: '/images/ar-condicionado.jpg' },
-        { id: 3, name: 'Pedreiro', image: '/images/pedreiro.jpg' },
-        { id: 4, name: 'Encanador', image: '/images/encanador.jpg' },
-        { id: 5, name: 'Eletricista', image: '/images/eletricista.jpg' },
+        { id: 1, name: 'Jardineiro'},
+        { id: 2, name: 'Ar Condicionado'},
+        { id: 3, name: 'Pedreiro'},
+        { id: 4, name: 'Encanador'},
+        { id: 5, name: 'Eletricista'},
+      ],
+      cities: [
+        'Armazém',
+        'Braço do Norte',
+        'Capivari de Baixo',
+        'Grão-Pará',
+        'Gravatal',
+        'Imaruí',
+        'Imbituba',
+        'Jaguaruna',
+        'Laguna',
+        'Paulo Lopes',
+        'Rio Fortuna',
+        'São Bonifácio',
+        'São Martinho',
+        'Santa Rosa de Lima',
+        'Tubarão',
       ],
       showRegionModal: false,
       selectedCategory: null,
       selectedRegion: '',
+      searchCity: '',
     };
   },
   computed: {
@@ -73,26 +99,33 @@ export default {
         category.name.toLowerCase().includes(this.searchCategory.toLowerCase())
       );
     },
+    filteredCities() {
+      return this.cities.filter((city) =>
+        city.toLowerCase().includes(this.searchCity.toLowerCase())
+      );
+    },
   },
   methods: {
     openRegionModal(category) {
       this.selectedCategory = category;
       this.showRegionModal = true;
+      this.searchCity = '';
     },
     closeRegionModal() {
       this.showRegionModal = false;
       this.selectedRegion = '';
       this.selectedCategory = null;
+      this.searchCity = '';
     },
-    confirmRegion() {
-      if (this.selectedRegion.trim() === '') {
-        alert('Por favor, insira uma cidade ou região.');
-        return;
-      }
-      this.$router.push({
-        path: '/workers',
-        query: { category: this.selectedCategory.name, region: this.selectedRegion },
-      });
+    selectCity(city) {
+      this.selectedRegion = city;
+      // Salvar a cidade no localStorage
+      localStorage.setItem('selectedCity', city);
+      // Redirecionar para a página de trabalhadores
+      // this.$router.push({
+      //   path: '/trabalhadores',
+      //   query: { category: this.selectedCategory.name, region: this.selectedRegion },
+      // });
       this.closeRegionModal();
     },
   },
@@ -102,17 +135,27 @@ export default {
 <style scoped>
 .home-container {
   padding: 0;
-  background-color: #f5f5f5; /* Fundo cinza claro para contraste */
+  background-color: #f5f5f5;
 }
 
-/* Seção Principal */
+.header-logo {
+  background-color: #257BB8;
+  padding: 20px;
+  text-align: center;
+}
+
+.logo {
+  width: 200px;
+  height: auto;
+}
+
 .header-section {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-bottom: 40px;
-  background-color: #257BB8; /* Fundo azul do logo */
-  color: #FFFFFF; /* Texto branco */
+  padding: 40px 20px;
+  background-color: #257BB8;
+  color: #FFFFFF;
 }
 
 .header-text {
@@ -133,10 +176,9 @@ p {
   height: auto;
   border-radius: 10px;
   margin-left: 20px;
-  border: 3px solid #F4B400; /* Borda amarela do logo */
+  border: 3px solid #F4B400;
 }
 
-/* Seção de Categorias */
 .categories-section {
   max-width: 1200px;
   margin: 40px auto;
@@ -148,14 +190,14 @@ p {
   width: 100%;
   max-width: 500px;
   font-size: 1rem;
-  border: 2px solid #257BB8; /* Borda azul */
+  border: 2px solid #257BB8;
   border-radius: 5px;
   margin-bottom: 20px;
   transition: border-color 0.3s;
 }
 
 .category-search:focus {
-  border-color: #F4B400; /* Amarelo ao focar */
+  border-color: #F4B400;
   outline: none;
 }
 
@@ -171,7 +213,7 @@ p {
   padding: 15px;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  border: 1px solid #257BB8; /* Borda azul */
+  border: 1px solid #257BB8;
 }
 
 .category-card:hover {
@@ -212,59 +254,65 @@ h3 {
   border-radius: 10px;
   width: 400px;
   text-align: center;
-  border: 2px solid #257BB8; /* Borda azul */
+  border: 2px solid #257BB8;
 }
 
 h2 {
   font-size: 1.5rem;
-  color: #257BB8; /* Título azul */
+  color: #257BB8;
 }
 
 .region-input {
   padding: 10px;
-  width: 92%;
+  width: 94%;
   font-size: 1rem;
-  border: 2px solid #257BB8; /* Borda azul */
+  border: 2px solid #257BB8;
   border-radius: 5px;
   margin: 20px 0;
   transition: border-color 0.3s;
 }
 
 .region-input:focus {
-  border-color: #F4B400; /* Amarelo ao focar */
+  border-color: #F4B400;
   outline: none;
+}
+
+.cities-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  border: 1px solid #257BB8;
+  border-radius: 5px;
+}
+
+.city-option {
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.city-option:hover {
+  background-color: #F4B400;
+  color: #FFFFFF;
 }
 
 .modal-buttons {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
 }
 
-.confirm-btn,
 .cancel-btn {
   padding: 10px 20px;
   font-size: 1rem;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  background-color: #257BB8;
+  color: #FFFFFF;
   transition: background-color 0.3s;
 }
 
-.confirm-btn {
-  background-color: #F4B400; /* Amarelo do logo */
-  color: #FFFFFF;
-}
-
-.confirm-btn:hover {
-  background-color: #d9a300; /* Amarelo mais escuro */
-}
-
-.cancel-btn {
-  background-color: #257BB8; /* Azul do logo */
-  color: #FFFFFF;
-}
-
 .cancel-btn:hover {
-  background-color: #257BB8; /* Azul mais escuro */
+  background-color: #1557b0;
 }
 </style>

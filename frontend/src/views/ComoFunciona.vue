@@ -37,27 +37,27 @@ export default {
             steps: [
                 {
                     number: '1',
-                    title: 'Escolha a Categoria e Região',
+                    title: 'Escolha a Categoria e Cidade',
                     description:
-                        'Selecione a categoria do serviço (ex.: Pedreiro, Encanador) e informe sua cidade para encontrar trabalhadores próximos.',
+                        'Selecione a categoria do serviço (ex.: Pedreiro, Encanador) e informe sua cidade para encontrar prestadores próximos.',
                 },
                 {
                     number: '2',
-                    title: 'Escolha um Trabalhador',
+                    title: 'Escolha um Prestador',
                     description:
-                        'Veja o ranking dos mais bem avaliados e escolha o trabalhador com base em avaliações e portfólio.',
+                        'Veja o ranking dos mais bem avaliados e escolha o prestador com base em avaliações e portfólio.',
                 },
                 {
                     number: '3',
                     title: 'Contratação e Notificação',
                     description:
-                        'Envie uma solicitação. O trabalhador será notificado e decidirá se aceita. Após a aceitação, troque contatos via WhatsApp.',
+                        'Envie uma solicitação. O prestador será notificado e decidirá se aceita. Após a aceitação, troque contatos via WhatsApp.',
                 },
                 {
                     number: '4',
                     title: 'Avaliação Após o Serviço',
                     description:
-                        'Após o serviço, ambos (cliente e trabalhador) podem avaliar a experiência, com comentários e fotos para referência futura.',
+                        'Após o serviço, ambos (cliente e prestador) podem avaliar a experiência, com comentários e fotos para referência futura.',
                 },
             ],
             benefits: [
@@ -68,7 +68,7 @@ export default {
                 },
                 {
                     icon: '✔',
-                    title: 'Para Trabalhadores',
+                    title: 'Para Prestadores',
                     description: 'Aumente sua visibilidade com avaliações e construa um portfólio.',
                 },
                 {

@@ -8,24 +8,24 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.conectin.conectin.dto.UsuarioDto;
-import com.conectin.conectin.entities.Usuario;
-import com.conectin.conectin.services.UsuarioService;
+import com.conectin.conectin.dto.PortfolioDto;
+import com.conectin.conectin.entities.Portfolio;
+import com.conectin.conectin.services.PortfolioService;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/usuarios")
-public class UsuarioController {
+@RequestMapping("/api/portfolios")
+public class PortfolioController {
 
     @Autowired
-    private UsuarioService usuarioService;
+    private PortfolioService portfolioService;
 
-    @PostMapping("/cadastrar")
-    public ResponseEntity<Usuario> cadastrarUsuario(@Valid @RequestBody UsuarioDto usuarioDto) {
+    @PostMapping("/adicionar")
+    public ResponseEntity<Portfolio> adicionarPortfolio(@Valid @RequestBody PortfolioDto dto) {
         try {
-            Usuario usuario = usuarioService.cadastrarUsuario(usuarioDto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
+            Portfolio portfolio = portfolioService.adicionarPortfolio(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(portfolio);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }

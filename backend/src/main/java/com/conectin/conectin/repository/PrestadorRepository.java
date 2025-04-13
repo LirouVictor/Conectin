@@ -1,5 +1,8 @@
 package com.conectin.conectin.repository;
 
-public class PrestadorRepository {
-    
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.conectin.conectin.entities.Prestador;
+
+public interface PrestadorRepository extends JpaRepository<Prestador, Integer> {
 }

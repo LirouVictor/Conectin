@@ -7,15 +7,17 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Cliente {
+public class CidadePrestador {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    @ManyToOne
+    @JoinColumn(name = "prestador_id", nullable = false)
+    private Prestador prestador;
 
-    private String historicoContratacoes;
+    @ManyToOne
+    @JoinColumn(name = "cidade_id", nullable = false)
+    private Cidade cidade;
 }

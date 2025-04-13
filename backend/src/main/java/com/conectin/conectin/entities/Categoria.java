@@ -7,15 +7,16 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Cliente {
+public class Categoria {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
-    private Usuario usuario;
+    @Column(nullable = false)
+    private String nome;
 
-    private String historicoContratacoes;
+    private String descricao;
+
+    private String imagemUrl;
 }

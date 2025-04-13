@@ -1,10 +1,11 @@
 package com.conectin.conectin.dto;
 
+import java.util.List;
+
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
-
-@Data // Lombok annotation para gerar getters, setters, equals, hashCode e toString
+@Data
 public class UsuarioDto {
 
     @NotBlank(message = "O nome é obrigatório")
@@ -25,8 +26,9 @@ public class UsuarioDto {
     private boolean prestador;
     private boolean cliente;
 
-    // Método para verificar se as senhas coincidem
+    private List<Integer> cidadesAtuacao;
+
     public boolean isSenhasCoincidem() {
         return senha != null && senha.equals(confirmarSenha);
     }
-}
+}           

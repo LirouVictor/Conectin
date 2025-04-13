@@ -8,24 +8,24 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.conectin.conectin.dto.UsuarioDto;
-import com.conectin.conectin.entities.Usuario;
-import com.conectin.conectin.services.UsuarioService;
+import com.conectin.conectin.dto.AvaliacaoDto;
+import com.conectin.conectin.entities.Avaliacao;
+import com.conectin.conectin.services.AvaliacaoService;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/usuarios")
-public class UsuarioController {
+@RequestMapping("/api/avaliacoes")
+public class AvaliacaoController {
 
     @Autowired
-    private UsuarioService usuarioService;
+    private AvaliacaoService avaliacaoService;
 
-    @PostMapping("/cadastrar")
-    public ResponseEntity<Usuario> cadastrarUsuario(@Valid @RequestBody UsuarioDto usuarioDto) {
+    @PostMapping("/criar")
+    public ResponseEntity<Avaliacao> criarAvaliacao(@Valid @RequestBody AvaliacaoDto dto) {
         try {
-            Usuario usuario = usuarioService.cadastrarUsuario(usuarioDto);
-            return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
+            Avaliacao avaliacao = avaliacaoService.criarAvaliacao(dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(avaliacao);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }

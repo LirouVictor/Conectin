@@ -1,14 +1,12 @@
 package com.conectin.conectin.entities;
 
 import java.time.LocalDateTime;
-
-import lombok.Getter;
-import lombok.Setter;
-
-
-import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -36,9 +34,8 @@ public class Usuario {
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
-    // Mapeamento para tipos de usuário (enum)
     @ElementCollection(targetClass = TipoUsuario.class, fetch = FetchType.EAGER)
-    @Enumerated(EnumType.STRING) // Armazena os valores como strings no banco de dados
+    @Enumerated(EnumType.STRING)
     private Set<TipoUsuario> tipos = new HashSet<>();
 
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -52,18 +49,14 @@ public class Usuario {
         this.dataCadastro = LocalDateTime.now();
     }
 
-
-    // Método para verificar se o usuário é um PRESTADOR
     public boolean isPrestador() {
         return tipos.contains(TipoUsuario.PRESTADOR);
     }
 
-    // Método para verificar se o usuário é um CLIENTE
     public boolean isCliente() {
         return tipos.contains(TipoUsuario.CLIENTE);
     }
 
-    // Método para adicionar um tipo ao usuário
     public void addTipo(TipoUsuario tipo) {
         tipos.add(tipo);
     }
