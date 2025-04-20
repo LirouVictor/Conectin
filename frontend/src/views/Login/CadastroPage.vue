@@ -81,6 +81,14 @@ export default {
       this.mensagemErro = '';
       this.mensagemSucesso = '';
 
+      // Validar força da senha
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+      if (!passwordRegex.test(this.usuario.senha)) {
+        this.mensagemErro =
+          'A senha deve ter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas e números.';
+        return;
+      }
+
       // Verificar se as senhas coincidem
       if (this.usuario.senha !== this.usuario.confirmarSenha) {
         this.mensagemErro = 'As senhas não coincidem.';
@@ -111,9 +119,29 @@ export default {
         // Exibir mensagem de sucesso
         this.mensagemSucesso = 'Usuário cadastrado com sucesso!';
         console.log('Resposta do backend:', response.data);
+
+        // Limpar o formulário
+        this.usuario = {
+          nome: '',
+          endereco: '',
+          isPrestador: false,
+          isCliente: false,
+          email: '',
+          senha: '',
+          confirmarSenha: '',
+        };
+
+        // Redirecionar para a página de login após 2 segundos
+        setTimeout(() => {
+          this.$router.push('/login');
+        }, 2000);
       } catch (error) {
-        // Exibir mensagem de erro
-        this.mensagemErro = 'Erro ao cadastrar usuário. Tente novamente.';
+        // Tratar erros específicos do backend
+        if (error.response && error.response.data && error.response.data.error) {
+          this.mensagemErro = error.response.data.error; // Exibe erro específico do backend
+        } else {
+          this.mensagemErro = 'Erro ao cadastrar usuário. Tente novamente.';
+        }
         console.error('Erro ao cadastrar usuário:', error);
       }
     },
@@ -126,8 +154,8 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: calc(100vh - 110px); /* Ajusta para o espaço do header */
-  background-color: #f5f5f5; /* Fundo cinza claro */
+  min-height: calc(100vh - 110px);
+  background-color: #f5f5f5;
 }
 
 .register-box {
@@ -136,14 +164,14 @@ export default {
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 500px; /* Aumentado para acomodar os checkboxes */
+  max-width: 500px;
   text-align: left;
-  border: 2px solid #257BB8; /* Borda azul corrigida */
+  border: 2px solid #257BB8;
 }
 
 h1 {
   font-size: 2rem;
-  color: #257BB8; /* Título azul */
+  color: #257BB8;
   text-align: center;
   margin-bottom: 30px;
 }
@@ -156,13 +184,13 @@ h1 {
   width: 94.5%;
   padding: 12px;
   font-size: 1rem;
-  border: 2px solid #257BB8; /* Borda azul corrigida */
+  border: 2px solid #257BB8;
   border-radius: 5px;
   transition: border-color 0.3s;
 }
 
 .input-field:focus {
-  border-color: #F4B400; /* Amarelo ao focar */
+  border-color: #F4B400;
   outline: none;
 }
 
@@ -185,7 +213,7 @@ h1 {
   width: 100%;
   padding: 12px;
   font-size: 1rem;
-  background-color: #F4B400; /* Amarelo do logo */
+  background-color: #F4B400;
   color: #FFFFFF;
   border: none;
   border-radius: 5px;
@@ -194,17 +222,17 @@ h1 {
 }
 
 .register-btn:hover {
-  background-color: #d9a300; /* Amarelo mais escuro ao passar o mouse */
+  background-color: #d9a300;
 }
 
 .error-message {
-  color: #dc3545; /* Vermelho para erro */
+  color: #dc3545;
   text-align: center;
   margin-top: 10px;
 }
 
 .success-message {
-  color: #28a745; /* Verde para sucesso */
+  color: #28a745;
   text-align: center;
   margin-top: 10px;
 }

@@ -16,6 +16,8 @@
 </template>
 
 <script>
+import { useAuthStore } from '@/stores/auth'; // Ajuste o caminho conforme necessário
+
 export default {
     data() {
         return {
@@ -25,14 +27,19 @@ export default {
     },
     methods: {
         async handleLogin() {
+            const authStore = useAuthStore();
             try {
-                const response = await this.$axios.post('/api/auth/login', {
-                    email: this.email,
-                    senha: this.senha,
-                });
-                console.log(response.data);
-            } catch (error) {
-                console.error(error);
+                const response = await authStore.login(this.email, this.senha);
+                console.log('Login bem-sucedido:', response);
+                // Redirecionar para outra página, se necessário
+                this.$router.push('/');
+            } catch (error){
+                if (error.response && error.response.data) {
+                    this.mensagemErro = error.response.data; // Exibe mensagem do backend
+                } else {
+                    this.mensagemErro = 'Erro ao fazer login. Tente novamente.';
+                }
+                console.error('Erro no login:', error);
             }
         },
     },
@@ -40,15 +47,12 @@ export default {
 </script>
 
 <style scoped>
-
 .login-container {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: calc(100vh - 400px);
-    /* Ajusta para o espaço do header */
     background-color: #f5f5f5;
-    /* Fundo cinza claro, consistente com o site */
 }
 
 .login-box {
@@ -60,13 +64,11 @@ export default {
     max-width: 400px;
     text-align: center;
     border: 2px solid #257BB8;
-    /* Borda azul do logo */
 }
 
 h2 {
     font-size: 2rem;
     color: #257BB8;
-    /* Título azul */
     margin-bottom: 30px;
 }
 
@@ -79,14 +81,12 @@ h2 {
     padding: 12px;
     font-size: 1rem;
     border: 2px solid #257BB8;
-    /* Borda azul */
     border-radius: 5px;
     transition: border-color 0.3s;
 }
 
 .input-field:focus {
     border-color: #F4B400;
-    /* Amarelo ao focar */
     outline: none;
 }
 
@@ -95,7 +95,6 @@ h2 {
     padding: 12px;
     font-size: 1rem;
     background-color: #F4B400;
-    /* Amarelo do logo */
     color: #FFFFFF;
     border: none;
     border-radius: 5px;
@@ -105,6 +104,5 @@ h2 {
 
 .login-btn:hover {
     background-color: #d9a300;
-    /* Amarelo mais escuro ao passar o mouse */
 }
 </style>

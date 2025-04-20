@@ -11,8 +11,8 @@ import lombok.Data;
 @Data
 public class PrestadorDto {
 
-    private Integer id;
-    private Integer usuarioId;
+    private long id;
+    private long usuarioId;
     private String nome;
     private String descricao;
     private String disponibilidade;

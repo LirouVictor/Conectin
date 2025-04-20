@@ -1,8 +1,11 @@
 package com.conectin.conectin.services;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.conectin.conectin.dto.UsuarioDto;
@@ -28,6 +31,9 @@ public class UsuarioService {
     @Autowired
     private CidadePrestadorRepository cidadePrestadorRepository;
 
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
     public Usuario cadastrarUsuario(UsuarioDto usuarioDto) {
         if (!usuarioDto.isSenhasCoincidem()) {
             throw new IllegalArgumentException("As senhas não coincidem");
@@ -40,7 +46,7 @@ public class UsuarioService {
         usuario.setNome(usuarioDto.getNome());
         usuario.setEndereco(usuarioDto.getEndereco());
         usuario.setEmail(usuarioDto.getEmail());
-        usuario.setSenha(usuarioDto.getSenha());
+        usuario.setSenha(passwordEncoder.encode(usuarioDto.getSenha()));
 
         if (usuarioDto.isPrestador()) {
             usuario.addTipo(TipoUsuario.PRESTADOR);
@@ -82,5 +88,50 @@ public class UsuarioService {
         }
 
         return usuario;
+    }
+
+    public Usuario login(String email, String senha) {
+    Usuario usuario = usuarioRepository.findByEmail(email)
+        .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+
+    if (!passwordEncoder.matches(senha, usuario.getSenha())) {
+        throw new IllegalArgumentException("Senha inválida");
+    }
+
+    return usuario;
+}
+
+    public Optional<Usuario> editarUsuario(Long id, UsuarioDto usuarioDto) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
+        if (usuarioOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Usuario usuario = usuarioOpt.get();
+
+        usuario.setNome(usuarioDto.getNome());
+        usuario.setEmail(usuarioDto.getEmail());
+        usuario.setEndereco(usuarioDto.getEndereco());
+
+        if (usuarioDto.getSenha() != null && !usuarioDto.getSenha().isBlank()) {
+            if (!usuarioDto.isSenhasCoincidem()) {
+                throw new IllegalArgumentException("As senhas não coincidem");
+            }
+            usuario.setSenha(usuarioDto.getSenha());
+        }
+
+        return Optional.of(usuarioRepository.save(usuario));
+    }
+
+    public boolean deletarUsuario(Long id) {
+        if (!usuarioRepository.existsById(id)) {
+            return false;
+        }
+        usuarioRepository.deleteById(id);
+        return true;
+    }
+
+    public List<Usuario> listarUsuarios() {
+        return usuarioRepository.findAll();
     }
 }
