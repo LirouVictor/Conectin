@@ -1,108 +1,89 @@
 <template>
     <div class="login-container">
-        <div class="login-box">
-            <h2>Login</h2>
-            <form @submit.prevent="handleLogin">
-                <div class="input-group">
-                    <input v-model="email" type="email" placeholder="Email" required class="input-field" />
-                </div>
-                <div class="input-group">
-                    <input v-model="senha" type="password" placeholder="Senha" required class="input-field" />
-                </div>
-                <button type="submit" class="login-btn">Entrar</button>
-            </form>
-        </div>
+      <div class="login-box">
+        <h2>Login</h2>
+        <form @submit.prevent="handleLogin">
+          <div class="input-group">
+            <input v-model="email" type="email" placeholder="Email" required class="input-field" />
+          </div>
+          <div class="input-group">
+            <input v-model="senha" type="password" placeholder="Senha" required class="input-field" />
+          </div>
+          <button type="submit" class="login-btn">Entrar</button>
+        </form>
+      </div>
     </div>
-</template>
-
-<script>
-import { useAuthStore } from '@/stores/auth'; // Ajuste o caminho conforme necessário
-
-export default {
+  </template>
+  
+  <script>
+  import { useAuthStore } from '@/stores/auth';
+  import { useToast } from 'vue-toastification';
+  
+  export default {
     data() {
-        return {
-            email: '',
-            senha: '',
-        };
+      return {
+        email: '',
+        senha: '',
+      };
+    },
+    setup() {
+      const toast = useToast();
+      return { toast };
     },
     methods: {
-        async handleLogin() {
-            const authStore = useAuthStore();
-            try {
-                const response = await authStore.login(this.email, this.senha);
-                console.log('Login bem-sucedido:', response);
-                // Redirecionar para outra página, se necessário
-                this.$router.push('/');
-            } catch (error){
-                if (error.response && error.response.data) {
-                    this.mensagemErro = error.response.data; // Exibe mensagem do backend
-                } else {
-                    this.mensagemErro = 'Erro ao fazer login. Tente novamente.';
-                }
-                console.error('Erro no login:', error);
-            }
-        },
+      async handleLogin() {
+        const authStore = useAuthStore();
+        try {
+          const response = await authStore.login(this.email, this.senha);
+          this.toast.success(response.message);
+          this.$router.push('/');
+        } catch (error) {
+          if (error.response && error.response.data) {
+            this.toast.error(error.response.data.message);
+          } else {
+            this.toast.error('Erro ao fazer login. Tente novamente.');
+          }
+        }
+      },
     },
-};
-</script>
-
-<style scoped>
-.login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 400px);
-    background-color: #f5f5f5;
-}
-
-.login-box {
-    background-color: #FFFFFF;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    width: 100%;
+  };
+  </script>
+  
+  <style scoped>
+  .login-container {
     max-width: 400px;
-    text-align: center;
-    border: 2px solid #257BB8;
-}
-
-h2 {
-    font-size: 2rem;
-    color: #257BB8;
-    margin-bottom: 30px;
-}
-
-.input-group {
-    margin-bottom: 20px;
-}
-
-.input-field {
-    width: 92%;
-    padding: 12px;
-    font-size: 1rem;
-    border: 2px solid #257BB8;
+    margin: 50px auto;
+  }
+  
+  .login-box {
+    padding: 20px;
+    border: 1px solid #ccc;
     border-radius: 5px;
-    transition: border-color 0.3s;
-}
-
-.input-field:focus {
-    border-color: #F4B400;
-    outline: none;
-}
-
-.login-btn {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .input-group {
+    margin-bottom: 15px;
+  }
+  
+  .input-field {
     width: 100%;
-    padding: 12px;
-    font-size: 1rem;
-    background-color: #F4B400;
-    color: #FFFFFF;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .login-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.login-btn:hover {
-    background-color: #d9a300;
-}
-</style>
+  }
+  
+  .login-btn:hover {
+    background-color: #0056b3;
+  }
+  </style>

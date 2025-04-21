@@ -134,4 +134,9 @@ public class UsuarioService {
     public List<Usuario> listarUsuarios() {
         return usuarioRepository.findAll();
     }
+
+    public Usuario findById(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+    }
 }
