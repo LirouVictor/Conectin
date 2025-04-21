@@ -9,13 +9,7 @@
         </div>
         <div class="input-group">
           <label for="endereco">Endereço:</label>
-          <input
-            v-model="usuario.endereco"
-            type="text"
-            id="endereco"
-            required
-            class="input-field"
-          />
+          <input v-model="usuario.endereco" type="text" id="endereco" required class="input-field" />
         </div>
         <div class="input-group">
           <label>Tipo de Usuário:</label>
@@ -40,27 +34,20 @@
         </div>
         <div class="input-group">
           <label for="confirmarSenha">Confirmar Senha:</label>
-          <input
-            v-model="usuario.confirmarSenha"
-            type="password"
-            id="confirmarSenha"
-            required
-            class="input-field"
-          />
+          <input v-model="usuario.confirmarSenha" type="password" id="confirmarSenha" required class="input-field" />
         </div>
         <button type="submit" class="register-btn">Cadastrar</button>
       </form>
-      <p v-if="mensagemErro" class="error-message">{{ mensagemErro }}</p>
-      <p v-if="mensagemSucesso" class="success-message">{{ mensagemSucesso }}</p>
     </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios';
+import api from '@/services/api';
+import { useToast } from 'vue-toastification';
 
 export default {
-  name: 'RegisterPage',
+  name: 'CadastroPage',
   data() {
     return {
       usuario: {
@@ -72,26 +59,24 @@ export default {
         senha: '',
         confirmarSenha: '',
       },
-      mensagemErro: '',
-      mensagemSucesso: '',
     };
+  },
+  setup() {
+    const toast = useToast();
+    return { toast };
   },
   methods: {
     async cadastrarUsuario() {
-      this.mensagemErro = '';
-      this.mensagemSucesso = '';
-
       // Validar força da senha
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
       if (!passwordRegex.test(this.usuario.senha)) {
-        this.mensagemErro =
-          'A senha deve ter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas e números.';
+        this.toast.error('A senha deve ter pelo menos 8 caracteres, incluindo letras maiúsculas, minúsculas e números.');
         return;
       }
 
       // Verificar se as senhas coincidem
       if (this.usuario.senha !== this.usuario.confirmarSenha) {
-        this.mensagemErro = 'As senhas não coincidem.';
+        this.toast.error('As senhas não coincidem.');
         return;
       }
 
@@ -101,13 +86,12 @@ export default {
       if (this.usuario.isCliente) tipos.push('CLIENTE');
 
       if (tipos.length === 0) {
-        this.mensagemErro = 'Selecione pelo menos um tipo de usuário.';
+        this.toast.error('Selecione pelo menos um tipo de usuário.');
         return;
       }
 
       try {
-        // Enviar os dados para o backend
-        const response = await axios.post('http://localhost:8080/api/usuarios/cadastrar', {
+        const response = await api.post('/usuarios/cadastrar', {
           nome: this.usuario.nome,
           endereco: this.usuario.endereco,
           tipo: tipos.join(','),
@@ -116,11 +100,8 @@ export default {
           confirmarSenha: this.usuario.confirmarSenha,
         });
 
-        // Exibir mensagem de sucesso
-        this.mensagemSucesso = 'Usuário cadastrado com sucesso!';
-        console.log('Resposta do backend:', response.data);
+        this.toast.success(response.data.message);
 
-        // Limpar o formulário
         this.usuario = {
           nome: '',
           endereco: '',
@@ -131,18 +112,15 @@ export default {
           confirmarSenha: '',
         };
 
-        // Redirecionar para a página de login após 2 segundos
         setTimeout(() => {
           this.$router.push('/login');
         }, 2000);
       } catch (error) {
-        // Tratar erros específicos do backend
-        if (error.response && error.response.data && error.response.data.error) {
-          this.mensagemErro = error.response.data.error; // Exibe erro específico do backend
+        if (error.response && error.response.data) {
+          this.toast.error(error.response.data.message);
         } else {
-          this.mensagemErro = 'Erro ao cadastrar usuário. Tente novamente.';
+          this.toast.error('Erro ao cadastrar usuário. Tente novamente.');
         }
-        console.error('Erro ao cadastrar usuário:', error);
       }
     },
   },
@@ -151,89 +129,44 @@ export default {
 
 <style scoped>
 .register-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: calc(100vh - 110px);
-  background-color: #f5f5f5;
+  max-width: 500px;
+  margin: 50px auto;
 }
 
 .register-box {
-  background-color: #FFFFFF;
-  padding: 40px;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 500px;
-  text-align: left;
-  border: 2px solid #257BB8;
-}
-
-h1 {
-  font-size: 2rem;
-  color: #257BB8;
-  text-align: center;
-  margin-bottom: 30px;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .input-group {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .input-field {
-  width: 94.5%;
-  padding: 12px;
-  font-size: 1rem;
-  border: 2px solid #257BB8;
-  border-radius: 5px;
-  transition: border-color 0.3s;
-}
-
-.input-field:focus {
-  border-color: #F4B400;
-  outline: none;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 .checkbox-group {
   display: flex;
   gap: 20px;
-  margin-top: 10px;
-}
-
-.checkbox-group div {
-  display: flex;
-  align-items: center;
-}
-
-.checkbox-group input {
-  margin-right: 5px;
 }
 
 .register-btn {
   width: 100%;
-  padding: 12px;
-  font-size: 1rem;
-  background-color: #F4B400;
-  color: #FFFFFF;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s;
 }
 
 .register-btn:hover {
-  background-color: #d9a300;
-}
-
-.error-message {
-  color: #dc3545;
-  text-align: center;
-  margin-top: 10px;
-}
-
-.success-message {
-  color: #28a745;
-  text-align: center;
-  margin-top: 10px;
+  background-color: #0056b3;
 }
 </style>
