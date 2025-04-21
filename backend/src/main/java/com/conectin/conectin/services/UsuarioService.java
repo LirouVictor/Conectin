@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -90,16 +91,16 @@ public class UsuarioService {
         return usuario;
     }
 
-    public Usuario login(String email, String senha) {
-    Usuario usuario = usuarioRepository.findByEmail(email)
-        .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
-
-    if (!passwordEncoder.matches(senha, usuario.getSenha())) {
-        throw new IllegalArgumentException("Senha inválida");
+public Usuario login(String email, String senha) {
+        Usuario usuario = findByEmail(email);
+        if (usuario == null) {
+            return null; // Usuário não encontrado
+        }
+        if (!BCrypt.checkpw(senha, usuario.getSenha())) {
+            return null; // Senha incorreta
+        }
+        return usuario;
     }
-
-    return usuario;
-}
 
     public Optional<Usuario> editarUsuario(Long id, UsuarioDto usuarioDto) {
         Optional<Usuario> usuarioOpt = usuarioRepository.findById(id);
@@ -138,5 +139,9 @@ public class UsuarioService {
     public Usuario findById(Long id) {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
+    }
+
+    public Usuario findByEmail(String email) {
+        return usuarioRepository.findByEmail(email);
     }
 }

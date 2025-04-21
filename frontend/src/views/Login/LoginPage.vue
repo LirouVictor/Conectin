@@ -38,11 +38,12 @@
           this.toast.success(response.message);
           this.$router.push('/');
         } catch (error) {
-          if (error.response && error.response.data) {
-            this.toast.error(error.response.data.message);
-          } else {
-            this.toast.error('Erro ao fazer login. Tente novamente.');
-          }
+            console.log('Erro completo:', error); // Para depuração
+            if (error.response && error.response.data && error.response.data.message) {
+              this.toast.error(error.response.data.message);
+            } else {
+              this.toast.error('Erro ao fazer login: ' + (error.message || 'Servidor não retornou detalhes.'));
+            }
         }
       },
     },

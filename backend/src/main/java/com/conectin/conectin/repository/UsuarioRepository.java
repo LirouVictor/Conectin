@@ -7,9 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.conectin.conectin.entities.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
-    Optional<Usuario> findByEmail(String email);
     boolean existsByEmail(String email);
     Optional<Usuario> findById(Long id);
     boolean existsById(Long id);
     void deleteById(Long id);
+    Usuario findByEmail(String email);
 }

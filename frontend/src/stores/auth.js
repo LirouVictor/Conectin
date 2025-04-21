@@ -8,11 +8,12 @@ export const useAuthStore = defineStore('auth', {
   }),
   actions: {
     async login(email, senha) {
+      console.log('Enviando payload:', { email, senha });
       const response = await api.post('usuarios/login', { email, senha });
       const message = response.data.message;
       const token = message.split('Token: ')[1];
       this.token = token;
-      this.user = { email }; // Ajuste conforme os dados retornados pelo backend
+      this.user = { email };
       localStorage.setItem('token', token);
       localStorage.setItem('usuarioLogado', JSON.stringify(this.user));
       return response.data;

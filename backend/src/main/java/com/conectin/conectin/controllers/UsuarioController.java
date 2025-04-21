@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -57,12 +59,35 @@ public class UsuarioController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UsuarioDto usuarioDto) {
-        Usuario usuario = usuarioService.login(usuarioDto.getEmail(), usuarioDto.getSenha());
-        if (usuario == null) {
-            throw new CustomException(ErrorMessages.INVALID_CREDENTIALS, ErrorMessages.INVALID_CREDENTIALS_CODE);
+        try {
+            // Validação básica
+            String email = usuarioDto.getEmail();
+            String senha = usuarioDto.getSenha();
+            if (email == null || senha == null) {
+                throw new CustomException("Email e senha são obrigatórios", "USER_ERROR_001");
+            }
+    
+            // Buscar usuário pelo email
+            Usuario usuario = usuarioService.findByEmail(email);
+            if (usuario == null) {
+                System.out.println("Usuário não encontrado para o email: " + email);
+                throw new CustomException("Usuário não encontrado", "USER_ERROR_002");
+            }
+    
+            // Comparar a senha com o hash
+            boolean isPasswordValid = BCrypt.checkpw(senha, usuario.getSenha());
+            if (!isPasswordValid) {
+                throw new CustomException("Senha incorreta", "USER_ERROR_003");
+            }
+    
+            // Gerar token
+            String token = jwtUtil.generateToken(usuario.getEmail());
+            return ResponseEntity.ok(new SuccessMessage("Login bem-sucedido! Token: " + token, "AUTH_SUCCESS_001"));
+        } catch (CustomException e) {
+            throw e; // Propaga a CustomException para ser tratada pelo handler global
+        } catch (Exception e) {
+            throw new CustomException("Erro no servidor: " + e.getMessage(), "SERVER_ERROR_001");
         }
-        String token = jwtUtil.generateToken(usuario.getEmail());
-        return ResponseEntity.ok(new SuccessMessage("Login bem-sucedido! Token: " + token, "AUTH_SUCCESS_001"));
     }
 
     @GetMapping("/{id}")
