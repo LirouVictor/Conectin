@@ -23,7 +23,7 @@
           class="category-card"
           @click="openRegionModal(category)"
         >
-          <img :src="category.image" :alt="category.name" class="category-image" />
+          <!-- <img :src="category.image" :alt="category.name" class="category-image" /> -->
           <h3>{{ category.name }}</h3>
         </div>
       </div>

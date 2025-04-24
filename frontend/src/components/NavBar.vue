@@ -25,6 +25,9 @@
   </script>
   
   <style scoped>
+
+
+
   .navbar {
     background-color: #257bb8;
     padding: 15px 0;

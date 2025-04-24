@@ -1,33 +1,31 @@
 package com.conectin.conectin.controllers;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.conectin.conectin.config.JwtUtil;
 import com.conectin.conectin.dto.UsuarioDto;
+import com.conectin.conectin.entities.Cliente;
+import com.conectin.conectin.entities.Prestador;
+import com.conectin.conectin.entities.TipoUsuario;
 import com.conectin.conectin.entities.Usuario;
 import com.conectin.conectin.exception.CustomException;
 import com.conectin.conectin.exception.ErrorMessages;
 import com.conectin.conectin.payload.SuccessMessage;
+import com.conectin.conectin.repository.ClienteRepository;
+import com.conectin.conectin.repository.PrestadorRepository;
+import com.conectin.conectin.repository.UsuarioRepository;
 import com.conectin.conectin.services.UsuarioService;
 
 import jakarta.validation.Valid;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.security.crypto.bcrypt.BCrypt;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -37,8 +35,18 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private PrestadorRepository prestadorRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    @Autowired
     private JwtUtil jwtUtil;
 
+    // Endpoint de cadastro
     @PostMapping("/cadastrar")
     public ResponseEntity<?> cadastrarUsuario(@Valid @RequestBody UsuarioDto usuarioDto) {
         try {
@@ -57,39 +65,96 @@ public class UsuarioController {
         }
     }
 
+    // Endpoint de login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UsuarioDto usuarioDto) {
         try {
-            // Validação básica
             String email = usuarioDto.getEmail();
             String senha = usuarioDto.getSenha();
             if (email == null || senha == null) {
                 throw new CustomException("Email e senha são obrigatórios", "USER_ERROR_001");
             }
-    
-            // Buscar usuário pelo email
+
             Usuario usuario = usuarioService.findByEmail(email);
             if (usuario == null) {
                 System.out.println("Usuário não encontrado para o email: " + email);
                 throw new CustomException("Usuário não encontrado", "USER_ERROR_002");
             }
-    
-            // Comparar a senha com o hash
+
             boolean isPasswordValid = BCrypt.checkpw(senha, usuario.getSenha());
             if (!isPasswordValid) {
                 throw new CustomException("Senha incorreta", "USER_ERROR_003");
             }
-    
-            // Gerar token
+
             String token = jwtUtil.generateToken(usuario.getEmail());
             return ResponseEntity.ok(new SuccessMessage("Login bem-sucedido! Token: " + token, "AUTH_SUCCESS_001"));
         } catch (CustomException e) {
-            throw e; // Propaga a CustomException para ser tratada pelo handler global
+            throw e;
         } catch (Exception e) {
             throw new CustomException("Erro no servidor: " + e.getMessage(), "SERVER_ERROR_001");
         }
     }
 
+    // Endpoint GET /perfil
+    @GetMapping("/perfil")
+    public ResponseEntity<?> perfilUsuario(@RequestHeader("Authorization") String token) {
+        // Validar token
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new CustomException(ErrorMessages.INVALID_TOKEN, ErrorMessages.INVALID_TOKEN_CODE);
+        }
+        String jwtToken = token.substring(7);
+        String username = jwtUtil.extractUsername(jwtToken);
+
+        if (!jwtUtil.validateToken(jwtToken, username)) {
+            throw new CustomException(ErrorMessages.EXPIRED_TOKEN, ErrorMessages.EXPIRED_TOKEN_CODE);
+        }
+
+        // Buscar usuário pelo email
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(username);
+        if (usuarioOpt.isEmpty()) {
+            throw new CustomException("Usuário não encontrado", "USER_NOT_FOUND");
+        }
+        Usuario usuario = usuarioOpt.get();
+
+        // Estruturar a resposta
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", usuario.getId());
+        response.put("nome", usuario.getNome());
+        response.put("endereco", usuario.getEndereco());
+        response.put("email", usuario.getEmail());
+        response.put("foto", usuario.getFotoPerfil());
+        response.put("tipos", usuario.getTipos());
+
+        // Adicionar dados de Prestador, se aplicável
+        if (usuario.isPrestador()) {
+            Optional<Prestador> prestadorOpt = prestadorRepository.findByUsuarioId(usuario.getId());
+            if (prestadorOpt.isPresent()) {
+                Prestador prestador = prestadorOpt.get();
+                Map<String, Object> prestadorData = new HashMap<>();
+                prestadorData.put("id", prestador.getId());
+                prestadorData.put("descricao", prestador.getDescricao());
+                prestadorData.put("disponibilidade", prestador.getDisponibilidade());
+                prestadorData.put("avaliacaoMedia", prestador.getAvaliacaoMedia());
+                response.put("prestador", prestadorData);
+            }
+        }
+
+        // Adicionar dados de Cliente, se aplicável
+        if (usuario.isCliente()) {
+            Optional<Cliente> clienteOpt = clienteRepository.findByUsuarioId(usuario.getId());
+            if (clienteOpt.isPresent()) {
+                Cliente cliente = clienteOpt.get();
+                Map<String, Object> clienteData = new HashMap<>();
+                clienteData.put("id", cliente.getId());
+                clienteData.put("historicoContratacoes", cliente.getHistoricoContratacoes());
+                response.put("cliente", clienteData);
+            }
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    // Outros endpoints (mantidos como estão)
     @GetMapping("/{id}")
     public ResponseEntity<?> getUsuarioById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
         if (token == null || !token.startsWith("Bearer ")) {
@@ -172,7 +237,7 @@ public class UsuarioController {
             throw new CustomException(ErrorMessages.EXPIRED_TOKEN, ErrorMessages.EXPIRED_TOKEN_CODE);
         }
 
-        List<Usuario> usuarios = usuarioService.listarUsuarios();
+        java.util.List<Usuario> usuarios = usuarioService.listarUsuarios();
         return ResponseEntity.ok(usuarios);
     }
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="register-container">
     <div class="register-box">
-      <h1>Página de Cadastro</h1>
+      <h1>Faça seu Cadastro</h1>
       <form @submit.prevent="cadastrarUsuario">
         <div class="input-group">
           <label for="nome">Nome:</label>
@@ -15,11 +15,13 @@
           <label>Tipo de Usuário:</label>
           <div class="checkbox-group">
             <div>
-              <input type="checkbox" id="prestador" v-model="usuario.isPrestador" />
+              <br>
+              <input type="checkbox" id="prestador" v-model="usuario.prestador" />
               <label for="prestador">Prestador</label>
             </div>
             <div>
-              <input type="checkbox" id="cliente" v-model="usuario.isCliente" />
+              <br>
+              <input type="checkbox" id="cliente" v-model="usuario.cliente" />
               <label for="cliente">Cliente</label>
             </div>
           </div>
@@ -53,8 +55,8 @@ export default {
       usuario: {
         nome: '',
         endereco: '',
-        isPrestador: false,
-        isCliente: false,
+        prestador: false,
+        cliente: false,
         email: '',
         senha: '',
         confirmarSenha: '',
@@ -80,12 +82,8 @@ export default {
         return;
       }
 
-      // Determinar o tipo de usuário
-      const tipos = [];
-      if (this.usuario.isPrestador) tipos.push('PRESTADOR');
-      if (this.usuario.isCliente) tipos.push('CLIENTE');
-
-      if (tipos.length === 0) {
+      // Verificar se pelo menos um tipo foi selecionado
+      if (!this.usuario.prestador && !this.usuario.cliente) {
         this.toast.error('Selecione pelo menos um tipo de usuário.');
         return;
       }
@@ -94,7 +92,8 @@ export default {
         const response = await api.post('/usuarios/cadastrar', {
           nome: this.usuario.nome,
           endereco: this.usuario.endereco,
-          tipo: tipos.join(','),
+          prestador: this.usuario.prestador,
+          cliente: this.usuario.cliente,
           email: this.usuario.email,
           senha: this.usuario.senha,
           confirmarSenha: this.usuario.confirmarSenha,
@@ -102,11 +101,12 @@ export default {
 
         this.toast.success(response.data.message);
 
+        // Limpar formulário
         this.usuario = {
           nome: '',
           endereco: '',
-          isPrestador: false,
-          isCliente: false,
+          prestador: false,
+          cliente: false,
           email: '',
           senha: '',
           confirmarSenha: '',
@@ -145,7 +145,7 @@ export default {
 }
 
 .input-field {
-  width: 100%;
+  width: 95.5%;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -159,14 +159,15 @@ export default {
 .register-btn {
   width: 100%;
   padding: 10px;
-  background-color: #007bff;
+  background-color: #ffc107;
   color: white;
+  font-size: large;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .register-btn:hover {
-  background-color: #0056b3;
+  background-color: #257bb8;
 }
 </style>
