@@ -46,7 +46,6 @@ public class UsuarioController {
     @Autowired
     private JwtUtil jwtUtil;
 
-    // Endpoint de cadastro
     @PostMapping("/cadastrar")
     public ResponseEntity<?> cadastrarUsuario(@Valid @RequestBody UsuarioDto usuarioDto) {
         try {
@@ -65,40 +64,51 @@ public class UsuarioController {
         }
     }
 
-    // Endpoint de login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UsuarioDto usuarioDto) {
         try {
             String email = usuarioDto.getEmail();
             String senha = usuarioDto.getSenha();
             if (email == null || senha == null) {
-                throw new CustomException("Email e senha são obrigatórios", "USER_ERROR_001");
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("message", "Email e senha são obrigatórios");
+                errorResponse.put("code", "USER_ERROR_001");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
             }
 
             Usuario usuario = usuarioService.findByEmail(email);
             if (usuario == null) {
-                System.out.println("Usuário não encontrado para o email: " + email);
-                throw new CustomException("Usuário não encontrado", "USER_ERROR_002");
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("message", "Usuário não encontrado");
+                errorResponse.put("code", "USER_ERROR_002");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
             }
 
             boolean isPasswordValid = BCrypt.checkpw(senha, usuario.getSenha());
             if (!isPasswordValid) {
-                throw new CustomException("Senha incorreta", "USER_ERROR_003");
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("message", "Usuário ou Senha incorreta");
+                errorResponse.put("code", "USER_ERROR_003");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
             }
 
             String token = jwtUtil.generateToken(usuario.getEmail());
-            return ResponseEntity.ok(new SuccessMessage("Login bem-sucedido! Token: " + token, "AUTH_SUCCESS_001"));
-        } catch (CustomException e) {
-            throw e;
+            Map<String, String> successResponse = new HashMap<>();
+            successResponse.put("message", "Login bem-sucedido!");
+            successResponse.put("token", token);
+            successResponse.put("code", "AUTH_SUCCESS_001");
+            return ResponseEntity.ok(successResponse);
+
         } catch (Exception e) {
-            throw new CustomException("Erro no servidor: " + e.getMessage(), "SERVER_ERROR_001");
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("message", "Erro no servidor: " + e.getMessage());
+            errorResponse.put("code", "SERVER_ERROR_001");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 
-    // Endpoint GET /perfil
     @GetMapping("/perfil")
     public ResponseEntity<?> perfilUsuario(@RequestHeader("Authorization") String token) {
-        // Validar token
         if (token == null || !token.startsWith("Bearer ")) {
             throw new CustomException(ErrorMessages.INVALID_TOKEN, ErrorMessages.INVALID_TOKEN_CODE);
         }
@@ -109,14 +119,12 @@ public class UsuarioController {
             throw new CustomException(ErrorMessages.EXPIRED_TOKEN, ErrorMessages.EXPIRED_TOKEN_CODE);
         }
 
-        // Buscar usuário pelo email
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(username);
         if (usuarioOpt.isEmpty()) {
             throw new CustomException("Usuário não encontrado", "USER_NOT_FOUND");
         }
         Usuario usuario = usuarioOpt.get();
 
-        // Estruturar a resposta
         Map<String, Object> response = new HashMap<>();
         response.put("id", usuario.getId());
         response.put("nome", usuario.getNome());
@@ -125,7 +133,6 @@ public class UsuarioController {
         response.put("foto", usuario.getFotoPerfil());
         response.put("tipos", usuario.getTipos());
 
-        // Adicionar dados de Prestador, se aplicável
         if (usuario.isPrestador()) {
             Optional<Prestador> prestadorOpt = prestadorRepository.findByUsuarioId(usuario.getId());
             if (prestadorOpt.isPresent()) {
@@ -139,7 +146,6 @@ public class UsuarioController {
             }
         }
 
-        // Adicionar dados de Cliente, se aplicável
         if (usuario.isCliente()) {
             Optional<Cliente> clienteOpt = clienteRepository.findByUsuarioId(usuario.getId());
             if (clienteOpt.isPresent()) {
@@ -152,27 +158,6 @@ public class UsuarioController {
         }
 
         return ResponseEntity.ok(response);
-    }
-
-    // Outros endpoints (mantidos como estão)
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getUsuarioById(@PathVariable Long id, @RequestHeader("Authorization") String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
-            throw new CustomException(ErrorMessages.INVALID_TOKEN, ErrorMessages.INVALID_TOKEN_CODE);
-        }
-
-        String jwtToken = token.substring(7);
-        String username = jwtUtil.extractUsername(jwtToken);
-
-        if (!jwtUtil.validateToken(jwtToken, username)) {
-            throw new CustomException(ErrorMessages.EXPIRED_TOKEN, ErrorMessages.EXPIRED_TOKEN_CODE);
-        }
-
-        Usuario usuario = usuarioService.findById(id);
-        if (usuario == null) {
-            throw new CustomException(ErrorMessages.USER_NOT_FOUND, ErrorMessages.USER_NOT_FOUND_CODE);
-        }
-        return ResponseEntity.ok(new SuccessMessage("Usuário encontrado: " + usuario.getNome(), "USER_SUCCESS_001"));
     }
 
     @PutMapping("/editar/{id}")

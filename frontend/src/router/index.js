@@ -3,10 +3,11 @@ import HomePage from '../views/HomePage.vue';
 import LoginPage from '../views/Login/LoginPage.vue';
 import CadastroPage from '../views/Login/CadastroPage.vue';
 import ComoFuncionaPage from '../views/ComoFunciona.vue';
-import RankingPrestadores from '../views/Prestador/RankingPrestadores.vue';
-import PerfilPrestador from '../views/Prestador/PerfilPrestador.vue';
+import RankingPrestadores from '../views/Usuario/Prestador/RankingPrestadores.vue';
+import PerfilPrestador from '../views/Usuario/Prestador/PerfilPrestador.vue';
 import { useUserStore } from '../stores/user'; // Add this import
-import EditarUsuario from '../views/EditarUsuario.vue';
+import EditarUsuario from '../views/Usuario/EditarUsuario.vue';
+import EditarPerfilUsuario from '../views/Usuario/EditarPerfilUsuario.vue'; // Import the EditarUsuario component
 
 const routes = [
   { path: '/', name: 'Home', component: HomePage },
@@ -25,9 +26,15 @@ const routes = [
     props: true, // Pass route params as props to the component
   },
   {
-    path: '/editar-usuario',
+    path: '/EditarUsuario/:id',
     name: 'EditarUsuario',
     component: EditarUsuario,
+    meta: { requiresAuth: true }, // Optional: Mark as protected
+  },
+  {
+    path: '/EditarPerfilUsuario/:id',
+    name: 'EditarPerfilUsuario',
+    component: EditarPerfilUsuario,
     meta: { requiresAuth: true }, // Optional: Mark as protected
   },
 ];

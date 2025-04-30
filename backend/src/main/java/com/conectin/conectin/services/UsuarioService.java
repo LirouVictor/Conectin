@@ -31,29 +31,25 @@ public class UsuarioService {
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
 
     public Usuario cadastrarUsuario(UsuarioDto usuarioDto) {
-        // Validar email
         if (!EMAIL_PATTERN.matcher(usuarioDto.getEmail()).matches()) {
             throw new IllegalArgumentException("Formato de e-mail inválido");
         }
 
-        // Verificar se o email já existe
         if (usuarioRepository.findByEmail(usuarioDto.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Este e-mail já existe");
         }
 
-        // Validar senhas
         if (!usuarioDto.isSenhasCoincidem()) {
             throw new IllegalArgumentException("As senhas não coincidem");
         }
 
-        // Criar usuário
         Usuario usuario = new Usuario();
         usuario.setNome(usuarioDto.getNome());
         usuario.setEndereco(usuarioDto.getEndereco());
         usuario.setEmail(usuarioDto.getEmail());
         usuario.setSenha(BCrypt.hashpw(usuarioDto.getSenha(), BCrypt.gensalt()));
+        usuario.setFotoPerfil(usuarioDto.getFotoPerfil());
 
-        // Adicionar tipos
         if (usuarioDto.isPrestador()) {
             usuario.addTipo(TipoUsuario.PRESTADOR);
         }
@@ -65,20 +61,18 @@ public class UsuarioService {
             throw new IllegalArgumentException("Pelo menos um tipo de usuário deve ser selecionado");
         }
 
-        // Salvar usuário
         usuario = usuarioRepository.save(usuario);
 
-        // Criar Prestador, se aplicável
         if (usuario.isPrestador()) {
             Prestador prestador = new Prestador();
             prestador.setUsuario(usuario);
-            prestador.setDescricao(""); // Pode ser preenchido posteriormente
-            prestador.setDisponibilidade("");
+            prestador.setDescricao(usuarioDto.getDescricao() != null ? usuarioDto.getDescricao() : "");
+            prestador.setDisponibilidade(usuarioDto.getDisponibilidade() != null ? usuarioDto.getDisponibilidade() : "");
             prestador.setAvaliacaoMedia(0.0f);
+            // Aqui você pode adicionar lógica para categorias e cidades
             prestadorRepository.save(prestador);
         }
 
-        // Criar Cliente, se aplicável
         if (usuario.isCliente()) {
             Cliente cliente = new Cliente();
             cliente.setUsuario(usuario);
@@ -105,23 +99,20 @@ public class UsuarioService {
 
         Usuario usuario = usuarioOpt.get();
 
-        // Validar email
         if (!EMAIL_PATTERN.matcher(usuarioDto.getEmail()).matches()) {
             throw new IllegalArgumentException("Formato de e-mail inválido");
         }
 
-        // Verificar se o novo email já existe (exceto para o próprio usuário)
         Optional<Usuario> usuarioByEmail = usuarioRepository.findByEmail(usuarioDto.getEmail());
-        if (usuarioByEmail.isPresent() && usuarioByEmail.get().getId() != id) { // Correção: usar != para comparar long
+        if (usuarioByEmail.isPresent() && usuarioByEmail.get().getId() != id) {
             throw new IllegalArgumentException("Este e-mail já existe");
         }
 
-        // Atualizar dados
         usuario.setNome(usuarioDto.getNome());
         usuario.setEndereco(usuarioDto.getEndereco());
         usuario.setEmail(usuarioDto.getEmail());
+        usuario.setFotoPerfil(usuarioDto.getFotoPerfil());
 
-        // Atualizar tipos
         usuario.getTipos().clear();
         if (usuarioDto.isPrestador()) {
             usuario.addTipo(TipoUsuario.PRESTADOR);
@@ -134,7 +125,6 @@ public class UsuarioService {
             throw new IllegalArgumentException("Pelo menos um tipo de usuário deve ser selecionado");
         }
 
-        // Atualizar senha, se fornecida
         if (usuarioDto.getSenha() != null && !usuarioDto.getSenha().isEmpty()) {
             if (!usuarioDto.isSenhasCoincidem()) {
                 throw new IllegalArgumentException("As senhas não coincidem");
@@ -142,17 +132,20 @@ public class UsuarioService {
             usuario.setSenha(BCrypt.hashpw(usuarioDto.getSenha(), BCrypt.gensalt()));
         }
 
-        // Atualizar Prestador e Cliente
         if (usuario.isPrestador()) {
             Optional<Prestador> prestadorOpt = prestadorRepository.findByUsuarioId(id);
+            Prestador prestador;
             if (prestadorOpt.isEmpty()) {
-                Prestador prestador = new Prestador();
+                prestador = new Prestador();
                 prestador.setUsuario(usuario);
-                prestador.setDescricao("");
-                prestador.setDisponibilidade("");
                 prestador.setAvaliacaoMedia(0.0f);
-                prestadorRepository.save(prestador);
+            } else {
+                prestador = prestadorOpt.get();
             }
+            prestador.setDescricao(usuarioDto.getDescricao() != null ? usuarioDto.getDescricao() : prestador.getDescricao());
+            prestador.setDisponibilidade(usuarioDto.getDisponibilidade() != null ? usuarioDto.getDisponibilidade() : prestador.getDisponibilidade());
+            // Aqui você pode adicionar lógica para categorias, cidades e portfólio
+            prestadorRepository.save(prestador);
         } else {
             prestadorRepository.findByUsuarioId(id).ifPresent(prestadorRepository::delete);
         }

@@ -11,6 +11,9 @@
         </div>
         <button type="submit" class="login-btn">Entrar</button>
       </form>
+      <div v-if="showForgotPassword" class="forgot-password">
+        <p>Você esqueceu sua senha? <a href="/recuperar-senha">Clique aqui!</a></p>
+      </div>
     </div>
   </div>
 </template>
@@ -25,6 +28,7 @@ export default {
     return {
       email: '',
       senha: '',
+      showForgotPassword: false, // Controla a exibição da mensagem de recuperação
     };
   },
   setup() {
@@ -35,6 +39,7 @@ export default {
     async handleLogin() {
       const authStore = useAuthStore();
       const userStore = useUserStore();
+      this.showForgotPassword = false; // Resetar a mensagem antes de tentar o login
       try {
         const response = await authStore.login(this.email, this.senha);
         this.toast.success(response.message);
@@ -43,7 +48,15 @@ export default {
       } catch (error) {
         console.log('Erro completo:', error);
         if (error.response && error.response.data && error.response.data.message) {
-          this.toast.error(error.response.data.message);
+          const errorMessage = error.response.data.message;
+          this.toast.error(errorMessage);
+          // Exibir a mensagem de recuperação para erros específicos
+          if (
+            errorMessage.includes('Usuário não encontrado') ||
+            errorMessage.includes('Senha incorreta')
+          ) {
+            this.showForgotPassword = true;
+          }
         } else {
           this.toast.error('Erro ao fazer login: ' + (error.message || 'Servidor não retornou detalhes.'));
         }

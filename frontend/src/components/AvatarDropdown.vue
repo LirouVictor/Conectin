@@ -4,7 +4,7 @@
     <span v-if="user">{{ user.nome }}</span>
     <div v-if="dropdownVisible" class="dropdown-content">
       <template v-if="user">
-        <router-link v-if="isPrestador" to="/editar-usuario/prestador">Editar Perfil (Prestador)</router-link>
+        <router-link v-if="isPrestador" to="/EditarPerfilUsuario">Editar Perfil (Prestador)</router-link>
         <router-link v-if="isCliente" to="/editar-usuario/cliente">Editar Perfil (Cliente)</router-link>
         <a href="#" @click.prevent="logout">Logout</a>
       </template>

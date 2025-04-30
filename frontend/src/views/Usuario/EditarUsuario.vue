@@ -17,7 +17,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useUserStore } from '../stores/user';
+import { useUserStore } from '../../stores/user';
 import { useRouter } from 'vue-router';
 import api from '@/services/api';
 import { useToast } from 'vue-toastification';
