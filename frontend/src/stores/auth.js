@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import api from '@/services/api';
-import { useUserStore } from './user'; // Importar o userStore
+import { useUserStore } from './user';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -11,16 +11,13 @@ export const useAuthStore = defineStore('auth', {
     async login(email, senha) {
       console.log('Enviando payload:', { email, senha });
       const response = await api.post('usuarios/login', { email, senha });
-      const message = response.data.message;
-      const token = message.split('Token: ')[1];
+      const token = response.data.token; // Acessar diretamente o token
 
       // Buscar dados completos do usuário
       let userData;
       if (response.data.user) {
-        // Opção 1: A API de login retorna os dados do usuário
         userData = response.data.user;
       } else {
-        // Opção 2: Fazer uma chamada adicional para buscar o perfil
         const profileResponse = await api.get('/usuarios/perfil', {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -32,7 +29,7 @@ export const useAuthStore = defineStore('auth', {
 
       // Atualizar o userStore
       const userStore = useUserStore();
-      userStore.setUser(userData); // Adicionar método setUser ao userStore
+      userStore.setUser(userData);
 
       // Armazenar no localStorage
       localStorage.setItem('token', token);
