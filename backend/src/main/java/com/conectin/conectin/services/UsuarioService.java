@@ -1,10 +1,18 @@
 package com.conectin.conectin.services;
 
+import com.conectin.conectin.entities.Portfolio;
+import com.conectin.conectin.dto.CategoriaDto;
+import com.conectin.conectin.dto.CidadeDto;
+import com.conectin.conectin.dto.PortfolioDto;
 import com.conectin.conectin.dto.UsuarioDto;
+import com.conectin.conectin.entities.CidadePrestador;
 import com.conectin.conectin.entities.Cliente;
 import com.conectin.conectin.entities.Prestador;
+import com.conectin.conectin.entities.PrestadorCategoria;
 import com.conectin.conectin.entities.TipoUsuario;
 import com.conectin.conectin.entities.Usuario;
+import com.conectin.conectin.repository.CidadePrestadorRepository;
+import com.conectin.conectin.repository.CidadeRepository;
 import com.conectin.conectin.repository.ClienteRepository;
 import com.conectin.conectin.repository.PrestadorRepository;
 import com.conectin.conectin.repository.UsuarioRepository;
@@ -12,9 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
@@ -27,6 +37,11 @@ public class UsuarioService {
 
     @Autowired
     private ClienteRepository clienteRepository;
+
+    @Autowired
+    private CidadePrestadorRepository cidadePrestadorRepository;
+
+    @Autowired CidadeRepository cidadeRepository;
 
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
 
@@ -177,4 +192,64 @@ public class UsuarioService {
     public List<Usuario> listarUsuarios() {
         return usuarioRepository.findAll();
     }
+
+public UsuarioDto buscarPerfil(Long usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+
+        UsuarioDto dto = new UsuarioDto();
+        dto.setNome(usuario.getNome());
+        dto.setEndereco(usuario.getEndereco());
+        dto.setEmail(usuario.getEmail());
+        dto.setFotoPerfil(usuario.getFotoPerfil());
+        dto.setPrestador(usuario.isPrestador());
+        dto.setCliente(usuario.isCliente());
+
+        if (usuario.isPrestador()) {
+            Prestador prestador = prestadorRepository.findByUsuarioId(usuarioId)
+                    .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado"));
+            dto.setDescricao(prestador.getDescricao());
+            dto.setDisponibilidade(prestador.getDisponibilidade());
+            dto.setPortfolios(
+                prestador.getPortfolios().stream()
+                    .map((Portfolio p) -> toPortfolioDto(p, prestador.getId()))
+                    .collect(Collectors.toList())
+            );
+        
+
+            dto.setCidades(cidadePrestadorRepository.findByPrestadorId(prestador.getId())
+                    .stream()
+                    .map(this::toCidadeDto)
+                    .collect(Collectors.toList()));
+            dto.setCategorias(prestador.getPrestadorCategorias().stream()
+                    .map(this::toCategoriaDto)
+                    .collect(Collectors.toList()));
+        }
+
+        return dto;
+    }
+
+    private PortfolioDto toPortfolioDto(Portfolio p, Integer prestadorId) {
+        PortfolioDto portfolioDto = new PortfolioDto();
+        portfolioDto.setPrestadorId(prestadorId);
+        portfolioDto.setTitulo(p.getTitulo());
+        portfolioDto.setDescricao(p.getDescricao());
+        portfolioDto.setFotos(p.getFotos() != null ? p.getFotos() : Collections.emptyList());
+        return portfolioDto;
+    }
+
+    private CidadeDto toCidadeDto(CidadePrestador cp) {
+        CidadeDto cidadeDto = new CidadeDto();
+        cidadeDto.setId(cp.getCidade().getId().longValue());
+        cidadeDto.setNome(cp.getCidade().getNome());
+        return cidadeDto;
+    }
+
+    private CategoriaDto toCategoriaDto(PrestadorCategoria pc) {
+        CategoriaDto categoriaDto = new CategoriaDto();
+        categoriaDto.setId(pc.getCategoria().getId().longValue());
+        categoriaDto.setNome(pc.getCategoria().getNome());
+        return categoriaDto;
+    }
+    
 }

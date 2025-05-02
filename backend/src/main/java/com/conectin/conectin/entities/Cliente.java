@@ -18,4 +18,6 @@ public class Cliente {
     private Usuario usuario;
 
     private String historicoContratacoes;
+
+    private Float avaliacaoMedia; // Adicionado para armazenar a média das avaliações
 }

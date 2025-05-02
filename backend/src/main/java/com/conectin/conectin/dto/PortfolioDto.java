@@ -1,21 +1,28 @@
 package com.conectin.conectin.dto;
 
-import java.util.List;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import com.conectin.conectin.entities.Portfolio;
 
 @Data
 public class PortfolioDto {
-
-    @NotNull(message = "O ID do prestador é obrigatório")
+    private Integer id;
     private Integer prestadorId;
-
-    @NotBlank(message = "O título é obrigatório")
     private String titulo;
-
     private String descricao;
-
     private List<String> fotos;
+    private LocalDateTime data;
+
+    public static PortfolioDto fromEntity(Portfolio p) {
+        PortfolioDto dto = new PortfolioDto();
+        dto.setId(p.getId());
+        dto.setPrestadorId(p.getPrestador() != null ? p.getPrestador().getId() : null);
+        dto.setTitulo(p.getTitulo());
+        dto.setDescricao(p.getDescricao());
+        dto.setFotos(p.getFotos() != null ? p.getFotos() : Collections.emptyList());
+        dto.setData(p.getData());
+        return dto;
+    }
 }

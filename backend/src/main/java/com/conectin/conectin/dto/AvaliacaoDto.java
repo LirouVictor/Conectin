@@ -21,7 +21,7 @@ public class AvaliacaoDto {
 
     @Min(value = 1, message = "A nota deve ser no mínimo 1")
     @Max(value = 5, message = "A nota deve ser no máximo 5")
-    private Integer nota;
+    private Float nota; // Alterado de Integer para Float
 
     private String comentario;
 

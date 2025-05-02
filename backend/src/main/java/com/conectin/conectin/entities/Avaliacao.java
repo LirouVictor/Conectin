@@ -29,7 +29,7 @@ public class Avaliacao {
     private Usuario avaliado;
 
     @Column(nullable = false)
-    private Integer nota;
+    private Float nota; // Alterado de Integer para Float
 
     private String comentario;
 

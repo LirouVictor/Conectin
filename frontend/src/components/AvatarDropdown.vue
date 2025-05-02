@@ -4,8 +4,7 @@
     <span v-if="user">{{ user.nome }}</span>
     <div v-if="dropdownVisible" class="dropdown-content">
       <template v-if="user">
-        <router-link v-if="isPrestador" to="/EditarPerfilUsuario">Editar Perfil (Prestador)</router-link>
-        <router-link v-if="isCliente" to="/editar-usuario/cliente">Editar Perfil (Cliente)</router-link>
+        <router-link :to="{ name: 'EditarPerfilUsuario', params: { id: user.id } }">Meu Perfil</router-link>
         <a href="#" @click.prevent="logout">Logout</a>
       </template>
       <template v-else>
@@ -38,10 +37,6 @@ const dropdownVisible = ref(false);
 
 // Computed user data from store
 const user = computed(() => userStore.user);
-
-// Verificar tipos do usuário
-const isPrestador = computed(() => user.value?.tipos?.includes('PRESTADOR'));
-const isCliente = computed(() => user.value?.tipos?.includes('CLIENTE'));
 
 // Methods
 const toggleDropdown = (event) => {

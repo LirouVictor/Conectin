@@ -7,9 +7,13 @@ import org.springframework.stereotype.Service;
 
 import com.conectin.conectin.dto.AvaliacaoDto;
 import com.conectin.conectin.entities.Avaliacao;
+import com.conectin.conectin.entities.Cliente;
+import com.conectin.conectin.entities.Prestador;
 import com.conectin.conectin.entities.SolicitacaoServico;
 import com.conectin.conectin.entities.Usuario;
 import com.conectin.conectin.repository.AvaliacaoRepository;
+import com.conectin.conectin.repository.ClienteRepository;
+import com.conectin.conectin.repository.PrestadorRepository;
 import com.conectin.conectin.repository.SolicitacaoServicoRepository;
 import com.conectin.conectin.repository.UsuarioRepository;
 
@@ -24,6 +28,12 @@ public class AvaliacaoService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+    @Autowired
+    private PrestadorRepository prestadorRepository;
 
     public Avaliacao criarAvaliacao(AvaliacaoDto dto) {
         SolicitacaoServico solicitacao = solicitacaoServicoRepository.findById(dto.getSolicitacaoId())
@@ -42,6 +52,32 @@ public class AvaliacaoService {
         avaliacao.setData(LocalDateTime.now());
         avaliacao.setFotos(dto.getFotos());
 
-        return avaliacaoRepository.save(avaliacao);
+        avaliacao = avaliacaoRepository.save(avaliacao);
+
+        // Atualizar a média de avaliações do usuário avaliado
+        atualizarAvaliacaoMedia(avaliado);
+
+        return avaliacao;
+    }
+
+    private void atualizarAvaliacaoMedia(Usuario avaliado) {
+        Float media = avaliacaoRepository.calcularMediaAvaliacoes(avaliado.getId());
+        if (media == null) {
+            media = 0.0f; // Caso não haja avaliações
+        }
+    
+        final Float finalMedia = media; // Criar uma cópia final
+    
+        // Verificar se o avaliado é um Cliente
+        clienteRepository.findByUsuarioId(avaliado.getId()).ifPresent(cliente -> {
+            cliente.setAvaliacaoMedia(finalMedia);
+            clienteRepository.save(cliente);
+        });
+    
+        // Verificar se o avaliado é um Prestador
+        prestadorRepository.findByUsuarioId(avaliado.getId()).ifPresent(prestador -> {
+            prestador.setAvaliacaoMedia(finalMedia);
+            prestadorRepository.save(prestador);
+        });
     }
 }

@@ -26,6 +26,8 @@ public class Portfolio {
     private String descricao;
 
     @ElementCollection
+    @CollectionTable(name = "portfolio_fotos", joinColumns = @JoinColumn(name = "portfolio_id"))
+    @Column(name = "foto_url")
     private List<String> fotos;
 
     @Column(nullable = false)

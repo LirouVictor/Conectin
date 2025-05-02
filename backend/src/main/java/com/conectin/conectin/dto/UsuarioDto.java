@@ -1,10 +1,10 @@
 package com.conectin.conectin.dto;
 
-import java.util.List;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+
+import java.util.List;
 
 @Data
 public class UsuarioDto {
@@ -21,16 +21,17 @@ public class UsuarioDto {
 
     private String senha;
     private String confirmarSenha;
+    private String senhaAtual; // Novo campo para validação de senha
 
     private boolean prestador;
     private boolean cliente;
 
-    private String fotoPerfil; // URL ou caminho da foto de perfil
-    private String descricao; // Descrição do prestador
-    private String disponibilidade; // Disponibilidade do prestador
-    private List<CategoriaDto> categorias; // Categorias de trabalho
-    private List<CidadeDto> cidades; // Cidades atendidas
-    private List<PortfolioDto> portfolios; // Itens do portfólio
+    private String fotoPerfil;
+    private String descricao;
+    private String disponibilidade;
+    private List<CategoriaDto> categorias;
+    private List<CidadeDto> cidades;
+    private List<PortfolioDto> portfolios;
 
     public boolean isSenhasCoincidem() {
         if (senha == null || confirmarSenha == null) {
