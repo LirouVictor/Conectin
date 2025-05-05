@@ -16,10 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.conectin.conectin.dto.PrestadorDto;
 import com.conectin.conectin.entities.Categoria;
+import com.conectin.conectin.entities.Cidade;
 import com.conectin.conectin.entities.CidadePrestador;
 import com.conectin.conectin.entities.Prestador;
 import com.conectin.conectin.entities.PrestadorCategoria;
 import com.conectin.conectin.repository.CategoriaRepository;
+import com.conectin.conectin.repository.CidadeRepository;
 import com.conectin.conectin.repository.PrestadorRepository;
 import com.conectin.conectin.services.PrestadorService;
 
@@ -36,12 +38,21 @@ public class PrestadorController {
     @Autowired
     private CategoriaRepository categoriaRepository;
 
+    @Autowired
+    private CidadeRepository cidadeRepository;
+
     // Lista todas as categorias disponíveis
     @GetMapping("/categorias")
     public ResponseEntity<List<Categoria>> getCategorias() {
         List<Categoria> categorias = categoriaRepository.findAll();
         return ResponseEntity.ok(categorias);
     }
+
+    //     @GetMapping("/cidades")
+    // public ResponseEntity<List<Cidade>> getCidades() {
+    //     List<Cidade> cidades = cidadeRepository.findAll();
+    //     return ResponseEntity.ok(cidades);
+    // }
 
     // Cria um novo prestador (usado para testes ou criação direta, mas normalmente o cadastro é via UsuarioController)
     @PostMapping("/prestadores")

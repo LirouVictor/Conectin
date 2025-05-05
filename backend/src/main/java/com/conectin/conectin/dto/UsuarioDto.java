@@ -40,22 +40,3 @@ public class UsuarioDto {
         return senha.equals(confirmarSenha);
     }
 }
-
-@Data
-class CategoriaDto {
-    private Long id;
-    private String nome;
-}
-
-@Data
-class CidadeDto {
-    private Long id;
-    private String nome;
-}
-
-@Data
-class PortfolioDto {
-    private Long id;
-    private String urlImagem;
-    private String descricao;
-}

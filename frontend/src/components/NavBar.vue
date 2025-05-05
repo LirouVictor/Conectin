@@ -29,10 +29,10 @@
 
 
   .navbar {
-    background-color: #257bb8;
+    background: linear-gradient(135deg, #257BB8 0%, #1557B0 100%);
     padding: 15px 0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
+    }
   
   .navbar-container {
     display: flex;
