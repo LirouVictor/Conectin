@@ -142,22 +142,24 @@ export default {
         nome: '',
         endereco: '',
         email: '',
-        prestador: false,
-        cliente: false,
-        fotoPerfil: '',
+        prestador: false, // Booleano
+        cliente: false,   // Booleano
+        fotoPerfil: null, // Pode ser string (URL/base64) ou File object temporariamente
         descricao: '',
         disponibilidade: '',
-        portfolios: [],
-        categoriasSelecionadas: [],
-        cidadesSelecionadas: [],
+        portfolios: [], // Lista de objetos { id?, urlImagem: string, descricao: string }
+        categoriasSelecionadas: [], // Lista de IDs
+        cidadesSelecionadas: [],    // Lista de IDs
         senhaAtual: '',
         senha: '',
         confirmarSenha: '',
       },
-      categoriasDisponiveis: [],
-      cidadesDisponiveis: [],
-      novaCidade: '', // Para o select de adicionar cidade
+      categoriasDisponiveis: [], // Lista de objetos {id, nome, ...}
+      cidadesDisponiveis: [],    // Lista de objetos {id, nome, ...}
+      novaCidade: '',
       alterarSenhaVisivel: false,
+      fotoPerfilFile: null, // Para armazenar o objeto File da foto de perfil
+      portfolioFiles: {},   // Para armazenar os objetos File do portfólio { index: File }
     };
   },
   mounted() {
@@ -168,27 +170,33 @@ export default {
   methods: {
     async carregarPerfil() {
       try {
-        const response = await api.get('/usuarios/perfil', {
+        const response = await api.get('/usuarios/perfil', { // Ajuste o endpoint se necessário
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         const data = response.data;
-        this.usuario = {
-          nome: data.nome,
-          endereco: data.endereco,
-          email: data.email,
-          prestador: data.tipos.includes('PRESTADOR'),
-          cliente: data.tipos.includes('CLIENTE'),
-          fotoPerfil: data.foto,
-          descricao: data.prestador?.descricao || '',
-          disponibilidade: data.prestador?.disponibilidade || '',
-          portfolios: data.prestador?.portfolios || [],
-          categoriasSelecionadas: data.prestador?.categorias?.map(c => c.id) || [],
-          cidadesSelecionadas: data.prestador?.cidades?.map(c => c.id) || [],
-          senhaAtual: '',
-          senha: '',
-          confirmarSenha: '',
-        };
+
+        // Popula o estado local 'usuario' com os dados do backend
+        this.usuario.nome = data.nome;
+        this.usuario.endereco = data.endereco;
+        this.usuario.email = data.email;
+        this.usuario.prestador = data.prestador; // Assume que o backend retorna 'prestador' como booleano
+        this.usuario.cliente = data.cliente;   // Assume que o backend retorna 'cliente' como booleano
+        this.usuario.fotoPerfil = data.fotoPerfil; // Assume que o backend retorna a URL da foto
+
+        // Campos específicos do prestador, que no DTO estão na raiz
+        this.usuario.descricao = data.descricao || '';
+        this.usuario.disponibilidade = data.disponibilidade || '';
+        this.usuario.portfolios = data.portfolios?.map(p => ({ ...p, urlImagem: p.urlImagem || p.imagemUrl || '' })) || []; // Ajuste nome do campo se necessário
+        this.usuario.categoriasSelecionadas = data.categorias?.map(c => c.id) || [];
+        this.usuario.cidadesSelecionadas = data.cidades?.map(c => c.id) || [];
+
+        // Limpa campos de senha
+        this.usuario.senhaAtual = '';
+        this.usuario.senha = '';
+        this.usuario.confirmarSenha = '';
+
       } catch (error) {
+        console.error('Erro ao carregar perfil:', error);
         this.toast.error('Erro ao carregar perfil.');
       }
     },
@@ -211,21 +219,36 @@ export default {
     handleFotoUpload(event) {
       const file = event.target.files[0];
       if (file) {
+        this.fotoPerfilFile = file; // Armazena o File object
         const reader = new FileReader();
         reader.onload = (e) => {
-          this.usuario.fotoPerfil = e.target.result;
+          this.usuario.fotoPerfil = e.target.result; // Preview como base64
         };
         reader.readAsDataURL(file);
+      } else {
+        this.fotoPerfilFile = null;
+        this.usuario.fotoPerfil = null; // Ou a URL anterior se quiser manter
       }
     },
     handlePortfolioUpload(event, index) {
       const file = event.target.files[0];
       if (file) {
+        this.portfolioFiles[index] = file; // Armazena o File object
         const reader = new FileReader();
         reader.onload = (e) => {
-          this.usuario.portfolios[index].urlImagem = e.target.result;
+          // Garante que o objeto portfolio no índice exista
+          if (!this.usuario.portfolios[index]) {
+            this.usuario.portfolios[index] = { id: null, urlImagem: '', descricao: '' };
+          }
+          this.usuario.portfolios[index].urlImagem = e.target.result; // Preview como base64
         };
         reader.readAsDataURL(file);
+      } else {
+        delete this.portfolioFiles[index];
+         if (this.usuario.portfolios[index]) {
+            // Poderia resetar a urlImagem ou manter a anterior se a edição for cancelada
+            // this.usuario.portfolios[index].urlImagem = ''; // Ou valor original
+         }
       }
     },
     adicionarPortfolio() {
@@ -233,6 +256,7 @@ export default {
     },
     removerPortfolio(index) {
       this.usuario.portfolios.splice(index, 1);
+      delete this.portfolioFiles[index]; // Remove o arquivo associado se houver
     },
     toggleAlterarSenha() {
       this.alterarSenhaVisivel = !this.alterarSenhaVisivel;
@@ -245,9 +269,11 @@ export default {
     adicionarCidade() {
       if (this.novaCidade && !this.usuario.cidadesSelecionadas.includes(this.novaCidade)) {
         this.usuario.cidadesSelecionadas.push(this.novaCidade);
-        this.novaCidade = ''; // Limpar o select após adicionar
+        this.novaCidade = '';
+      } else if (this.novaCidade) {
+        this.toast.info('Esta cidade já foi adicionada.');
       } else {
-        this.toast.error('Selecione uma cidade válida ou ela já foi adicionada.');
+         this.toast.error('Selecione uma cidade para adicionar.');
       }
     },
     removerCidade(cidadeId) {
@@ -255,11 +281,12 @@ export default {
     },
     getCidadeNome(cidadeId) {
       const cidade = this.cidadesDisponiveis.find(c => c.id === cidadeId);
-      return cidade ? cidade.nome : 'Cidade Desconhecida';
+      return cidade ? cidade.nome : 'Carregando...';
     },
+
     async salvarPerfil() {
       if (!this.usuario.prestador && !this.usuario.cliente) {
-        this.toast.error('Selecione pelo menos um tipo de usuário.');
+        this.toast.error('Selecione pelo menos um tipo de usuário (Prestador ou Cliente).');
         return;
       }
 
@@ -272,45 +299,102 @@ export default {
           this.toast.error('A nova senha é obrigatória.');
           return;
         }
+        if (this.usuario.senha.length < 6) { // Exemplo de validação
+            this.toast.error('A nova senha deve ter pelo menos 6 caracteres.');
+            return;
+        }
         if (this.usuario.senha !== this.usuario.confirmarSenha) {
-          this.toast.error('As senhas não coincidem.');
+          this.toast.error('A nova senha e a confirmação de senha não coincidem.');
           return;
         }
       }
 
+      // O backend espera um JSON, não FormData diretamente para este DTO.
+      // Se você fosse enviar arquivos como File objects, precisaria usar FormData.
+      // Como fotoPerfil e portfolio.urlImagem são base64 strings (do FileReader),
+      // eles podem ir no JSON. Se o backend espera File, a lógica aqui precisaria mudar para FormData.
+
+      const dadosParaEnviar = {
+        nome: this.usuario.nome,
+        endereco: this.usuario.endereco,
+        email: this.usuario.email,
+        fotoPerfil: this.usuario.fotoPerfil, // Envia a string base64 ou URL existente
+
+        prestador: this.usuario.prestador, // Booleano
+        cliente: this.usuario.cliente,     // Booleano
+
+        // Campos que, no DTO, estão na raiz, mas são relevantes para o prestador
+        descricao: this.usuario.prestador ? this.usuario.descricao : null,
+        disponibilidade: this.usuario.prestador ? this.usuario.disponibilidade : null,
+        
+        // Mapeia IDs para objetos {id: valor} como esperado pelo backend para List<CategoriaDto>, etc.
+        categorias: this.usuario.prestador ? this.usuario.categoriasSelecionadas.map(id => ({ id: id })) : [],
+        cidades: this.usuario.prestador ? this.usuario.cidadesSelecionadas.map(id => ({ id: id })) : [],
+        
+        // Portfolios: envia a lista de objetos com urlImagem (base64 ou URL) e descricao
+        // Se o portfolio item tiver um 'id' (vindo do carregarPerfil), mantenha-o para o backend saber se é update ou new.
+        portfolios: this.usuario.prestador ? this.usuario.portfolios.map(p => ({
+            id: p.id || null, // Envia o ID se existir (para update)
+            urlImagem: p.urlImagem, // String base64 ou URL
+            descricao: p.descricao
+        })) : [],
+      };
+
+      if (this.alterarSenhaVisivel) {
+        dadosParaEnviar.senhaAtual = this.usuario.senhaAtual;
+        dadosParaEnviar.senha = this.usuario.senha;
+        dadosParaEnviar.confirmarSenha = this.usuario.confirmarSenha;
+      } else {
+        // Não envie campos de senha se não estiver alterando,
+        // para evitar validações desnecessárias no backend.
+        // O UsuarioDto os tem, mas o backend pode tratá-los como opcionais
+        // se não forem para alteração de senha.
+        // Se o backend exigir que sejam nulos, envie:
+        // dadosParaEnviar.senhaAtual = null;
+        // dadosParaEnviar.senha = null;
+        // dadosParaEnviar.confirmarSenha = null;
+      }
+
+      console.log("Dados a enviar para o backend:", JSON.stringify(dadosParaEnviar, null, 2));
+
       try {
-        const dadosParaEnviar = {
-          nome: this.usuario.nome,
-          endereco: this.usuario.endereco,
-          email: this.usuario.email,
-          tipos: [
-            ...(this.usuario.cliente ? ['CLIENTE'] : []),
-            ...(this.usuario.prestador ? ['PRESTADOR'] : []),
-          ],
-          fotoPerfil: this.usuario.fotoPerfil,
-          prestador: this.usuario.prestador ? {
-            descricao: this.usuario.descricao,
-            disponibilidade: this.usuario.disponibilidade,
-            categorias: this.usuario.categoriasSelecionadas,
-            cidades: this.usuario.cidadesSelecionadas,
-            portfolios: this.usuario.portfolios,
-          } : null,
-        };
-
-        if (this.alterarSenhaVisivel) {
-          dadosParaEnviar.senhaAtual = this.usuario.senhaAtual;
-          dadosParaEnviar.senha = this.usuario.senha;
+        // Use o ID do usuário logado do store para o endpoint
+        if (!this.userStore.user || !this.userStore.user.id) {
+            this.toast.error("ID do usuário não encontrado. Faça login novamente.");
+            return;
         }
+        const userId = this.userStore.user.id;
 
-        const response = await api.put(`/usuarios/editar/${this.userStore.user.id}`, dadosParaEnviar, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        const response = await api.put(`/usuarios/editar/${userId}`, dadosParaEnviar, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json', // Importante para payload JSON
+          },
         });
-        this.userStore.user = { ...this.userStore.user, ...this.usuario };
-        localStorage.setItem('usuarioLogado', JSON.stringify(this.userStore.user));
-        this.toast.success(response.data.message);
-        this.router.push({ name: 'Perfil' });
+
+        // Atualizar o userStore e localStorage com os dados que FORAM enviados e confirmados
+        // (ou com a resposta do backend se ela retornar o objeto atualizado)
+        const perfilAtualizadoParaStore = {
+            nome: dadosParaEnviar.nome,
+            email: dadosParaEnviar.email,
+            endereco: dadosParaEnviar.endereco,
+            fotoPerfil: dadosParaEnviar.fotoPerfil, // pode ser base64, idealmente o backend retornaria a URL final
+            prestador: dadosParaEnviar.prestador,
+            cliente: dadosParaEnviar.cliente,
+            // ... outros campos que o userStore precise e que foram atualizados
+        };
+        this.userStore.setUser({ ...this.userStore.user, ...perfilAtualizadoParaStore }); // Assumindo que setUser existe no store
+
+        this.toast.success(response.data.message || 'Perfil salvo com sucesso!');
+        this.router.push({ name: 'Perfil' }); // Ou para onde for apropriado
+
       } catch (error) {
-        this.toast.error(error.response?.data?.message || 'Erro ao salvar perfil.');
+        console.error("Erro ao salvar perfil:", error.response || error);
+        const errorMessage = error.response?.data?.message ||
+                             (error.response?.data?.errors ? Object.values(error.response.data.errors).join(', ') : null) ||
+                             error.response?.data?.error ||
+                             'Erro ao salvar perfil. Verifique os dados e tente novamente.';
+        this.toast.error(errorMessage);
       }
     },
   },

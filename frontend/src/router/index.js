@@ -29,7 +29,7 @@ const routes = [
     path: '/EditarUsuario/:id',
     name: 'EditarUsuario',
     component: EditarUsuario,
-    meta: { requiresAuth: true }, // Optional: Mark as protected
+    meta: { requiresAuth: true }, 
   },
   {
     path: '/EditarPerfilUsuario/:id',
