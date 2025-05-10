@@ -386,7 +386,7 @@ export default {
         this.userStore.setUser({ ...this.userStore.user, ...perfilAtualizadoParaStore }); // Assumindo que setUser existe no store
 
         this.toast.success(response.data.message || 'Perfil salvo com sucesso!');
-        this.router.push({ name: 'Perfil' }); // Ou para onde for apropriado
+        //this.router.push({ name: 'Perfil' }); // Ou para onde for apropriado
 
       } catch (error) {
         console.error("Erro ao salvar perfil:", error.response || error);
