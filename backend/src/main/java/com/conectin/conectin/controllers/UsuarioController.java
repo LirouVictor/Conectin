@@ -107,6 +107,28 @@ public class UsuarioController {
         }
     }
 
+    // @GetMapping("/perfil")
+    // public ResponseEntity<?> perfilUsuario(@RequestHeader("Authorization") String token) {
+    //     if (token == null || !token.startsWith("Bearer ")) {
+    //         throw new CustomException(ErrorMessages.INVALID_TOKEN, ErrorMessages.INVALID_TOKEN_CODE);
+    //     }
+    //     String jwtToken = token.substring(7);
+    //     String username = jwtUtil.extractUsername(jwtToken); // Geralmente é o e-mail
+
+    //     if (username == null || !jwtUtil.validateToken(jwtToken, username)) {
+    //         throw new CustomException(ErrorMessages.EXPIRED_TOKEN, ErrorMessages.EXPIRED_TOKEN_CODE);
+    //     }
+
+    //     // Busca o usuário autenticado pelo e-mail (username) extraído do token
+    //     Usuario usuarioAuth = usuarioRepository.findByEmail(username)
+    //             .orElseThrow(() -> new CustomException("Usuário autenticado não encontrado no banco de dados.", "AUTH_USER_NOT_FOUND"));
+
+    //     // Use o serviço para obter o DTO formatado corretamente com todos os detalhes necessários
+    //     UsuarioDto perfilDto = usuarioService.buscarPerfilCompletoDto(usuarioAuth.getId());
+
+    //     return ResponseEntity.ok(perfilDto);
+    // }
+
     @GetMapping("/perfil")
     public ResponseEntity<?> perfilUsuario(@RequestHeader("Authorization") String token) {
         if (token == null || !token.startsWith("Bearer ")) {
@@ -146,16 +168,16 @@ public class UsuarioController {
             }
         }
 
-        if (usuario.isCliente()) {
-            Optional<Cliente> clienteOpt = clienteRepository.findByUsuarioId(usuario.getId());
-            if (clienteOpt.isPresent()) {
-                Cliente cliente = clienteOpt.get();
-                Map<String, Object> clienteData = new HashMap<>();
-                clienteData.put("id", cliente.getId());
-                clienteData.put("historicoContratacoes", cliente.getHistoricoContratacoes());
-                response.put("cliente", clienteData);
-            }
-        }
+        // if (usuario.isCliente()) {
+        //     Optional<Cliente> clienteOpt = clienteRepository.findByUsuarioId(usuario.getId());
+        //     if (clienteOpt.isPresent()) {
+        //         Cliente cliente = clienteOpt.get();
+        //         Map<String, Object> clienteData = new HashMap<>();
+        //         clienteData.put("id", cliente.getId());
+        //         clienteData.put("historicoContratacoes", cliente.getHistoricoContratacoes());
+        //         response.put("cliente", clienteData);
+        //     }
+        // }
 
         return ResponseEntity.ok(response);
     }

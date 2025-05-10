@@ -6,7 +6,6 @@ import ComoFuncionaPage from '../views/ComoFunciona.vue';
 import RankingPrestadores from '../views/Usuario/Prestador/RankingPrestadores.vue';
 import PerfilPrestador from '../views/Usuario/Prestador/PerfilPrestador.vue';
 import { useUserStore } from '../stores/user'; // Add this import
-import EditarUsuario from '../views/Usuario/EditarUsuario.vue';
 import EditarPerfilUsuario from '../views/Usuario/EditarPerfilUsuario.vue'; // Import the EditarUsuario component
 
 const routes = [
@@ -24,12 +23,6 @@ const routes = [
     name: 'PerfilPrestador',
     component: PerfilPrestador,
     props: true, // Pass route params as props to the component
-  },
-  {
-    path: '/EditarUsuario/:id',
-    name: 'EditarUsuario',
-    component: EditarUsuario,
-    meta: { requiresAuth: true }, 
   },
   {
     path: '/EditarPerfilUsuario/:id',
