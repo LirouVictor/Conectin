@@ -3,7 +3,6 @@
     <div class="editar-perfil-box">
       <h1>Editar Perfil</h1>
       <form @submit.prevent="salvarPerfil">
-        <!-- Dados Gerais -->
         <div class="input-group">
           <label for="nome">Nome:</label>
           <input v-model="usuario.nome" type="text" id="nome" required class="input-field" />
@@ -22,7 +21,6 @@
           <img v-if="usuario.fotoPerfil" :src="usuario.fotoPerfil" alt="Foto de Perfil" class="foto-preview" />
         </div>
 
-        <!-- Dados do Prestador -->
         <div v-if="usuario.prestador" class="prestador-section">
           <h3>Dados do Prestador</h3>
           <div class="input-group">
@@ -34,17 +32,29 @@
             <input v-model="usuario.disponibilidade" type="text" id="disponibilidade" class="input-field" />
           </div>
 
-          <!-- Categorias (Serviços) -->
           <div class="input-group">
             <label>Categorias (Serviços):</label>
-            <select multiple v-model="usuario.categoriasSelecionadas" class="input-field">
-              <option v-for="categoria in categoriasDisponiveis" :key="categoria.id" :value="categoria.id">
-                {{ categoria.nome }}
-              </option>
-            </select>
+            <div class="categorias-selecionadas">
+              <div v-if="usuario.categoriasSelecionadas.length === 0" class="sem-categorias">
+                Nenhuma categoria selecionada.
+              </div>
+              <div v-else class="categoria-item" v-for="categoriaId in usuario.categoriasSelecionadas" :key="categoriaId">
+                <span>{{ getCategoriaNome(categoriaId) }}</span>
+                <button type="button" @click="removerCategoria(categoriaId)" class="remove-btn">Remover</button>
+              </div>
+            </div>
+            <div class="adicionar-categoria">
+              <select v-model="novaCategoria" class="input-field">
+                <option value="" disabled>Selecione uma categoria</option>
+                <option v-for="categoria in categoriasDisponiveis" :key="categoria.id" :value="categoria.id">
+                  {{ categoria.nome }}
+                </option>
+              </select>
+              <button type="button" @click="adicionarCategoria" :disabled="!novaCategoria" class="add-btn">Adicionar
+                Categoria</button>
+            </div>
           </div>
 
-          <!-- Cidades Atendidas -->
           <div class="input-group">
             <label>Cidades Atendidas:</label>
             <div class="cidades-selecionadas">
@@ -63,11 +73,11 @@
                   {{ cidade.nome }}
                 </option>
               </select>
-              <button type="button" @click="adicionarCidade" :disabled="!novaCidade" class="add-btn">Adicionar Cidade</button>
+              <button type="button" @click="adicionarCidade" :disabled="!novaCidade" class="add-btn">Adicionar
+                Cidade</button>
             </div>
           </div>
 
-          <!-- Portfólio -->
           <div class="portfolio-section">
             <h4>Portfólio</h4>
             <div v-for="(item, index) in usuario.portfolios" :key="index" class="portfolio-item">
@@ -80,7 +90,6 @@
           </div>
         </div>
 
-        <!-- Tipos de Usuário -->
         <div class="input-group">
           <label>Tipo de Usuário:</label>
           <div class="checkbox-group">
@@ -95,7 +104,6 @@
           </div>
         </div>
 
-        <!-- Alterar Senha -->
         <div class="input-group">
           <button type="button" @click="toggleAlterarSenha" class="alterar-senha-btn">
             {{ alterarSenhaVisivel ? 'Cancelar Alteração de Senha' : 'Alterar Senha' }}
@@ -125,8 +133,8 @@
 <script>
 import api from '@/services/api';
 import { useToast } from 'vue-toastification';
-import { useUserStore } from '@/stores/user';
-import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/user'; // Seu store de usuário
+import { useRouter } from 'vue-router'; // Se precisar de navegação
 
 export default {
   name: 'EditarPerfil',
@@ -142,122 +150,144 @@ export default {
         nome: '',
         endereco: '',
         email: '',
-        prestador: false, // Booleano
-        cliente: false,   // Booleano
-        fotoPerfil: null, // Pode ser string (URL/base64) ou File object temporariamente
+        fotoPerfil: null,
+        prestador: false, // Booleano que indica se é prestador
+        cliente: false,   // Booleano que indica se é cliente
+        // Campos específicos do prestador
         descricao: '',
         disponibilidade: '',
         portfolios: [], // Lista de objetos { id?, urlImagem: string, descricao: string }
-        categoriasSelecionadas: [], // Lista de IDs
-        cidadesSelecionadas: [],    // Lista de IDs
+        categoriasSelecionadas: [], // Lista de IDs de categorias
+        cidadesSelecionadas: [],    // Lista de IDs de cidades
+        // Campos para alteração de senha
         senhaAtual: '',
         senha: '',
         confirmarSenha: '',
       },
-      categoriasDisponiveis: [], // Lista de objetos {id, nome, ...}
-      cidadesDisponiveis: [],    // Lista de objetos {id, nome, ...}
-      novaCidade: '',
+      categoriasDisponiveis: [], // Para popular o <select> de categorias
+      cidadesDisponiveis: [],    // Para popular o <select> de cidades
+      novaCidade: '',            // v-model para adicionar nova cidade
+      novaCategoria: '',         // v-model para adicionar nova categoria
       alterarSenhaVisivel: false,
-      fotoPerfilFile: null, // Para armazenar o objeto File da foto de perfil
-      portfolioFiles: {},   // Para armazenar os objetos File do portfólio { index: File }
+      fotoPerfilFile: null,      // Armazena o File object da foto de perfil para upload
+      portfolioFiles: {},        // Armazena File objects do portfólio { index: File }
     };
   },
   mounted() {
     this.carregarPerfil();
-    this.carregarCategorias();
-    this.carregarCidades();
+    this.carregarCategorias(); // Carrega opções para o select de categorias
+    this.carregarCidades();    // Carrega opções para o select de cidades
   },
   methods: {
     async carregarPerfil() {
       try {
-        const response = await api.get('/usuarios/perfil', { // Ajuste o endpoint se necessário
+        const response = await api.get('/usuarios/perfil', {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         });
         const data = response.data;
 
-        // Popula o estado local 'usuario' com os dados do backend
-        this.usuario.nome = data.nome;
-        this.usuario.endereco = data.endereco;
-        this.usuario.email = data.email;
-        this.usuario.prestador = data.prestador; // Assume que o backend retorna 'prestador' como booleano
-        this.usuario.cliente = data.cliente;   // Assume que o backend retorna 'cliente' como booleano
-        this.usuario.fotoPerfil = data.fotoPerfil; // Assume que o backend retorna a URL da foto
+        this.usuario.nome = data.nome || '';
+        this.usuario.endereco = data.endereco || '';
+        this.usuario.email = data.email || '';
+        this.usuario.fotoPerfil = data.foto || null;
 
-        // Campos específicos do prestador, que no DTO estão na raiz
-        this.usuario.descricao = data.descricao || '';
-        this.usuario.disponibilidade = data.disponibilidade || '';
-        this.usuario.portfolios = data.portfolios?.map(p => ({ ...p, urlImagem: p.urlImagem || p.imagemUrl || '' })) || []; // Ajuste nome do campo se necessário
-        this.usuario.categoriasSelecionadas = data.categorias?.map(c => c.id) || [];
-        this.usuario.cidadesSelecionadas = data.cidades?.map(c => c.id) || [];
+        const isPrestador = data.tipos?.includes('PRESTADOR') || (data.prestador && typeof data.prestador === 'object');
+        const isCliente = data.tipos?.includes('CLIENTE') || false;
 
-        // Limpa campos de senha
+        this.usuario.prestador = isPrestador;
+        this.usuario.cliente = isCliente;
+
+        if (this.usuario.prestador && data.prestador && typeof data.prestador === 'object') {
+          const prestadorData = data.prestador;
+
+          this.usuario.descricao = prestadorData.descricao || '';
+          this.usuario.disponibilidade = prestadorData.disponibilidade || '';
+          this.usuario.portfolios = (prestadorData.portfolios || []).map(p => ({
+            id: p.id || null,
+            urlImagem: p.urlImagem || p.imagemUrl || '',
+            descricao: p.descricao || ''
+          }));
+          this.usuario.categoriasSelecionadas = (prestadorData.categorias || []).map(cat => cat.id);
+          this.usuario.cidadesSelecionadas = (prestadorData.cidades || []).map(cid => cid.id);
+        } else {
+          this.usuario.descricao = '';
+          this.usuario.disponibilidade = '';
+          this.usuario.portfolios = [];
+          this.usuario.categoriasSelecionadas = [];
+          this.usuario.cidadesSelecionadas = [];
+        }
+
         this.usuario.senhaAtual = '';
         this.usuario.senha = '';
         this.usuario.confirmarSenha = '';
+        this.alterarSenhaVisivel = false;
 
       } catch (error) {
-        console.error('Erro ao carregar perfil:', error);
-        this.toast.error('Erro ao carregar perfil.');
+        console.error('Erro ao carregar perfil:', error.response || error);
+        this.toast.error(error.response?.data?.message || 'Não foi possível carregar os dados do perfil.');
       }
     },
+
     async carregarCategorias() {
       try {
         const response = await api.get('/categorias');
         this.categoriasDisponiveis = response.data;
       } catch (error) {
-        this.toast.error('Erro ao carregar categorias.');
+        console.error('Erro ao carregar categorias:', error.response || error);
+        this.toast.error('Erro ao carregar lista de categorias.');
       }
     },
+
     async carregarCidades() {
       try {
         const response = await api.get('/cidades');
         this.cidadesDisponiveis = response.data;
       } catch (error) {
-        this.toast.error('Erro ao carregar cidades.');
+        console.error('Erro ao carregar cidades:', error.response || error);
+        this.toast.error('Erro ao carregar lista de cidades.');
       }
     },
+
     handleFotoUpload(event) {
       const file = event.target.files[0];
       if (file) {
-        this.fotoPerfilFile = file; // Armazena o File object
+        this.fotoPerfilFile = file;
         const reader = new FileReader();
         reader.onload = (e) => {
-          this.usuario.fotoPerfil = e.target.result; // Preview como base64
+          this.usuario.fotoPerfil = e.target.result;
         };
         reader.readAsDataURL(file);
       } else {
         this.fotoPerfilFile = null;
-        this.usuario.fotoPerfil = null; // Ou a URL anterior se quiser manter
       }
     },
+
     handlePortfolioUpload(event, index) {
       const file = event.target.files[0];
       if (file) {
-        this.portfolioFiles[index] = file; // Armazena o File object
+        this.portfolioFiles[index] = file;
         const reader = new FileReader();
         reader.onload = (e) => {
-          // Garante que o objeto portfolio no índice exista
           if (!this.usuario.portfolios[index]) {
             this.usuario.portfolios[index] = { id: null, urlImagem: '', descricao: '' };
           }
-          this.usuario.portfolios[index].urlImagem = e.target.result; // Preview como base64
+          this.usuario.portfolios[index].urlImagem = e.target.result;
         };
         reader.readAsDataURL(file);
       } else {
         delete this.portfolioFiles[index];
-         if (this.usuario.portfolios[index]) {
-            // Poderia resetar a urlImagem ou manter a anterior se a edição for cancelada
-            // this.usuario.portfolios[index].urlImagem = ''; // Ou valor original
-         }
       }
     },
+
     adicionarPortfolio() {
       this.usuario.portfolios.push({ id: null, urlImagem: '', descricao: '' });
     },
+
     removerPortfolio(index) {
       this.usuario.portfolios.splice(index, 1);
-      delete this.portfolioFiles[index]; // Remove o arquivo associado se houver
+      delete this.portfolioFiles[index];
     },
+
     toggleAlterarSenha() {
       this.alterarSenhaVisivel = !this.alterarSenhaVisivel;
       if (!this.alterarSenhaVisivel) {
@@ -266,6 +296,7 @@ export default {
         this.usuario.confirmarSenha = '';
       }
     },
+
     adicionarCidade() {
       if (this.novaCidade && !this.usuario.cidadesSelecionadas.includes(this.novaCidade)) {
         this.usuario.cidadesSelecionadas.push(this.novaCidade);
@@ -273,15 +304,38 @@ export default {
       } else if (this.novaCidade) {
         this.toast.info('Esta cidade já foi adicionada.');
       } else {
-         this.toast.error('Selecione uma cidade para adicionar.');
+        this.toast.error('Selecione uma cidade para adicionar.');
       }
     },
+
     removerCidade(cidadeId) {
       this.usuario.cidadesSelecionadas = this.usuario.cidadesSelecionadas.filter(id => id !== cidadeId);
     },
+
     getCidadeNome(cidadeId) {
       const cidade = this.cidadesDisponiveis.find(c => c.id === cidadeId);
-      return cidade ? cidade.nome : 'Carregando...';
+      return cidade ? cidade.nome : 'ID: ' + cidadeId;
+    },
+
+    // Métodos para Categorias
+    adicionarCategoria() {
+      if (this.novaCategoria && !this.usuario.categoriasSelecionadas.includes(this.novaCategoria)) {
+        this.usuario.categoriasSelecionadas.push(this.novaCategoria); // novaCategoria é o ID
+        this.novaCategoria = ''; // Limpa o select de adicionar categoria
+      } else if (this.novaCategoria) {
+        this.toast.info('Esta categoria já foi adicionada.');
+      } else {
+        this.toast.error('Selecione uma categoria para adicionar.');
+      }
+    },
+
+    removerCategoria(categoriaId) {
+      this.usuario.categoriasSelecionadas = this.usuario.categoriasSelecionadas.filter(id => id !== categoriaId);
+    },
+
+    getCategoriaNome(categoriaId) {
+      const categoria = this.categoriasDisponiveis.find(c => c.id === categoriaId);
+      return categoria ? categoria.nome : 'ID: ' + categoriaId; // Fallback se a categoria não for encontrada
     },
 
     async salvarPerfil() {
@@ -299,9 +353,9 @@ export default {
           this.toast.error('A nova senha é obrigatória.');
           return;
         }
-        if (this.usuario.senha.length < 6) { // Exemplo de validação
-            this.toast.error('A nova senha deve ter pelo menos 6 caracteres.');
-            return;
+        if (this.usuario.senha.length < 6) {
+          this.toast.error('A nova senha deve ter pelo menos 6 caracteres.');
+          return;
         }
         if (this.usuario.senha !== this.usuario.confirmarSenha) {
           this.toast.error('A nova senha e a confirmação de senha não coincidem.');
@@ -309,91 +363,65 @@ export default {
         }
       }
 
-      // O backend espera um JSON, não FormData diretamente para este DTO.
-      // Se você fosse enviar arquivos como File objects, precisaria usar FormData.
-      // Como fotoPerfil e portfolio.urlImagem são base64 strings (do FileReader),
-      // eles podem ir no JSON. Se o backend espera File, a lógica aqui precisaria mudar para FormData.
-
       const dadosParaEnviar = {
         nome: this.usuario.nome,
         endereco: this.usuario.endereco,
         email: this.usuario.email,
-        fotoPerfil: this.usuario.fotoPerfil, // Envia a string base64 ou URL existente
-
-        prestador: this.usuario.prestador, // Booleano
-        cliente: this.usuario.cliente,     // Booleano
-
-        // Campos que, no DTO, estão na raiz, mas são relevantes para o prestador
+        fotoPerfil: this.usuario.fotoPerfil, // Assumindo que o backend aceita base64 ou URL
+        prestador: this.usuario.prestador,
+        cliente: this.usuario.cliente,
         descricao: this.usuario.prestador ? this.usuario.descricao : null,
         disponibilidade: this.usuario.prestador ? this.usuario.disponibilidade : null,
-        
-        // Mapeia IDs para objetos {id: valor} como esperado pelo backend para List<CategoriaDto>, etc.
-        categorias: this.usuario.prestador ? this.usuario.categoriasSelecionadas.map(id => ({ id: id })) : [],
-        cidades: this.usuario.prestador ? this.usuario.cidadesSelecionadas.map(id => ({ id: id })) : [],
-        
-        // Portfolios: envia a lista de objetos com urlImagem (base64 ou URL) e descricao
-        // Se o portfolio item tiver um 'id' (vindo do carregarPerfil), mantenha-o para o backend saber se é update ou new.
+        categorias: this.usuario.prestador ? this.usuario.categoriasSelecionadas.map(id => ({ id })) : [],
+        cidades: this.usuario.prestador ? this.usuario.cidadesSelecionadas.map(id => ({ id })) : [],
         portfolios: this.usuario.prestador ? this.usuario.portfolios.map(p => ({
-            id: p.id || null, // Envia o ID se existir (para update)
-            urlImagem: p.urlImagem, // String base64 ou URL
-            descricao: p.descricao
+          id: p.id || null,
+          urlImagem: p.urlImagem,
+          descricao: p.descricao
         })) : [],
       };
 
       if (this.alterarSenhaVisivel) {
         dadosParaEnviar.senhaAtual = this.usuario.senhaAtual;
         dadosParaEnviar.senha = this.usuario.senha;
-        dadosParaEnviar.confirmarSenha = this.usuario.confirmarSenha;
-      } else {
-        // Não envie campos de senha se não estiver alterando,
-        // para evitar validações desnecessárias no backend.
-        // O UsuarioDto os tem, mas o backend pode tratá-los como opcionais
-        // se não forem para alteração de senha.
-        // Se o backend exigir que sejam nulos, envie:
-        // dadosParaEnviar.senhaAtual = null;
-        // dadosParaEnviar.senha = null;
-        // dadosParaEnviar.confirmarSenha = null;
       }
 
-      console.log("Dados a enviar para o backend:", JSON.stringify(dadosParaEnviar, null, 2));
+      console.log("Dados que seriam enviados para o backend:", JSON.stringify(dadosParaEnviar, null, 2));
 
       try {
-        // Use o ID do usuário logado do store para o endpoint
         if (!this.userStore.user || !this.userStore.user.id) {
-            this.toast.error("ID do usuário não encontrado. Faça login novamente.");
-            return;
+          this.toast.error("ID do usuário não encontrado. Por favor, faça login novamente.");
+          return;
         }
         const userId = this.userStore.user.id;
 
+        // Lembre-se da lógica de FormData se estiver enviando arquivos reais
         const response = await api.put(`/usuarios/editar/${userId}`, dadosParaEnviar, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json', // Importante para payload JSON
+            'Content-Type': 'application/json',
           },
         });
 
-        // Atualizar o userStore e localStorage com os dados que FORAM enviados e confirmados
-        // (ou com a resposta do backend se ela retornar o objeto atualizado)
-        const perfilAtualizadoParaStore = {
-            nome: dadosParaEnviar.nome,
-            email: dadosParaEnviar.email,
-            endereco: dadosParaEnviar.endereco,
-            fotoPerfil: dadosParaEnviar.fotoPerfil, // pode ser base64, idealmente o backend retornaria a URL final
-            prestador: dadosParaEnviar.prestador,
-            cliente: dadosParaEnviar.cliente,
-            // ... outros campos que o userStore precise e que foram atualizados
-        };
-        this.userStore.setUser({ ...this.userStore.user, ...perfilAtualizadoParaStore }); // Assumindo que setUser existe no store
+        this.userStore.setUser({
+          ...this.userStore.user,
+          nome: dadosParaEnviar.nome,
+          email: dadosParaEnviar.email,
+          endereco: dadosParaEnviar.endereco,
+          fotoPerfil: response.data.fotoPerfilUrl || dadosParaEnviar.fotoPerfil,
+          prestador: dadosParaEnviar.prestador,
+          cliente: dadosParaEnviar.cliente,
+        });
 
-        this.toast.success(response.data.message || 'Perfil salvo com sucesso!');
-        //this.router.push({ name: 'Perfil' }); // Ou para onde for apropriado
+        this.toast.success(response.data.message || 'Perfil atualizado com sucesso!');
+        // this.router.push({ name: 'PerfilUsuario' });
 
       } catch (error) {
         console.error("Erro ao salvar perfil:", error.response || error);
         const errorMessage = error.response?.data?.message ||
-                             (error.response?.data?.errors ? Object.values(error.response.data.errors).join(', ') : null) ||
-                             error.response?.data?.error ||
-                             'Erro ao salvar perfil. Verifique os dados e tente novamente.';
+          (error.response?.data?.errors ? Object.values(error.response.data.errors).join(', ') : null) ||
+          error.response?.data?.error ||
+          'Falha ao atualizar o perfil. Verifique os dados e tente novamente.';
         this.toast.error(errorMessage);
       }
     },
@@ -405,129 +433,229 @@ export default {
 .editar-perfil-container {
   max-width: 600px;
   margin: 50px auto;
+  font-family: 'Inter', sans-serif; /* Adicionando uma fonte mais moderna */
 }
 
 .editar-perfil-box {
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 30px; /* Aumentando o padding */
+  border: 1px solid #e0e0e0; /* Borda mais suave */
+  border-radius: 8px; /* Bordas mais arredondadas */
+  background-color: #fff; /* Fundo branco */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Sombra mais suave */
+}
+
+.editar-perfil-box h1 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+  font-size: 1.8em;
 }
 
 .input-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px; /* Aumentando o espaçamento */
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px; /* Espaçamento entre label e input */
+  font-weight: 500; /* Peso da fonte */
+  color: #555;
 }
 
 .input-field {
   width: 100%;
-  padding: 8px;
+  padding: 12px; /* Padding maior para melhor toque */
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px; /* Bordas arredondadas */
+  box-sizing: border-box; /* Para incluir padding e borda na largura total */
+  transition: border-color 0.3s ease; /* Transição suave */
+}
+
+.input-field:focus {
+  border-color: #007bff; /* Cor da borda ao focar */
+  outline: none; /* Remove outline padrão */
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Sombra ao focar */
+}
+
+textarea.input-field {
+  min-height: 100px; /* Altura mínima para textareas */
+  resize: vertical; /* Permite redimensionamento vertical */
 }
 
 .checkbox-group {
   display: flex;
-  gap: 20px;
+  gap: 25px; /* Espaçamento maior */
+  align-items: center;
+}
+.checkbox-group div {
+  display: flex;
+  align-items: center;
+}
+.checkbox-group input[type="checkbox"] {
+  margin-right: 8px;
+  width: 18px; /* Tamanho do checkbox */
+  height: 18px; /* Tamanho do checkbox */
+  accent-color: #007bff; /* Cor do checkbox */
+}
+.checkbox-group label {
+  margin-bottom: 0; /* Remove margem inferior da label do checkbox */
+  font-weight: normal;
 }
 
-.foto-preview, .portfolio-preview {
-  max-width: 100px;
-  margin-top: 10px;
+
+.foto-preview,
+.portfolio-preview {
+  max-width: 120px; /* Tamanho maior para preview */
+  height: auto;
+  margin-top: 12px;
+  border-radius: 6px; /* Bordas arredondadas para preview */
+  border: 1px solid #ddd;
+  padding: 4px;
+  background-color: #f9f9f9;
 }
 
-.prestador-section {
-  margin-top: 20px;
-}
-
-.senha-section {
-  margin-top: 20px;
-}
-
+.prestador-section,
+.senha-section,
 .portfolio-section {
-  margin-top: 20px;
+  margin-top: 30px; /* Espaçamento maior entre seções */
+  padding-top: 20px;
+  border-top: 1px solid #eee; /* Linha divisória */
+}
+
+.prestador-section h3,
+.portfolio-section h4 {
+  margin-bottom: 20px;
+  color: #333;
 }
 
 .portfolio-item {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid #e7e7e7;
+  border-radius: 6px;
+  background-color: #fdfdfd;
 }
 
-.cidades-selecionadas {
-  margin-bottom: 10px;
+.cidades-selecionadas,
+.categorias-selecionadas { /* Aplicando estilo também para categorias */
+  margin-bottom: 15px; /* Aumentando margem inferior */
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  min-height: 40px; /* Altura mínima para indicar que é uma área */
 }
 
-.sem-cidades {
-  color: #888;
+.sem-cidades,
+.sem-categorias { /* Aplicando estilo também para categorias */
+  color: #777; /* Cor mais suave */
+  font-style: italic;
+  padding: 8px 0;
 }
 
-.cidade-item {
+.cidade-item,
+.categoria-item { /* Aplicando estilo também para categorias */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px;
-  border-bottom: 1px solid #eee;
+  padding: 8px 10px; /* Padding ajustado */
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #fff;
+  border-radius: 4px;
+  margin-bottom: 6px; /* Espaço entre itens */
+}
+.cidade-item:last-child,
+.categoria-item:last-child {
+  border-bottom: none;
+}
+.cidade-item span,
+.categoria-item span {
+  color: #333;
 }
 
-.adicionar-cidade {
+
+.adicionar-cidade,
+.adicionar-categoria { /* Aplicando estilo também para categorias */
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: center;
+  margin-top: 10px; /* Espaço acima do grupo de adicionar */
 }
+.adicionar-cidade .input-field,
+.adicionar-categoria .input-field {
+  flex-grow: 1; /* Faz o select ocupar o espaço disponível */
+}
+
 
 .remove-btn {
-  background-color: #dc3545;
+  background-color: #e74c3c; /* Cor mais viva */
   color: white;
   border: none;
-  padding: 5px 10px;
-  border-radius: 4px;
+  padding: 6px 12px; /* Padding ajustado */
+  border-radius: 5px;
   cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.2s ease;
 }
 
 .remove-btn:hover {
-  background-color: #c82333;
+  background-color: #c0392b; /* Cor mais escura no hover */
 }
 
 .add-btn {
-  background-color: #28a745;
+  background-color: #2ecc71; /* Cor mais viva */
   color: white;
   border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
+  padding: 12px 18px; /* Padding ajustado para input-field */
+  border-radius: 6px;
   cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
 }
 
 .add-btn:hover {
-  background-color: #218838;
+  background-color: #27ae60; /* Cor mais escura no hover */
 }
 
 .add-btn:disabled {
-  background-color: #6c757d;
+  background-color: #bdc3c7; /* Cinza mais claro para desabilitado */
+  color: #7f8c8d;
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .alterar-senha-btn {
-  background-color: #6c757d;
+  background-color: #5bc0de; /* Azul informativo */
   color: white;
   border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
+  padding: 10px 18px;
+  border-radius: 6px;
   cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  display: inline-block; /* Para que não ocupe a largura toda */
+  margin-bottom: 10px; /* Espaço se a seção de senha aparecer */
 }
 
 .alterar-senha-btn:hover {
-  background-color: #5a6268;
+  background-color: #31b0d5;
 }
 
 .save-btn {
   width: 100%;
-  padding: 10px;
+  padding: 14px; /* Padding maior */
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 1.1em; /* Fonte maior */
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+  margin-top: 20px; /* Espaço antes do botão de salvar */
 }
 
 .save-btn:hover {
