@@ -48,13 +48,8 @@ public class PrestadorController {
         return ResponseEntity.ok(categorias);
     }
 
-    //     @GetMapping("/cidades")
-    // public ResponseEntity<List<Cidade>> getCidades() {
-    //     List<Cidade> cidades = cidadeRepository.findAll();
-    //     return ResponseEntity.ok(cidades);
-    // }
-
-    // Cria um novo prestador (usado para testes ou criação direta, mas normalmente o cadastro é via UsuarioController)
+    // Cria um novo prestador (usado para testes ou criação direta, mas normalmente
+    // o cadastro é via UsuarioController)
     @PostMapping("/prestadores")
     public ResponseEntity<Prestador> createPrestador(@RequestBody PrestadorDto prestadorDto) {
         try {
@@ -78,23 +73,23 @@ public class PrestadorController {
     }
 
     // Método auxiliar para converter Prestador em PrestadorDto
-private PrestadorDto convertToDto(Prestador prestador) {
-    PrestadorDto dto = new PrestadorDto();
-    dto.setId(prestador.getId());
-    dto.setUsuarioId(prestador.getUsuario().getId());
-    dto.setNome(prestador.getUsuario().getNome());
-    dto.setDescricao(prestador.getDescricao());
-    dto.setDisponibilidade(prestador.getDisponibilidade());
-    dto.setAvaliacaoMedia(prestador.getAvaliacaoMedia());
-    dto.setCategorias(prestador.getPrestadorCategorias().stream()
-            .map(PrestadorCategoria::getCategoria)
-            .collect(Collectors.toList()));
-    dto.setPortfolios(prestador.getPortfolios());
-    dto.setCidades(prestador.getCidadePrestadores().stream()
-            .map(CidadePrestador::getCidade)
-            .collect(Collectors.toList()));
-    return dto;
-}
+    private PrestadorDto convertToDto(Prestador prestador) {
+        PrestadorDto dto = new PrestadorDto();
+        dto.setId(prestador.getId());
+        dto.setUsuarioId(prestador.getUsuario().getId());
+        dto.setNome(prestador.getUsuario().getNome());
+        dto.setDescricao(prestador.getDescricao());
+        dto.setDisponibilidade(prestador.getDisponibilidade());
+        dto.setAvaliacaoMedia(prestador.getAvaliacaoMedia());
+        dto.setCategorias(prestador.getPrestadorCategorias().stream()
+                .map(PrestadorCategoria::getCategoria)
+                .collect(Collectors.toList()));
+        dto.setPortfolios(prestador.getPortfolios());
+        dto.setCidades(prestador.getCidadePrestadores().stream()
+                .map(CidadePrestador::getCidade)
+                .collect(Collectors.toList()));
+        return dto;
+    }
 
     // Endpoint para o ranking geral
     @GetMapping("/prestadores/ranking")
@@ -105,22 +100,33 @@ private PrestadorDto convertToDto(Prestador prestador) {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(prestadoresDto);
     }
-    @GetMapping("/prestadores/{id}/categorias")
-public ResponseEntity<List<Categoria>> getCategoriasPorPrestador(@PathVariable Integer id) {
-    Prestador prestador = prestadorRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado"));
-    List<Categoria> categorias = prestador.getPrestadorCategorias().stream()
-            .map(PrestadorCategoria::getCategoria)
-            .collect(Collectors.toList());
-    return ResponseEntity.ok(categorias);
-}
 
-@GetMapping("/prestadores/{id}")
-public ResponseEntity<PrestadorDto> getPrestadorById(@PathVariable Integer id) {
-    Prestador prestador = prestadorRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado"));
-    PrestadorDto dto = convertToDto(prestador);
-    return ResponseEntity.ok(dto);
-}
+    @GetMapping("/prestadores/{id}/categorias")
+    public ResponseEntity<List<Categoria>> getCategoriasPorPrestador(@PathVariable Integer id) {
+        Prestador prestador = prestadorRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado"));
+        List<Categoria> categorias = prestador.getPrestadorCategorias().stream()
+                .map(PrestadorCategoria::getCategoria)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(categorias);
+    }
+
+    @GetMapping("/prestadores/{id}/cidades")
+    public ResponseEntity<List<Cidade>> getCidadesPorPrestador(@PathVariable Integer id) {
+        Prestador prestador = prestadorRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado"));
+        List<Cidade> cidades = prestador.getCidadePrestadores().stream()
+                .map(CidadePrestador::getCidade)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(cidades);
+    }
+
+    @GetMapping("/prestadores/{id}")
+    public ResponseEntity<PrestadorDto> getPrestadorById(@PathVariable Integer id) {
+        Prestador prestador = prestadorRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Prestador não encontrado"));
+        PrestadorDto dto = convertToDto(prestador);
+        return ResponseEntity.ok(dto);
+    }
 
 }

@@ -24,9 +24,9 @@ public class CidadeController {
         return ResponseEntity.ok(cidades);
     }
 
-    @GetMapping("/prestador/{prestadorId}")
-    public ResponseEntity<List<Cidade>> buscarCidadesPorPrestador(@PathVariable Integer prestadorId) {
-        List<Cidade> cidades = cidadeService.buscarCidadesPorPrestador(prestadorId);
-        return ResponseEntity.ok(cidades);
-    }
+    // @GetMapping("/prestador/{prestadorId}")
+    // public ResponseEntity<List<Cidade>> buscarCidadesPorPrestador(@PathVariable Integer prestadorId) {
+    //     List<Cidade> cidades = cidadeService.buscarCidadesPorPrestador(prestadorId);
+    //     return ResponseEntity.ok(cidades);
+    // }
 }

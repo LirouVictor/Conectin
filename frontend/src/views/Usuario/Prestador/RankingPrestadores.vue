@@ -77,6 +77,7 @@
   </div>
 </template>
 
+
 <script>
 import api from '@/services/api';
 import { useToast } from 'vue-toastification';
@@ -85,10 +86,10 @@ export default {
   name: 'RankingPrestadores',
   data() {
     return {
-      prestadores: [], // Lista original da API
-      categoria: '',   // Filtro de categoria
-      cidade: '',      // Filtro de cidade
-      carregando: true, // Estado de carregamento
+      prestadores: [], // Lista original da API, agora com dados mais completos
+      categoria: '',   // Filtro de categoria (string)
+      cidade: '',      // Filtro de cidade (string)
+      carregando: true, 
     };
   },
   setup() {
@@ -96,88 +97,104 @@ export default {
     return { toast };
   },
   computed: {
-    // Lógica de filtragem
     prestadoresFiltrados() {
-      // Se não há filtros, retorna todos os prestadores do ranking
       if (!this.categoria && !this.cidade) {
-        // Mantém a ordenação original da API (ranking)
         return this.prestadores;
       }
 
-      // Aplica os filtros
       return this.prestadores.filter(prestador => {
         const matchCategoria = !this.categoria ||
           (prestador.categorias && prestador.categorias.some(
             c => c.nome.toLowerCase() === this.categoria.toLowerCase()
           ));
 
-        // Garante que prestador.cidade existe antes de comparar
+        // AJUSTADO: Lógica para filtrar pela lista de cidades do prestador
         const matchCidade = !this.cidade ||
-          (prestador.cidade && prestador.cidade.toLowerCase() === this.cidade.toLowerCase());
+          (prestador._listaDeCidadesDoPrestador && prestador._listaDeCidadesDoPrestador.some(
+            cidadeDoPrestadorObj => cidadeDoPrestadorObj.nome.toLowerCase() === this.cidade.toLowerCase()
+          ));
 
         return matchCategoria && matchCidade;
       });
     }
   },
-  // Usar created para buscar filtros antes da montagem
   created() {
     this.atualizarFiltrosDaRota();
-    this.fetchPrestadores();
+    this.fetchPrestadores(); // Este método foi significativamente alterado
   },
   watch: {
-    // Vigiar mudanças na rota para atualizar filtros
     '$route.query': {
       handler() {
         this.atualizarFiltrosDaRota();
+        // AJUSTADO: Se os filtros da rota mudam, é bom recarregar os prestadores
+        // caso o backend já os filtre. No seu caso atual, a filtragem é no frontend,
+        // então apenas atualizar os filtros `this.categoria` e `this.cidade`
+        // já dispara a recomputação de `prestadoresFiltrados`.
+        // Se no futuro você passar os filtros para o backend em `fetchPrestadores`,
+        // esta linha abaixo seria necessária:
+        // this.fetchPrestadores();
       },
       deep: true
     }
   },
   methods: {
-    // Função auxiliar para centralizar a lógica de pegar filtros
     atualizarFiltrosDaRota() {
-        // Recuperar os parâmetros da URL ou localStorage
         this.categoria = this.$route.query.categoria || localStorage.getItem('selectedCategory') || '';
         this.cidade = this.$route.query.cidade || localStorage.getItem('selectedCity') || '';
     },
 
+    // AJUSTADO: Método fetchPrestadores completamente reescrito
     async fetchPrestadores() {
+      this.carregando = true;
       try {
-        this.carregando = true; // Inicia carregamento
-        const response = await api.get('/prestadores/ranking'); // Busca o ranking ordenado
+        // O endpoint /prestadores/ranking já retorna PrestadorDto que inclui
+        // prestador.categorias (List<Categoria>) e prestador.cidades (List<Cidade>)
+        // graças ao convertToDto no backend.
+        const response = await api.get('/prestadores/ranking');
 
-        // Busca categorias e simula/adiciona cidade
-        this.prestadores = await Promise.all(response.data.map(async (prestador) => {
-          const categoriasResponse = await api.get(`/prestadores/${prestador.id}/categorias`);
+        // Verificação se response.data existe
+        if (!response.data) {
+          this.toast.error('Ranking de prestadores não retornou dados.');
+          this.prestadores = [];
+          this.carregando = false; // Finaliza o carregamento aqui também
+          return; 
+        }
 
-          // Simulação de Cidade
-          const cidades = [
-            'Armazém', 'Braço do Norte', 'Capivari de Baixo', 'Grão-Pará', 'Gravatal',
-            'Imaruí', 'Imbituba', 'Jaguaruna', 'Laguna', 'Paulo Lopes', 'Rio Fortuna',
-            'São Bonifácio', 'São Martinho', 'Santa Rosa de Lima', 'Tubarão'
-          ];
-          const randomCidade = cidades[Math.floor(Math.random() * cidades.length)];
+        // Mapeia os dados do DTO para o formato que o template e os filtros esperam.
+        this.prestadores = response.data.map(prestadorDto => {
+          let cidadeDisplay = 'Não informada';
+          let cidadesDoPrestadorParaFiltro = []; // Lista de objetos Cidade {id, nome}
+
+          // O DTO do backend envia `prestadorDto.cidades` como uma lista de objetos Cidade.
+          if (prestadorDto.cidades && prestadorDto.cidades.length > 0) {
+            // Para exibição no card, podemos mostrar a primeira cidade ou concatenar.
+            // Aqui estou concatenando, mas você pode escolher a primeira: prestadorDto.cidades[0].nome
+            cidadeDisplay = prestadorDto.cidades.map(c => c.nome).join(', '); 
+
+            // Para o filtro `matchCidade` em `prestadoresFiltrados`, usamos a lista completa.
+            cidadesDoPrestadorParaFiltro = prestadorDto.cidades;
+          }
 
           return {
-            ...prestador,
-            categorias: categoriasResponse.data,
-            cidade: prestador.cidade || randomCidade // Usa a cidade do prestador se existir, senão usa a simulada
+            ...prestadorDto, // Inclui id, nome (do usuario), descricao, disponibilidade, avaliacaoMedia, etc.
+            categorias: prestadorDto.categorias || [], // Garante que 'categorias' seja sempre uma lista
+            cidade: cidadeDisplay,                     // String para exibição em {{ prestador.cidade }}
+            // NOVO: Propriedade auxiliar para o filtro `matchCidade` usar a lista de cidades.
+            // O _ no início é uma convenção para indicar uma propriedade "privada" ou auxiliar.
+            _listaDeCidadesDoPrestador: cidadesDoPrestadorParaFiltro
           };
-        }));
+        });
 
       } catch (error) {
-        if (error.response && error.response.data) {
-          this.toast.error(error.response.data.message);
-        } else {
-          this.toast.error('Erro ao carregar prestadores.');
-        }
+        console.error("Erro detalhado em fetchPrestadores:", error.response || error);
+        const errorMessage = error.response?.data?.message || error.message || 'Erro ao carregar prestadores.';
+        this.toast.error(errorMessage);
         this.prestadores = []; // Limpa em caso de erro para evitar mostrar dados antigos
       } finally {
         this.carregando = false; // Finaliza carregamento
       }
     },
 
-    // Método para limpar filtros
     limparFiltros() {
       localStorage.removeItem('selectedCategory');
       localStorage.removeItem('selectedCity');
@@ -185,7 +202,10 @@ export default {
       this.cidade = '';
 
       // Navegar para a mesma página sem parâmetros de query
-      this.$router.push({ path: this.$route.path });
+      // O watcher $route.query vai pegar essa mudança e chamar atualizarFiltrosDaRota.
+      if (Object.keys(this.$route.query).length > 0) {
+        this.$router.push({ path: this.$route.path });
+      }
     }
   }
 };
