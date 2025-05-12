@@ -38,9 +38,16 @@
               <div v-if="usuario.categoriasSelecionadas.length === 0" class="sem-categorias">
                 Nenhuma categoria selecionada.
               </div>
-              <div v-else class="categoria-item" v-for="categoriaId in usuario.categoriasSelecionadas" :key="categoriaId">
-                <span>{{ getCategoriaNome(categoriaId) }}</span>
-                <button type="button" @click="removerCategoria(categoriaId)" class="remove-btn">Remover</button>
+              <div v-else class="tag-container">
+                <span v-for="categoriaId in usuario.categoriasSelecionadas" :key="categoriaId" class="tag-item">
+                  <span class="tag-name">{{ getCategoriaNome(categoriaId) }}</span>
+                  <span class="trash-icon" @click="removerCategoria(categoriaId)" title="Remover">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#e74c3c" viewBox="0 0 16 16">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>
+                  </span>
+                </span>
               </div>
             </div>
             <div class="adicionar-categoria">
@@ -50,8 +57,7 @@
                   {{ categoria.nome }}
                 </option>
               </select>
-              <button type="button" @click="adicionarCategoria" :disabled="!novaCategoria" class="add-btn">Adicionar
-                Categoria</button>
+              <button type="button" @click="adicionarCategoria" :disabled="!novaCategoria" class="add-btn">Adicionar Categoria</button>
             </div>
           </div>
 
@@ -61,9 +67,16 @@
               <div v-if="usuario.cidadesSelecionadas.length === 0" class="sem-cidades">
                 Nenhuma cidade selecionada.
               </div>
-              <div v-else class="cidade-item" v-for="cidadeId in usuario.cidadesSelecionadas" :key="cidadeId">
-                <span>{{ getCidadeNome(cidadeId) }}</span>
-                <button type="button" @click="removerCidade(cidadeId)" class="remove-btn">Remover</button>
+              <div v-else class="tag-container">
+                <span v-for="cidadeId in usuario.cidadesSelecionadas" :key="cidadeId" class="tag-item">
+                  <span class="tag-name">{{ getCidadeNome(cidadeId) }}</span>
+                  <span class="trash-icon" @click="removerCidade(cidadeId)" title="Remover">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#e74c3c" viewBox="0 0 16 16">
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>
+                  </span>
+                </span>
               </div>
             </div>
             <div class="adicionar-cidade">
@@ -73,8 +86,7 @@
                   {{ cidade.nome }}
                 </option>
               </select>
-              <button type="button" @click="adicionarCidade" :disabled="!novaCidade" class="add-btn">Adicionar
-                Cidade</button>
+              <button type="button" @click="adicionarCidade" :disabled="!novaCidade" class="add-btn">Adicionar Cidade</button>
             </div>
           </div>
 
@@ -133,8 +145,8 @@
 <script>
 import api from '@/services/api';
 import { useToast } from 'vue-toastification';
-import { useUserStore } from '@/stores/user'; // Seu store de usuário
-import { useRouter } from 'vue-router'; // Se precisar de navegação
+import { useUserStore } from '@/stores/user';
+import { useRouter } from 'vue-router';
 
 export default {
   name: 'EditarPerfil',
@@ -151,32 +163,30 @@ export default {
         endereco: '',
         email: '',
         fotoPerfil: null,
-        prestador: false, // Booleano que indica se é prestador
-        cliente: false,   // Booleano que indica se é cliente
-        // Campos específicos do prestador
+        prestador: false,
+        cliente: false,
         descricao: '',
         disponibilidade: '',
-        portfolios: [], // Lista de objetos { id?, urlImagem: string, descricao: string }
-        categoriasSelecionadas: [], // Lista de IDs de categorias
-        cidadesSelecionadas: [],    // Lista de IDs de cidades
-        // Campos para alteração de senha
+        portfolios: [],
+        categoriasSelecionadas: [],
+        cidadesSelecionadas: [],
         senhaAtual: '',
         senha: '',
         confirmarSenha: '',
       },
-      categoriasDisponiveis: [], // Para popular o <select> de categorias
-      cidadesDisponiveis: [],    // Para popular o <select> de cidades
-      novaCidade: '',            // v-model para adicionar nova cidade
-      novaCategoria: '',         // v-model para adicionar nova categoria
+      categoriasDisponiveis: [],
+      cidadesDisponiveis: [],
+      novaCidade: '',
+      novaCategoria: '',
       alterarSenhaVisivel: false,
-      fotoPerfilFile: null,      // Armazena o File object da foto de perfil para upload
-      portfolioFiles: {},        // Armazena File objects do portfólio { index: File }
+      fotoPerfilFile: null,
+      portfolioFiles: {},
     };
   },
   mounted() {
     this.carregarPerfil();
-    this.carregarCategorias(); // Carrega opções para o select de categorias
-    this.carregarCidades();    // Carrega opções para o select de cidades
+    this.carregarCategorias();
+    this.carregarCidades();
   },
   methods: {
     async carregarPerfil() {
@@ -317,11 +327,10 @@ export default {
       return cidade ? cidade.nome : 'ID: ' + cidadeId;
     },
 
-    // Métodos para Categorias
     adicionarCategoria() {
       if (this.novaCategoria && !this.usuario.categoriasSelecionadas.includes(this.novaCategoria)) {
-        this.usuario.categoriasSelecionadas.push(this.novaCategoria); // novaCategoria é o ID
-        this.novaCategoria = ''; // Limpa o select de adicionar categoria
+        this.usuario.categoriasSelecionadas.push(this.novaCategoria);
+        this.novaCategoria = '';
       } else if (this.novaCategoria) {
         this.toast.info('Esta categoria já foi adicionada.');
       } else {
@@ -335,7 +344,7 @@ export default {
 
     getCategoriaNome(categoriaId) {
       const categoria = this.categoriasDisponiveis.find(c => c.id === categoriaId);
-      return categoria ? categoria.nome : 'ID: ' + categoriaId; // Fallback se a categoria não for encontrada
+      return categoria ? categoria.nome : 'ID: ' + categoriaId;
     },
 
     async salvarPerfil() {
@@ -367,7 +376,7 @@ export default {
         nome: this.usuario.nome,
         endereco: this.usuario.endereco,
         email: this.usuario.email,
-        fotoPerfil: this.usuario.fotoPerfil, // Assumindo que o backend aceita base64 ou URL
+        fotoPerfil: this.usuario.fotoPerfil,
         prestador: this.usuario.prestador,
         cliente: this.usuario.cliente,
         descricao: this.usuario.prestador ? this.usuario.descricao : null,
@@ -386,8 +395,6 @@ export default {
         dadosParaEnviar.senha = this.usuario.senha;
       }
 
-      console.log("Dados que seriam enviados para o backend:", JSON.stringify(dadosParaEnviar, null, 2));
-
       try {
         if (!this.userStore.user || !this.userStore.user.id) {
           this.toast.error("ID do usuário não encontrado. Por favor, faça login novamente.");
@@ -395,7 +402,6 @@ export default {
         }
         const userId = this.userStore.user.id;
 
-        // Lembre-se da lógica de FormData se estiver enviando arquivos reais
         const response = await api.put(`/usuarios/editar/${userId}`, dadosParaEnviar, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -414,7 +420,6 @@ export default {
         });
 
         this.toast.success(response.data.message || 'Perfil atualizado com sucesso!');
-        // this.router.push({ name: 'PerfilUsuario' });
 
       } catch (error) {
         console.error("Erro ao salvar perfil:", error.response || error);
@@ -433,15 +438,15 @@ export default {
 .editar-perfil-container {
   max-width: 600px;
   margin: 50px auto;
-  font-family: 'Inter', sans-serif; /* Adicionando uma fonte mais moderna */
+  font-family: 'Inter', sans-serif;
 }
 
 .editar-perfil-box {
-  padding: 30px; /* Aumentando o padding */
-  border: 1px solid #e0e0e0; /* Borda mais suave */
-  border-radius: 8px; /* Bordas mais arredondadas */
-  background-color: #fff; /* Fundo branco */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Sombra mais suave */
+  padding: 30px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .editar-perfil-box h1 {
@@ -452,39 +457,39 @@ export default {
 }
 
 .input-group {
-  margin-bottom: 20px; /* Aumentando o espaçamento */
+  margin-bottom: 20px;
 }
 
 .input-group label {
   display: block;
-  margin-bottom: 8px; /* Espaçamento entre label e input */
-  font-weight: 500; /* Peso da fonte */
+  margin-bottom: 8px;
+  font-weight: 500;
   color: #555;
 }
 
 .input-field {
   width: 100%;
-  padding: 12px; /* Padding maior para melhor toque */
+  padding: 12px;
   border: 1px solid #ccc;
-  border-radius: 6px; /* Bordas arredondadas */
-  box-sizing: border-box; /* Para incluir padding e borda na largura total */
-  transition: border-color 0.3s ease; /* Transição suave */
+  border-radius: 6px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
 }
 
 .input-field:focus {
-  border-color: #007bff; /* Cor da borda ao focar */
-  outline: none; /* Remove outline padrão */
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); /* Sombra ao focar */
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
 textarea.input-field {
-  min-height: 100px; /* Altura mínima para textareas */
-  resize: vertical; /* Permite redimensionamento vertical */
+  min-height: 100px;
+  resize: vertical;
 }
 
 .checkbox-group {
   display: flex;
-  gap: 25px; /* Espaçamento maior */
+  gap: 25px;
   align-items: center;
 }
 .checkbox-group div {
@@ -493,22 +498,21 @@ textarea.input-field {
 }
 .checkbox-group input[type="checkbox"] {
   margin-right: 8px;
-  width: 18px; /* Tamanho do checkbox */
-  height: 18px; /* Tamanho do checkbox */
-  accent-color: #007bff; /* Cor do checkbox */
+  width: 18px;
+  height: 18px;
+  accent-color: #007bff;
 }
 .checkbox-group label {
-  margin-bottom: 0; /* Remove margem inferior da label do checkbox */
+  margin-bottom: 0;
   font-weight: normal;
 }
 
-
 .foto-preview,
 .portfolio-preview {
-  max-width: 120px; /* Tamanho maior para preview */
+  max-width: 120px;
   height: auto;
   margin-top: 12px;
-  border-radius: 6px; /* Bordas arredondadas para preview */
+  border-radius: 6px;
   border: 1px solid #ddd;
   padding: 4px;
   background-color: #f9f9f9;
@@ -517,9 +521,9 @@ textarea.input-field {
 .prestador-section,
 .senha-section,
 .portfolio-section {
-  margin-top: 30px; /* Espaçamento maior entre seções */
+  margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid #eee; /* Linha divisória */
+  border-top: 1px solid #eee;
 }
 
 .prestador-section h3,
@@ -540,76 +544,95 @@ textarea.input-field {
 }
 
 .cidades-selecionadas,
-.categorias-selecionadas { /* Aplicando estilo também para categorias */
-  margin-bottom: 15px; /* Aumentando margem inferior */
+.categorias-selecionadas {
+  margin-bottom: 15px;
   padding: 10px;
   border: 1px solid #eee;
   border-radius: 6px;
   background-color: #f9f9f9;
-  min-height: 40px; /* Altura mínima para indicar que é uma área */
+  min-height: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
 .sem-cidades,
-.sem-categorias { /* Aplicando estilo também para categorias */
-  color: #777; /* Cor mais suave */
+.sem-categorias {
+  color: #777;
   font-style: italic;
   padding: 8px 0;
 }
 
-.cidade-item,
-.categoria-item { /* Aplicando estilo também para categorias */
+.tag-container {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-item {
+  display: inline-flex;
   align-items: center;
-  padding: 8px 10px; /* Padding ajustado */
-  border-bottom: 1px solid #e0e0e0;
   background-color: #fff;
-  border-radius: 4px;
-  margin-bottom: 6px; /* Espaço entre itens */
-}
-.cidade-item:last-child,
-.categoria-item:last-child {
-  border-bottom: none;
-}
-.cidade-item span,
-.categoria-item span {
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 6px 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-size: 0.9em;
   color: #333;
 }
 
+.tag-name {
+  margin-right: 8px;
+}
+
+.trash-icon {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trash-icon:hover::after {
+  content: 'Remover';
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.trash-icon:hover svg {
+  opacity: 0.8;
+}
 
 .adicionar-cidade,
-.adicionar-categoria { /* Aplicando estilo também para categorias */
+.adicionar-categoria {
   display: flex;
   gap: 12px;
   align-items: center;
-  margin-top: 10px; /* Espaço acima do grupo de adicionar */
+  margin-top: 10px;
 }
 .adicionar-cidade .input-field,
 .adicionar-categoria .input-field {
-  flex-grow: 1; /* Faz o select ocupar o espaço disponível */
+  flex-grow: 1;
 }
-
 
 .remove-btn {
-  background-color: #e74c3c; /* Cor mais viva */
-  color: white;
-  border: none;
-  padding: 6px 12px; /* Padding ajustado */
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 0.9em;
-  transition: background-color 0.2s ease;
-}
-
-.remove-btn:hover {
-  background-color: #c0392b; /* Cor mais escura no hover */
+  display: none; /* Oculta o botão original */
 }
 
 .add-btn {
-  background-color: #2ecc71; /* Cor mais viva */
+  background-color: #2ecc71;
   color: white;
   border: none;
-  padding: 12px 18px; /* Padding ajustado para input-field */
+  padding: 12px 18px;
   border-radius: 6px;
   cursor: pointer;
   font-weight: 500;
@@ -617,18 +640,18 @@ textarea.input-field {
 }
 
 .add-btn:hover {
-  background-color: #27ae60; /* Cor mais escura no hover */
+  background-color: #27ae60;
 }
 
 .add-btn:disabled {
-  background-color: #bdc3c7; /* Cinza mais claro para desabilitado */
+  background-color: #bdc3c7;
   color: #7f8c8d;
   cursor: not-allowed;
   opacity: 0.7;
 }
 
 .alterar-senha-btn {
-  background-color: #5bc0de; /* Azul informativo */
+  background-color: #5bc0de;
   color: white;
   border: none;
   padding: 10px 18px;
@@ -636,8 +659,8 @@ textarea.input-field {
   cursor: pointer;
   font-weight: 500;
   transition: background-color 0.2s ease;
-  display: inline-block; /* Para que não ocupe a largura toda */
-  margin-bottom: 10px; /* Espaço se a seção de senha aparecer */
+  display: inline-block;
+  margin-bottom: 10px;
 }
 
 .alterar-senha-btn:hover {
@@ -646,16 +669,16 @@ textarea.input-field {
 
 .save-btn {
   width: 100%;
-  padding: 14px; /* Padding maior */
+  padding: 14px;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 1.1em; /* Fonte maior */
+  font-size: 1.1em;
   font-weight: 500;
   transition: background-color 0.2s ease;
-  margin-top: 20px; /* Espaço antes do botão de salvar */
+  margin-top: 20px;
 }
 
 .save-btn:hover {
