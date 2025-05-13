@@ -1,9 +1,11 @@
 package com.conectin.conectin.controllers;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -51,7 +53,8 @@ public class UsuarioController {
         try {
             Usuario usuario = usuarioService.cadastrarUsuario(usuarioDto);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new SuccessMessage("Usuário cadastrado com sucesso: " + usuario.getNome(), "USER_SUCCESS_002"));
+                    .body(new SuccessMessage("Usuário cadastrado com sucesso: " + usuario.getNome(),
+                            "USER_SUCCESS_002"));
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("e-mail já existe")) {
                 throw new CustomException(ErrorMessages.EMAIL_ALREADY_EXISTS, ErrorMessages.EMAIL_ALREADY_EXISTS_CODE);
@@ -107,28 +110,6 @@ public class UsuarioController {
         }
     }
 
-    // @GetMapping("/perfil")
-    // public ResponseEntity<?> perfilUsuario(@RequestHeader("Authorization") String token) {
-    //     if (token == null || !token.startsWith("Bearer ")) {
-    //         throw new CustomException(ErrorMessages.INVALID_TOKEN, ErrorMessages.INVALID_TOKEN_CODE);
-    //     }
-    //     String jwtToken = token.substring(7);
-    //     String username = jwtUtil.extractUsername(jwtToken); // Geralmente é o e-mail
-
-    //     if (username == null || !jwtUtil.validateToken(jwtToken, username)) {
-    //         throw new CustomException(ErrorMessages.EXPIRED_TOKEN, ErrorMessages.EXPIRED_TOKEN_CODE);
-    //     }
-
-    //     // Busca o usuário autenticado pelo e-mail (username) extraído do token
-    //     Usuario usuarioAuth = usuarioRepository.findByEmail(username)
-    //             .orElseThrow(() -> new CustomException("Usuário autenticado não encontrado no banco de dados.", "AUTH_USER_NOT_FOUND"));
-
-    //     // Use o serviço para obter o DTO formatado corretamente com todos os detalhes necessários
-    //     UsuarioDto perfilDto = usuarioService.buscarPerfilCompletoDto(usuarioAuth.getId());
-
-    //     return ResponseEntity.ok(perfilDto);
-    // }
-
     @GetMapping("/perfil")
     public ResponseEntity<?> perfilUsuario(@RequestHeader("Authorization") String token) {
         if (token == null || !token.startsWith("Bearer ")) {
@@ -164,26 +145,65 @@ public class UsuarioController {
                 prestadorData.put("descricao", prestador.getDescricao());
                 prestadorData.put("disponibilidade", prestador.getDisponibilidade());
                 prestadorData.put("avaliacaoMedia", prestador.getAvaliacaoMedia());
-                response.put("prestador", prestadorData);
+                
+                List<Map<String, Object>> categoriasList = prestador.getPrestadorCategorias().stream()
+                        .map(pc -> {
+                            Map<String, Object> catMap = new HashMap<>();
+                            catMap.put("id", pc.getCategoria().getId().longValue());
+                            catMap.put("nome", pc.getCategoria().getNome()); // Incluir nome é útil
+                            return catMap;
+                        })
+                        .collect(Collectors.toList());
+                prestadorData.put("categorias", categoriasList); 
+
+                List<Map<String, Object>> cidadesList = prestador.getCidadePrestadores().stream()
+                        .map(cp -> {
+                            Map<String, Object> cidMap = new HashMap<>();
+                            cidMap.put("id", cp.getCidade().getId().longValue());
+                            cidMap.put("nome", cp.getCidade().getNome());
+                            return cidMap;
+                        })
+                        .collect(Collectors.toList());
+                prestadorData.put("cidades", cidadesList); // Adiciona a lista ao mapa do prestador
+                
+                List<Map<String, Object>> portfoliosList = prestador.getPortfolios().stream()
+                        .map(p -> {
+                            Map<String, Object> portMap = new HashMap<>();
+                            portMap.put("id", p.getId()); // Inclui o ID do portfolio
+                            portMap.put("descricao", p.getDescricao());
+                            String urlImagem = (p.getFotos() != null && !p.getFotos().isEmpty()) ? p.getFotos().get(0)
+                                    : null;
+                            portMap.put("urlImagem", urlImagem); // Campo esperado pelo frontend
+                            // Se precisar enviar a lista completa de fotos:
+                            // portMap.put("fotos", p.getFotos());
+                            return portMap;
+                        })
+                        .collect(Collectors.toList());
+                prestadorData.put("portfolios", portfoliosList); // Adiciona a lista ao mapa do prestador
+
+                response.put("prestador", prestadorData); // Adiciona o mapa completo do prestador à resposta principal
+            } else {
+                // Se for prestador mas não encontrar a entidade Prestador (inconsistência?),
+                // pode logar um aviso ou retornar null/objeto vazio para 'prestador'.
+                response.put("prestador", null); // Ou new HashMap<>()
+                // logger.warn("Usuário {} é prestador mas não possui entidade Prestador
+                // associada.", usuario.getId());
             }
+        } else {
+            // Se o usuário não for prestador, garantir que a chave 'prestador' não exista
+            // ou seja nula
+            response.put("prestador", null);
         }
 
-        // if (usuario.isCliente()) {
-        //     Optional<Cliente> clienteOpt = clienteRepository.findByUsuarioId(usuario.getId());
-        //     if (clienteOpt.isPresent()) {
-        //         Cliente cliente = clienteOpt.get();
-        //         Map<String, Object> clienteData = new HashMap<>();
-        //         clienteData.put("id", cliente.getId());
-        //         clienteData.put("historicoContratacoes", cliente.getHistoricoContratacoes());
-        //         response.put("cliente", clienteData);
-        //     }
-        // }
+        // Lógica para Cliente (se necessário, implementar de forma similar)
+        // if (usuario.isCliente()) { ... }
 
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/editar/{id}")
-    public ResponseEntity<?> editarUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioDto usuarioDto, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> editarUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioDto usuarioDto,
+            @RequestHeader("Authorization") String token) {
         if (token == null || !token.startsWith("Bearer ")) {
             throw new CustomException(ErrorMessages.INVALID_TOKEN, ErrorMessages.INVALID_TOKEN_CODE);
         }
@@ -200,7 +220,8 @@ public class UsuarioController {
             if (usuarioEditado.isEmpty()) {
                 throw new CustomException(ErrorMessages.USER_NOT_FOUND, ErrorMessages.USER_NOT_FOUND_CODE);
             }
-            return ResponseEntity.ok(new SuccessMessage("Usuário editado com sucesso: " + usuarioEditado.get().getNome(), "USER_SUCCESS_003"));
+            return ResponseEntity.ok(new SuccessMessage(
+                    "Usuário editado com sucesso: " + usuarioEditado.get().getNome(), "USER_SUCCESS_003"));
         } catch (IllegalArgumentException e) {
             if (e.getMessage().contains("e-mail já existe")) {
                 throw new CustomException(ErrorMessages.EMAIL_ALREADY_EXISTS, ErrorMessages.EMAIL_ALREADY_EXISTS_CODE);
