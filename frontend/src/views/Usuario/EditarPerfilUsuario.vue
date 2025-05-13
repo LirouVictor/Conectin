@@ -57,7 +57,7 @@
                   {{ categoria.nome }}
                 </option>
               </select>
-              <button type="button" @click="adicionarCategoria" :disabled="!novaCategoria" class="add-btn">Adicionar Categoria</button>
+              <button type="button" @click="adicionarCategoria" :disabled="!novaCategoria" class="add-btn">Adicionar</button>
             </div>
           </div>
 
@@ -86,7 +86,7 @@
                   {{ cidade.nome }}
                 </option>
               </select>
-              <button type="button" @click="adicionarCidade" :disabled="!novaCidade" class="add-btn">Adicionar Cidade</button>
+              <button type="button" @click="adicionarCidade" :disabled="!novaCidade" class="add-btn">Adicionar</button>
             </div>
           </div>
 
