@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.*;
+import java.io.IOException;
 
 import com.conectin.conectin.config.JwtUtil;
 import com.conectin.conectin.dto.UsuarioDto;
@@ -25,6 +26,7 @@ import com.conectin.conectin.payload.SuccessMessage;
 import com.conectin.conectin.repository.ClienteRepository;
 import com.conectin.conectin.repository.PrestadorRepository;
 import com.conectin.conectin.repository.UsuarioRepository;
+import com.conectin.conectin.services.FileStorageService;
 import com.conectin.conectin.services.UsuarioService;
 
 import jakarta.validation.Valid;
@@ -44,6 +46,9 @@ public class UsuarioController {
 
     @Autowired
     private ClienteRepository clienteRepository;
+
+    @Autowired
+    private FileStorageService fileStorageService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -110,127 +115,127 @@ public class UsuarioController {
         }
     }
 
-    @GetMapping("/perfil")
-    public ResponseEntity<?> perfilUsuario(@RequestHeader("Authorization") String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
-            throw new CustomException(ErrorMessages.INVALID_TOKEN, ErrorMessages.INVALID_TOKEN_CODE);
-        }
-        String jwtToken = token.substring(7);
-        String username = jwtUtil.extractUsername(jwtToken);
+   @GetMapping("/perfil")
+public ResponseEntity<?> perfilUsuario(@RequestHeader("Authorization") String token) {
+    if (token == null || !token.startsWith("Bearer ")) {
+        throw new CustomException(ErrorMessages.INVALID_TOKEN, ErrorMessages.INVALID_TOKEN_CODE);
+    }
+    String jwtToken = token.substring(7);
+    String username = jwtUtil.extractUsername(jwtToken);
 
-        if (!jwtUtil.validateToken(jwtToken, username)) {
-            throw new CustomException(ErrorMessages.EXPIRED_TOKEN, ErrorMessages.EXPIRED_TOKEN_CODE);
-        }
+    if (!jwtUtil.validateToken(jwtToken, username)) {
+        throw new CustomException(ErrorMessages.EXPIRED_TOKEN, ErrorMessages.EXPIRED_TOKEN_CODE);
+    }
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(username);
-        if (usuarioOpt.isEmpty()) {
-            throw new CustomException("Usuário não encontrado", "USER_NOT_FOUND");
-        }
-        Usuario usuario = usuarioOpt.get();
+    Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(username);
+    if (usuarioOpt.isEmpty()) {
+        throw new CustomException("Usuário não encontrado", "USER_NOT_FOUND");
+    }
+    Usuario usuario = usuarioOpt.get();
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", usuario.getId());
-        response.put("nome", usuario.getNome());
-        response.put("endereco", usuario.getEndereco());
-        response.put("email", usuario.getEmail());
-        response.put("foto", usuario.getFotoPerfil());
-        response.put("tipos", usuario.getTipos());
+    Map<String, Object> response = new HashMap<>();
+    response.put("id", usuario.getId());
+    response.put("nome", usuario.getNome());
+    response.put("endereco", usuario.getEndereco());
+    response.put("email", usuario.getEmail());
+    response.put("telefone", usuario.getTelefone()); // Novo campo
+    response.put("foto", usuario.getFotoPerfil());
+    response.put("tipos", usuario.getTipos());
 
-        if (usuario.isPrestador()) {
-            Optional<Prestador> prestadorOpt = prestadorRepository.findByUsuarioId(usuario.getId());
-            if (prestadorOpt.isPresent()) {
-                Prestador prestador = prestadorOpt.get();
-                Map<String, Object> prestadorData = new HashMap<>();
-                prestadorData.put("id", prestador.getId());
-                prestadorData.put("descricao", prestador.getDescricao());
-                prestadorData.put("disponibilidade", prestador.getDisponibilidade());
-                prestadorData.put("avaliacaoMedia", prestador.getAvaliacaoMedia());
-                
-                List<Map<String, Object>> categoriasList = prestador.getPrestadorCategorias().stream()
-                        .map(pc -> {
-                            Map<String, Object> catMap = new HashMap<>();
-                            catMap.put("id", pc.getCategoria().getId().longValue());
-                            catMap.put("nome", pc.getCategoria().getNome()); // Incluir nome é útil
-                            return catMap;
-                        })
-                        .collect(Collectors.toList());
-                prestadorData.put("categorias", categoriasList); 
+    if (usuario.isPrestador()) {
+        Optional<Prestador> prestadorOpt = prestadorRepository.findByUsuarioId(usuario.getId());
+        if (prestadorOpt.isPresent()) {
+            Prestador prestador = prestadorOpt.get();
+            Map<String, Object> prestadorData = new HashMap<>();
+            prestadorData.put("id", prestador.getId());
+            prestadorData.put("descricao", prestador.getDescricao());
+            prestadorData.put("disponibilidade", prestador.getDisponibilidade());
+            prestadorData.put("avaliacaoMedia", prestador.getAvaliacaoMedia());
 
-                List<Map<String, Object>> cidadesList = prestador.getCidadePrestadores().stream()
-                        .map(cp -> {
-                            Map<String, Object> cidMap = new HashMap<>();
-                            cidMap.put("id", cp.getCidade().getId().longValue());
-                            cidMap.put("nome", cp.getCidade().getNome());
-                            return cidMap;
-                        })
-                        .collect(Collectors.toList());
-                prestadorData.put("cidades", cidadesList); // Adiciona a lista ao mapa do prestador
-                
-                List<Map<String, Object>> portfoliosList = prestador.getPortfolios().stream()
-                        .map(p -> {
-                            Map<String, Object> portMap = new HashMap<>();
-                            portMap.put("id", p.getId()); // Inclui o ID do portfolio
-                            portMap.put("descricao", p.getDescricao());
-                            String urlImagem = (p.getFotos() != null && !p.getFotos().isEmpty()) ? p.getFotos().get(0)
-                                    : null;
-                            portMap.put("urlImagem", urlImagem); // Campo esperado pelo frontend
-                            // Se precisar enviar a lista completa de fotos:
-                            // portMap.put("fotos", p.getFotos());
-                            return portMap;
-                        })
-                        .collect(Collectors.toList());
-                prestadorData.put("portfolios", portfoliosList); // Adiciona a lista ao mapa do prestador
+            List<Map<String, Object>> categoriasList = prestador.getPrestadorCategorias().stream()
+                    .map(pc -> {
+                        Map<String, Object> catMap = new HashMap<>();
+                        catMap.put("id", pc.getCategoria().getId().longValue());
+                        catMap.put("nome", pc.getCategoria().getNome());
+                        return catMap;
+                    })
+                    .collect(Collectors.toList());
+            prestadorData.put("categorias", categoriasList);
 
-                response.put("prestador", prestadorData); // Adiciona o mapa completo do prestador à resposta principal
-            } else {
-                // Se for prestador mas não encontrar a entidade Prestador (inconsistência?),
-                // pode logar um aviso ou retornar null/objeto vazio para 'prestador'.
-                response.put("prestador", null); // Ou new HashMap<>()
-                // logger.warn("Usuário {} é prestador mas não possui entidade Prestador
-                // associada.", usuario.getId());
-            }
+            List<Map<String, Object>> cidadesList = prestador.getCidadePrestadores().stream()
+                    .map(cp -> {
+                        Map<String, Object> cidMap = new HashMap<>();
+                        cidMap.put("id", cp.getCidade().getId().longValue());
+                        cidMap.put("nome", cp.getCidade().getNome());
+                        return cidMap;
+                    })
+                    .collect(Collectors.toList());
+            prestadorData.put("cidades", cidadesList);
+
+            List<Map<String, Object>> portfoliosList = prestador.getPortfolios().stream()
+                    .map(p -> {
+                        Map<String, Object> portMap = new HashMap<>();
+                        portMap.put("id", p.getId());
+                        portMap.put("descricao", p.getDescricao());
+                        String urlImagem = (p.getFotos() != null && !p.getFotos().isEmpty()) ? p.getFotos().get(0) : null;
+                        portMap.put("urlImagem", urlImagem);
+                        return portMap;
+                    })
+                    .collect(Collectors.toList());
+            prestadorData.put("portfolios", portfoliosList);
+
+            response.put("prestador", prestadorData);
         } else {
-            // Se o usuário não for prestador, garantir que a chave 'prestador' não exista
-            // ou seja nula
             response.put("prestador", null);
         }
+    } else {
+        response.put("prestador", null);
+    }
 
-        // Lógica para Cliente (se necessário, implementar de forma similar)
-        // if (usuario.isCliente()) { ... }
+    return ResponseEntity.ok(response);
+}
 
+@PutMapping("/editar/{id}")
+public ResponseEntity<?> editarUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioDto usuarioDto,
+        @RequestHeader("Authorization") String token) {
+    if (token == null || !token.startsWith("Bearer ")) {
+        throw new CustomException(ErrorMessages.INVALID_TOKEN, ErrorMessages.INVALID_TOKEN_CODE);
+    }
+
+    String jwtToken = token.substring(7);
+    String username = jwtUtil.extractUsername(jwtToken);
+
+    if (!jwtUtil.validateToken(jwtToken, username)) {
+        throw new CustomException(ErrorMessages.EXPIRED_TOKEN, ErrorMessages.EXPIRED_TOKEN_CODE);
+    }
+
+    try {
+        if (usuarioDto.getFotoPerfil() != null && usuarioDto.getFotoPerfil().startsWith("data:image")) {
+            String fotoUrl = fileStorageService.saveFile(usuarioDto.getFotoPerfil());
+            usuarioDto.setFotoPerfil(fotoUrl);
+        }
+
+        Optional<Usuario> usuarioEditado = usuarioService.editarUsuario(id, usuarioDto);
+        if (usuarioEditado.isEmpty()) {
+            throw new CustomException(ErrorMessages.USER_NOT_FOUND, ErrorMessages.USER_NOT_FOUND_CODE);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Usuário editado com sucesso: " + usuarioEditado.get().getNome());
+        response.put("code", "USER_SUCCESS_003");
+        response.put("fotoPerfilUrl", usuarioEditado.get().getFotoPerfil()); // Relative path
         return ResponseEntity.ok(response);
+    } catch (IllegalArgumentException e) {
+        if (e.getMessage().contains("e-mail já existe")) {
+            throw new CustomException(ErrorMessages.EMAIL_ALREADY_EXISTS, ErrorMessages.EMAIL_ALREADY_EXISTS_CODE);
+        } else if (e.getMessage().contains("e-mail inválido")) {
+            throw new CustomException(ErrorMessages.INVALID_EMAIL, ErrorMessages.INVALID_EMAIL_CODE);
+        }
+        throw new CustomException("Erro ao editar usuário: " + e.getMessage(), "USER_ERROR_007");
+    } catch (IOException e) {
+        throw new CustomException("Erro ao salvar a foto de perfil: " + e.getMessage(), "FILE_ERROR_001");
     }
-
-    @PutMapping("/editar/{id}")
-    public ResponseEntity<?> editarUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioDto usuarioDto,
-            @RequestHeader("Authorization") String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
-            throw new CustomException(ErrorMessages.INVALID_TOKEN, ErrorMessages.INVALID_TOKEN_CODE);
-        }
-
-        String jwtToken = token.substring(7);
-        String username = jwtUtil.extractUsername(jwtToken);
-
-        if (!jwtUtil.validateToken(jwtToken, username)) {
-            throw new CustomException(ErrorMessages.EXPIRED_TOKEN, ErrorMessages.EXPIRED_TOKEN_CODE);
-        }
-
-        try {
-            Optional<Usuario> usuarioEditado = usuarioService.editarUsuario(id, usuarioDto);
-            if (usuarioEditado.isEmpty()) {
-                throw new CustomException(ErrorMessages.USER_NOT_FOUND, ErrorMessages.USER_NOT_FOUND_CODE);
-            }
-            return ResponseEntity.ok(new SuccessMessage(
-                    "Usuário editado com sucesso: " + usuarioEditado.get().getNome(), "USER_SUCCESS_003"));
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("e-mail já existe")) {
-                throw new CustomException(ErrorMessages.EMAIL_ALREADY_EXISTS, ErrorMessages.EMAIL_ALREADY_EXISTS_CODE);
-            } else if (e.getMessage().contains("e-mail inválido")) {
-                throw new CustomException(ErrorMessages.INVALID_EMAIL, ErrorMessages.INVALID_EMAIL_CODE);
-            }
-            throw new CustomException("Erro ao editar usuário", "USER_ERROR_007");
-        }
-    }
+}
 
     @DeleteMapping("/deletar/{id}")
     public ResponseEntity<?> deletarUsuario(@PathVariable Long id, @RequestHeader("Authorization") String token) {

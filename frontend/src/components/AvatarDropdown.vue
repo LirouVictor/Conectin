@@ -1,18 +1,23 @@
 <template>
-  <div class="avatar-dropdown" @click="toggleDropdown">
-    <img :src="user ? user.foto || defaultAvatar : defaultAvatar" class="avatar" alt="Avatar" />
-    <span v-if="user">{{ user.nome }}</span>
-    <div v-if="dropdownVisible" class="dropdown-content">
-      <template v-if="user">
-        <router-link :to="{ name: 'EditarPerfilUsuario', params: { id: user.id } }">Meu Perfil</router-link>
-        <a href="#" @click.prevent="logout">Logout</a>
-      </template>
-      <template v-else>
-        <router-link to="/login">Login</router-link>
-        <router-link to="/cadastro">Cadastre-se</router-link>
-      </template>
+    <div class="avatar-dropdown" @click="toggleDropdown">
+        <img 
+            :src="user && user.foto ? user.foto : defaultAvatar" 
+            class="avatar" 
+            alt="Avatar" 
+            @error="handleImageError"
+        />
+        <span v-if="user">{{ user.nome }}</span>
+        <div v-if="dropdownVisible" class="dropdown-content">
+            <template v-if="user">
+                <router-link :to="{ name: 'EditarPerfilUsuario', params: { id: user.id } }">Meu Perfil</router-link>
+                <a href="#" @click.prevent="logout">Logout</a>
+            </template>
+            <template v-else>
+                <router-link to="/login">Login</router-link>
+                <router-link to="/cadastro">Cadastre-se</router-link>
+            </template>
+        </div>
     </div>
-  </div>
 </template>
 
 <script setup>
@@ -20,51 +25,48 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
 
-// Define props
 defineProps({
-  defaultAvatar: {
-    type: String,
-    default: 'https://www.gravatar.com/avatar/?d=mp',
-  },
+    defaultAvatar: {
+        type: String,
+        default: 'https://www.gravatar.com/avatar/?d=mp',
+    },
 });
 
-// Pinia store e router
 const userStore = useUserStore();
 const router = useRouter();
 
-// Reactive state
 const dropdownVisible = ref(false);
-
-// Computed user data from store
 const user = computed(() => userStore.user);
 
-// Methods
 const toggleDropdown = (event) => {
-  event.stopPropagation();
-  dropdownVisible.value = !dropdownVisible.value;
+    event.stopPropagation();
+    dropdownVisible.value = !dropdownVisible.value;
 };
 
 const closeDropdown = (event) => {
-  if (!event.target.closest('.avatar-dropdown')) {
-    dropdownVisible.value = false;
-  }
+    if (!event.target.closest('.avatar-dropdown')) {
+        dropdownVisible.value = false;
+    }
 };
 
 const logout = () => {
-  userStore.logout();
-  dropdownVisible.value = false;
-  router.push({ name: 'Home' });
+    userStore.logout();
+    dropdownVisible.value = false;
+    router.push({ name: 'Home' });
 };
 
-// Lifecycle hooks
+const handleImageError = (event) => {
+    console.error('Erro ao carregar imagem:', event.target.src);
+    event.target.src = 'https://www.gravatar.com/avatar/?d=mp'; // Fallback to default avatar
+};
+
 onMounted(() => {
-  userStore.loadUser();
-  console.log('Usuário carregado:', userStore.user); // Para depuração
-  document.addEventListener('click', closeDropdown);
+    userStore.loadUser();
+    document.addEventListener('click', closeDropdown);
 });
 
 onUnmounted(() => {
-  document.removeEventListener('click', closeDropdown);
+    document.removeEventListener('click', closeDropdown);
 });
 </script>
 
@@ -80,6 +82,7 @@ onUnmounted(() => {
   width: 40px;
   height: 40px;
   border-radius: 50%;
+  object-fit: cover; /* Garante que a imagem não seja distorcida */
 }
 
 .dropdown-content {

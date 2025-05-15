@@ -1,25 +1,35 @@
 <template>
-  <div class="editar-perfil-container">
-    <div class="editar-perfil-box">
-      <h1>Editar Perfil</h1>
-      <form @submit.prevent="salvarPerfil">
-        <div class="input-group">
-          <label for="nome">Nome:</label>
-          <input v-model="usuario.nome" type="text" id="nome" required class="input-field" />
-        </div>
-        <div class="input-group">
-          <label for="endereco">Endereço:</label>
-          <input v-model="usuario.endereco" type="text" id="endereco" required class="input-field" />
-        </div>
-        <div class="input-group">
-          <label for="email">Email:</label>
-          <input v-model="usuario.email" type="email" id="email" required class="input-field" />
-        </div>
-        <div class="input-group">
-          <label for="fotoPerfil">Foto de Perfil:</label>
-          <input type="file" id="fotoPerfil" accept="image/*" @change="handleFotoUpload" class="input-field" />
-          <img v-if="usuario.fotoPerfil" :src="usuario.fotoPerfil" alt="Foto de Perfil" class="foto-preview" />
-        </div>
+    <div class="editar-perfil-container">
+        <div class="editar-perfil-box">
+            <h1>Editar Perfil</h1>
+            <form @submit.prevent="salvarPerfil">
+                <div class="input-group">
+                    <label for="nome">Nome:</label>
+                    <input v-model="usuario.nome" type="text" id="nome" required class="input-field" />
+                </div>
+                <div class="input-group">
+                    <label for="endereco">Endereço:</label>
+                    <input v-model="usuario.endereco" type="text" id="endereco" required class="input-field" />
+                </div>
+                <div class="input-group">
+                    <label for="email">Email:</label>
+                    <input v-model="usuario.email" type="email" id="email" required class="input-field" />
+                </div>
+                <div class="input-group">
+                    <label for="telefone">Telefone:</label>
+                    <input v-model="usuario.telefone" type="tel" id="telefone" required class="input-field" placeholder="Ex: 11987654321" />
+                </div>
+                <div class="input-group">
+                    <label for="fotoPerfil">Foto de Perfil:</label>
+                    <input type="file" id="fotoPerfil" accept="image/*" @change="handleFotoUpload" class="input-field" />
+                    <img 
+                        v-if="usuario.fotoPerfil || userStore.user?.foto" 
+                        :src="usuario.fotoPerfil || userStore.user.foto" 
+                        alt="Foto de Perfil" 
+                        class="foto-preview" 
+                        @error="handleImageError"
+                    />
+                    </div>
 
         <div v-if="usuario.prestador" class="prestador-section">
           <h3>Dados do Prestador</h3>
@@ -149,95 +159,88 @@ import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
 
 export default {
-  name: 'EditarPerfil',
-  setup() {
-    const toast = useToast();
-    const userStore = useUserStore();
-    const router = useRouter();
-    return { toast, userStore, router };
-  },
-  data() {
-    return {
-      usuario: {
-        nome: '',
-        endereco: '',
-        email: '',
-        fotoPerfil: null,
-        prestador: false,
-        cliente: false,
-        descricao: '',
-        disponibilidade: '',
-        portfolios: [],
-        categoriasSelecionadas: [],
-        cidadesSelecionadas: [],
-        senhaAtual: '',
-        senha: '',
-        confirmarSenha: '',
-      },
-      categoriasDisponiveis: [],
-      cidadesDisponiveis: [],
-      novaCidade: '',
-      novaCategoria: '',
-      alterarSenhaVisivel: false,
-      fotoPerfilFile: null,
-      portfolioFiles: {},
-    };
-  },
-  mounted() {
-    this.carregarPerfil();
-    this.carregarCategorias();
-    this.carregarCidades();
-  },
-  methods: {
-    async carregarPerfil() {
-      try {
-        const response = await api.get('/usuarios/perfil', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        const data = response.data;
-
-        this.usuario.nome = data.nome || '';
-        this.usuario.endereco = data.endereco || '';
-        this.usuario.email = data.email || '';
-        this.usuario.fotoPerfil = data.foto || null;
-
-        const isPrestador = data.tipos?.includes('PRESTADOR') || (data.prestador && typeof data.prestador === 'object');
-        const isCliente = data.tipos?.includes('CLIENTE') || false;
-
-        this.usuario.prestador = isPrestador;
-        this.usuario.cliente = isCliente;
-
-        if (this.usuario.prestador && data.prestador && typeof data.prestador === 'object') {
-          const prestadorData = data.prestador;
-
-          this.usuario.descricao = prestadorData.descricao || '';
-          this.usuario.disponibilidade = prestadorData.disponibilidade || '';
-          this.usuario.portfolios = (prestadorData.portfolios || []).map(p => ({
-            id: p.id || null,
-            urlImagem: p.urlImagem || p.imagemUrl || '',
-            descricao: p.descricao || ''
-          }));
-          this.usuario.categoriasSelecionadas = (prestadorData.categorias || []).map(cat => cat.id);
-          this.usuario.cidadesSelecionadas = (prestadorData.cidades || []).map(cid => cid.id);
-        } else {
-          this.usuario.descricao = '';
-          this.usuario.disponibilidade = '';
-          this.usuario.portfolios = [];
-          this.usuario.categoriasSelecionadas = [];
-          this.usuario.cidadesSelecionadas = [];
-        }
-
-        this.usuario.senhaAtual = '';
-        this.usuario.senha = '';
-        this.usuario.confirmarSenha = '';
-        this.alterarSenhaVisivel = false;
-
-      } catch (error) {
-        console.error('Erro ao carregar perfil:', error.response || error);
-        this.toast.error(error.response?.data?.message || 'Não foi possível carregar os dados do perfil.');
-      }
+    name: 'EditarPerfil',
+    setup() {
+        const toast = useToast();
+        const userStore = useUserStore();
+        const router = useRouter();
+        return { toast, userStore, router };
     },
+    data() {
+        return {
+            usuario: {
+                nome: '',
+                endereco: '',
+                email: '',
+                telefone: '',
+                fotoPerfil: null,
+                prestador: false,
+                cliente: false,
+                descricao: '',
+                disponibilidade: '',
+                portfolios: [],
+                categoriasSelecionadas: [],
+                cidadesSelecionadas: [],
+                senhaAtual: '',
+                senha: '',
+                confirmarSenha: '',
+            },
+            categoriasDisponiveis: [],
+            cidadesDisponiveis: [],
+            novaCidade: '',
+            novaCategoria: '',
+            alterarSenhaVisivel: false,
+            fotoPerfilFile: null,
+            portfolioFiles: {},
+        };
+    },
+    mounted() {
+        this.carregarPerfil();
+        this.carregarCategorias();
+        this.carregarCidades();
+    },
+    methods: {
+        async carregarPerfil() {
+            try {
+                const response = await api.get('/usuarios/perfil', {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+                });
+                const data = response.data;
 
+                this.usuario.nome = data.nome || '';
+                this.usuario.endereco = data.endereco || '';
+                this.usuario.email = data.email || '';
+                this.usuario.telefone = data.telefone || '';
+                this.usuario.fotoPerfil = null; // Will be set by file input
+
+                const isPrestador = data.tipos?.includes('PRESTADOR') || (data.prestador && typeof data.prestador === 'object');
+                const isCliente = data.tipos?.includes('CLIENTE') || false;
+
+                this.usuario.prestador = isPrestador;
+                this.usuario.cliente = isCliente;
+
+                if (this.usuario.prestador && data.prestador && typeof data.prestador === 'object') {
+                    const prestadorData = data.prestador;
+                    this.usuario.descricao = prestadorData.descricao || '';
+                    this.usuario.disponibilidade = prestadorData.disponibilidade || '';
+                    this.usuario.portfolios = (prestadorData.portfolios || []).map(p => ({
+                        id: p.id || null,
+                        urlImagem: p.urlImagem || p.imagemUrl || '',
+                        descricao: p.descricao || ''
+                    }));
+                    this.usuario.categoriasSelecionadas = (prestadorData.categorias || []).map(cat => cat.id);
+                    this.usuario.cidadesSelecionadas = (prestadorData.cidades || []).map(cid => cid.id);
+                }
+
+                this.usuario.senhaAtual = '';
+                this.usuario.senha = '';
+                this.usuario.confirmarSenha = '';
+                this.alterarSenhaVisivel = false;
+            } catch (error) {
+                console.error('Erro ao carregar perfil:', error.response || error);
+                this.toast.error(error.response?.data?.message || 'Não foi possível carregar os dados do perfil.');
+            }
+        },
     async carregarCategorias() {
       try {
         const response = await api.get('/categorias');
@@ -259,18 +262,23 @@ export default {
     },
 
     handleFotoUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        this.fotoPerfilFile = file;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          this.usuario.fotoPerfil = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      } else {
-        this.fotoPerfilFile = null;
-      }
-    },
+            const file = event.target.files[0];
+            if (file) {
+                this.fotoPerfilFile = file;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.usuario.fotoPerfil = e.target.result; // Base64 for preview
+                };
+                reader.readAsDataURL(file);
+            } else {
+                this.fotoPerfilFile = null;
+                this.usuario.fotoPerfil = null;
+            }
+        },
+        handleImageError(event) {
+            console.error('Erro ao carregar imagem:', event.target.src);
+            event.target.src = 'https://www.gravatar.com/avatar/?d=mp';
+        },
 
     handlePortfolioUpload(event, index) {
       const file = event.target.files[0];
@@ -347,90 +355,98 @@ export default {
       return categoria ? categoria.nome : 'ID: ' + categoriaId;
     },
 
-    async salvarPerfil() {
-      if (!this.usuario.prestador && !this.usuario.cliente) {
-        this.toast.error('Selecione pelo menos um tipo de usuário (Prestador ou Cliente).');
-        return;
-      }
+   async salvarPerfil() {
+            if (!this.usuario.prestador && !this.usuario.cliente) {
+                this.toast.error('Selecione pelo menos um tipo de usuário (Prestador ou Cliente).');
+                return;
+            }
 
-      if (this.alterarSenhaVisivel) {
-        if (!this.usuario.senhaAtual) {
-          this.toast.error('A senha atual é obrigatória para alterar a senha.');
-          return;
-        }
-        if (!this.usuario.senha) {
-          this.toast.error('A nova senha é obrigatória.');
-          return;
-        }
-        if (this.usuario.senha.length < 6) {
-          this.toast.error('A nova senha deve ter pelo menos 6 caracteres.');
-          return;
-        }
-        if (this.usuario.senha !== this.usuario.confirmarSenha) {
-          this.toast.error('A nova senha e a confirmação de senha não coincidem.');
-          return;
-        }
-      }
+            if (this.alterarSenhaVisivel) {
+                if (!this.usuario.senhaAtual) {
+                    this.toast.error('A senha atual é obrigatória para alterar a senha.');
+                    return;
+                }
+                if (!this.usuario.senha) {
+                    this.toast.error('A nova senha é obrigatória.');
+                    return;
+                }
+                if (this.usuario.senha.length < 6) {
+                    this.toast.error('A nova senha deve ter pelo menos 6 caracteres.');
+                    return;
+                }
+                if (this.usuario.senha !== this.usuario.confirmarSenha) {
+                    this.toast.error('A nova senha e a confirmação de senha não coincidem.');
+                    return;
+                }
+            }
 
-      const dadosParaEnviar = {
-        nome: this.usuario.nome,
-        endereco: this.usuario.endereco,
-        email: this.usuario.email,
-        fotoPerfil: this.usuario.fotoPerfil,
-        prestador: this.usuario.prestador,
-        cliente: this.usuario.cliente,
-        descricao: this.usuario.prestador ? this.usuario.descricao : null,
-        disponibilidade: this.usuario.prestador ? this.usuario.disponibilidade : null,
-        categorias: this.usuario.prestador ? this.usuario.categoriasSelecionadas.map(id => ({ id })) : [],
-        cidades: this.usuario.prestador ? this.usuario.cidadesSelecionadas.map(id => ({ id })) : [],
-        portfolios: this.usuario.prestador ? this.usuario.portfolios.map(p => ({
-          id: p.id || null,
-          urlImagem: p.urlImagem,
-          descricao: p.descricao
-        })) : [],
-      };
+            const dadosParaEnviar = {
+                nome: this.usuario.nome,
+                endereco: this.usuario.endereco,
+                email: this.usuario.email,
+                telefone: this.usuario.telefone,
+                fotoPerfil: this.usuario.fotoPerfil,
+                prestador: this.usuario.prestador,
+                cliente: this.usuario.cliente,
+                descricao: this.usuario.prestador ? this.usuario.descricao : null,
+                disponibilidade: this.usuario.prestador ? this.usuario.disponibilidade : null,
+                categorias: this.usuario.prestador ? this.usuario.categoriasSelecionadas.map(id => ({ id })) : [],
+                cidades: this.usuario.prestador ? this.usuario.cidadesSelecionadas.map(id => ({ id })) : [],
+                portfolios: this.usuario.prestador ? this.usuario.portfolios.map(p => ({
+                    id: p.id || null,
+                    urlImagem: p.urlImagem,
+                    descricao: p.descricao
+                })) : [],
+            };
 
-      if (this.alterarSenhaVisivel) {
-        dadosParaEnviar.senhaAtual = this.usuario.senhaAtual;
-        dadosParaEnviar.senha = this.usuario.senha;
-      }
+            if (this.alterarSenhaVisivel) {
+                dadosParaEnviar.senhaAtual = this.usuario.senhaAtual;
+                dadosParaEnviar.senha = this.usuario.senha;
+            }
 
-      try {
-        if (!this.userStore.user || !this.userStore.user.id) {
-          this.toast.error("ID do usuário não encontrado. Por favor, faça login novamente.");
-          return;
-        }
-        const userId = this.userStore.user.id;
+            try {
+                if (!this.userStore.user || !this.userStore.user.id) {
+                    this.toast.error("ID do usuário não encontrado. Por favor, faça login novamente.");
+                    return;
+                }
+                const userId = this.userStore.user.id;
 
-        const response = await api.put(`/usuarios/editar/${userId}`, dadosParaEnviar, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-          },
-        });
+                const response = await api.put(`/usuarios/editar/${userId}`, dadosParaEnviar, {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
 
-        this.userStore.setUser({
-          ...this.userStore.user,
-          nome: dadosParaEnviar.nome,
-          email: dadosParaEnviar.email,
-          endereco: dadosParaEnviar.endereco,
-          fotoPerfil: response.data.fotoPerfilUrl || dadosParaEnviar.fotoPerfil,
-          prestador: dadosParaEnviar.prestador,
-          cliente: dadosParaEnviar.cliente,
-        });
+                this.userStore.setUser({
+                    nome: dadosParaEnviar.nome,
+                    email: dadosParaEnviar.email,
+                    endereco: dadosParaEnviar.endereco,
+                    telefone: dadosParaEnviar.telefone,
+                    foto: response.data.fotoPerfilUrl, // Absolute URL from backend
+                    prestador: dadosParaEnviar.prestador,
+                    cliente: dadosParaEnviar.cliente,
+                });
 
-        this.toast.success(response.data.message || 'Perfil atualizado com sucesso!');
+                this.toast.success(response.data.message || 'Perfil atualizado com sucesso!');
 
-      } catch (error) {
-        console.error("Erro ao salvar perfil:", error.response || error);
-        const errorMessage = error.response?.data?.message ||
-          (error.response?.data?.errors ? Object.values(error.response.data.errors).join(', ') : null) ||
-          error.response?.data?.error ||
-          'Falha ao atualizar o perfil. Verifique os dados e tente novamente.';
-        this.toast.error(errorMessage);
-      }
+                try {
+                    await this.router.push({ name: 'EditarPerfilUsuario', params: { id: userId } });
+                } catch (error) {
+                    console.error('Navigation error:', error);
+                    this.toast.error('Rota de perfil não encontrada. Redirecionando para a página inicial.');
+                    await this.router.push({ name: 'Home' });
+                }
+            } catch (error) {
+                console.error("Erro ao salvar perfil:", error.response || error);
+                const errorMessage = error.response?.data?.message ||
+                    (error.response?.data?.errors ? Object.values(error.response.data.errors).join(', ') : null) ||
+                    error.response?.data?.error ||
+                    'Falha ao atualizar o perfil. Verifique os dados e tente novamente.';
+                this.toast.error(errorMessage);
+            }
+        },
     },
-  },
 };
 </script>
 

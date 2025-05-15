@@ -2,6 +2,7 @@ package com.conectin.conectin.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.util.List;
@@ -21,7 +22,11 @@ public class UsuarioDto {
 
     private String senha;
     private String confirmarSenha;
-    private String senhaAtual; // Novo campo para validação de senha
+    private String senhaAtual;
+
+    @NotBlank(message = "O telefone é obrigatório")
+    @Pattern(regexp = "\\d{10,11}", message = "Telefone deve ter 10 ou 11 dígitos")
+    private String telefone; // Novo campo
 
     private boolean prestador;
     private boolean cliente;

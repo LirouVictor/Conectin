@@ -31,6 +31,9 @@ public class Usuario {
 
     private String fotoPerfil;
 
+    @Column(nullable = false)
+    private String telefone; // Novo campo
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCadastro;
 
