@@ -4,25 +4,53 @@
       <!-- Header com logo e título -->
       <div class="ranking-header">
         <div class="logo-container">
+          <!-- Se você tiver um logo SVG ou imagem, coloque aqui -->
+          <!-- <span class="conectin-logo">Conectin</span> -->
         </div>
         <h1>Ranking de Prestadores</h1>
       </div>
       
       <p class="intro-text">
-        Conheça os melhores prestadores da plataforma. Use os filtros para refinar por categoria e cidade.
+        Conheça os melhores prestadores da plataforma.
+        <span v-if="!categoria && !cidade && !searchTerm">
+          Use a busca abaixo para encontrar um prestador específico ou selecione uma categoria e cidade na página inicial para refinar.
+        </span>
+        <span v-else>
+          Use a busca abaixo para refinar ainda mais os resultados.
+        </span>
         Clique em um prestador para ver mais detalhes!
       </p>
 
-      <!-- Seção de Filtros -->
-      <div class="filtros" v-if="categoria || cidade">
-        <div class="filtro-info">
-          <span class="filtro-label">Filtrando por:</span>
-          <span v-if="categoria" class="filtro-valor">Categoria: {{ categoria }}</span>
-          <span v-if="cidade" class="filtro-valor">Cidade: {{ cidade }}</span>
+      <!-- Seção de Filtros e Busca -->
+      <div class="filtros-e-busca-container">
+        <!-- Filtros de Categoria e Cidade (existentes) -->
+        <div class="filtros" v-if="categoria || cidade">
+          <div class="filtro-info">
+            <span class="filtro-label">Filtrando por:</span>
+            <span v-if="categoria" class="filtro-valor">Categoria: {{ categoria }}</span>
+            <span v-if="cidade" class="filtro-valor">Cidade: {{ cidade }}</span>
+          </div>
         </div>
-        <button class="limpar-filtro" @click="limparFiltros">Limpar Filtros</button>
+         <button v-if="categoria || cidade || searchTerm" class="limpar-filtro-geral" @click="limparFiltros">
+            Limpar Filtros e Busca
+        </button>
+        <p v-else-if="!searchTerm && !categoria && !cidade" class="intro-text filtro-status">
+          Nenhum filtro ou busca ativa. Mostrando ranking geral.
+        </p>
+
+        <!-- Barra de Busca Local -->
+        <div class="busca-local-container">
+          <input
+            type="text"
+            v-model="searchTerm"
+            placeholder="Buscar por nome, categoria ou cidade nos resultados..."
+            class="busca-input"
+          />
+          <button v-if="searchTerm" @click="limparBusca" class="limpar-busca-btn icon-btn" title="Limpar busca">
+            ×
+          </button>
+        </div>
       </div>
-      <p v-else class="intro-text filtro-status">Nenhum filtro aplicado. Mostrando ranking geral.</p>
 
       <!-- Indicador de Carregamento -->
       <div v-if="carregando" class="carregando">
@@ -33,8 +61,12 @@
       <!-- Mensagem de Sem Resultados -->
       <div v-else-if="prestadoresFiltrados.length === 0" class="sem-resultados">
         <div class="empty-state-icon">🔍</div>
-        <p>Nenhum prestador encontrado com os filtros selecionados.</p>
-        <!-- <button v-if="categoria || cidade" class="limpar-filtro" @click="limparFiltros">Limpar Filtros</button> -->
+        <p v-if="categoria || cidade || searchTerm">
+            Nenhum prestador encontrado com os filtros e/ou busca aplicados.
+        </p>
+        <p v-else>
+            Ainda não há prestadores cadastrados no ranking.
+        </p>
       </div>
 
       <!-- Container de Prestadores -->
@@ -86,9 +118,10 @@ export default {
   name: 'RankingPrestadores',
   data() {
     return {
-      prestadores: [], // Lista original da API, agora com dados mais completos
-      categoria: '',   // Filtro de categoria (string)
-      cidade: '',      // Filtro de cidade (string)
+      prestadores: [],
+      categoria: '',
+      cidade: '',
+      searchTerm: '', 
       carregando: true, 
     };
   },
@@ -98,41 +131,50 @@ export default {
   },
   computed: {
     prestadoresFiltrados() {
-      if (!this.categoria && !this.cidade) {
-        return this.prestadores;
+      let filtered = this.prestadores;
+
+      // 1. Filtro por categoria e cidade (lógica existente)
+      if (this.categoria || this.cidade) {
+        filtered = filtered.filter(prestador => {
+          const matchCategoria = !this.categoria ||
+            (prestador.categorias && prestador.categorias.some(
+              c => c.nome.toLowerCase() === this.categoria.toLowerCase()
+            ));
+
+          const matchCidade = !this.cidade ||
+            (prestador._listaDeCidadesDoPrestador && prestador._listaDeCidadesDoPrestador.some(
+              cidadeDoPrestadorObj => cidadeDoPrestadorObj.nome.toLowerCase() === this.cidade.toLowerCase()
+            ));
+          return matchCategoria && matchCidade;
+        });
       }
 
-      return this.prestadores.filter(prestador => {
-        const matchCategoria = !this.categoria ||
-          (prestador.categorias && prestador.categorias.some(
-            c => c.nome.toLowerCase() === this.categoria.toLowerCase()
-          ));
+      // 2. Filtro por termo de busca (aplicado sobre os resultados já filtrados por categoria/cidade)
+      if (this.searchTerm.trim() !== '') {
+        const lowerSearchTerm = this.searchTerm.toLowerCase().trim();
+        filtered = filtered.filter(prestador => {
+          const matchNome = prestador.nome && prestador.nome.toLowerCase().includes(lowerSearchTerm);
+          const matchCategoriasPrestador = prestador.categorias && prestador.categorias.some(
+            cat => cat.nome && cat.nome.toLowerCase().includes(lowerSearchTerm)
+          );
+          // NOVO: Adiciona busca pela string de cidades do prestador
+          const matchCidadeDisplay = prestador.cidade && prestador.cidade.toLowerCase().includes(lowerSearchTerm);
+          
+          return matchNome || matchCategoriasPrestador || matchCidadeDisplay;
+        });
+      }
 
-        // AJUSTADO: Lógica para filtrar pela lista de cidades do prestador
-        const matchCidade = !this.cidade ||
-          (prestador._listaDeCidadesDoPrestador && prestador._listaDeCidadesDoPrestador.some(
-            cidadeDoPrestadorObj => cidadeDoPrestadorObj.nome.toLowerCase() === this.cidade.toLowerCase()
-          ));
-
-        return matchCategoria && matchCidade;
-      });
+      return filtered;
     }
   },
   created() {
     this.atualizarFiltrosDaRota();
-    this.fetchPrestadores(); // Este método foi significativamente alterado
+    this.fetchPrestadores();
   },
   watch: {
     '$route.query': {
       handler() {
         this.atualizarFiltrosDaRota();
-        // AJUSTADO: Se os filtros da rota mudam, é bom recarregar os prestadores
-        // caso o backend já os filtre. No seu caso atual, a filtragem é no frontend,
-        // então apenas atualizar os filtros `this.categoria` e `this.cidade`
-        // já dispara a recomputação de `prestadoresFiltrados`.
-        // Se no futuro você passar os filtros para o backend em `fetchPrestadores`,
-        // esta linha abaixo seria necessária:
-        // this.fetchPrestadores();
       },
       deep: true
     }
@@ -143,44 +185,30 @@ export default {
         this.cidade = this.$route.query.cidade || localStorage.getItem('selectedCity') || '';
     },
 
-    // AJUSTADO: Método fetchPrestadores completamente reescrito
     async fetchPrestadores() {
       this.carregando = true;
       try {
-        // O endpoint /prestadores/ranking já retorna PrestadorDto que inclui
-        // prestador.categorias (List<Categoria>) e prestador.cidades (List<Cidade>)
-        // graças ao convertToDto no backend.
         const response = await api.get('/prestadores/ranking');
-
-        // Verificação se response.data existe
         if (!response.data) {
           this.toast.error('Ranking de prestadores não retornou dados.');
           this.prestadores = [];
-          this.carregando = false; // Finaliza o carregamento aqui também
+          this.carregando = false;
           return; 
         }
 
-        // Mapeia os dados do DTO para o formato que o template e os filtros esperam.
         this.prestadores = response.data.map(prestadorDto => {
           let cidadeDisplay = 'Não informada';
-          let cidadesDoPrestadorParaFiltro = []; // Lista de objetos Cidade {id, nome}
+          let cidadesDoPrestadorParaFiltro = [];
 
-          // O DTO do backend envia `prestadorDto.cidades` como uma lista de objetos Cidade.
           if (prestadorDto.cidades && prestadorDto.cidades.length > 0) {
-            // Para exibição no card, podemos mostrar a primeira cidade ou concatenar.
-            // Aqui estou concatenando, mas você pode escolher a primeira: prestadorDto.cidades[0].nome
             cidadeDisplay = prestadorDto.cidades.map(c => c.nome).join(', '); 
-
-            // Para o filtro `matchCidade` em `prestadoresFiltrados`, usamos a lista completa.
             cidadesDoPrestadorParaFiltro = prestadorDto.cidades;
           }
 
           return {
-            ...prestadorDto, // Inclui id, nome (do usuario), descricao, disponibilidade, avaliacaoMedia, etc.
-            categorias: prestadorDto.categorias || [], // Garante que 'categorias' seja sempre uma lista
-            cidade: cidadeDisplay,                     // String para exibição em {{ prestador.cidade }}
-            // NOVO: Propriedade auxiliar para o filtro `matchCidade` usar a lista de cidades.
-            // O _ no início é uma convenção para indicar uma propriedade "privada" ou auxiliar.
+            ...prestadorDto,
+            categorias: prestadorDto.categorias || [],
+            cidade: cidadeDisplay, // Esta é a string usada para busca e exibição
             _listaDeCidadesDoPrestador: cidadesDoPrestadorParaFiltro
           };
         });
@@ -189,9 +217,9 @@ export default {
         console.error("Erro detalhado em fetchPrestadores:", error.response || error);
         const errorMessage = error.response?.data?.message || error.message || 'Erro ao carregar prestadores.';
         this.toast.error(errorMessage);
-        this.prestadores = []; // Limpa em caso de erro para evitar mostrar dados antigos
+        this.prestadores = [];
       } finally {
-        this.carregando = false; // Finaliza carregamento
+        this.carregando = false;
       }
     },
 
@@ -200,12 +228,15 @@ export default {
       localStorage.removeItem('selectedCity');
       this.categoria = '';
       this.cidade = '';
+      this.searchTerm = ''; 
 
-      // Navegar para a mesma página sem parâmetros de query
-      // O watcher $route.query vai pegar essa mudança e chamar atualizarFiltrosDaRota.
       if (Object.keys(this.$route.query).length > 0) {
         this.$router.push({ path: this.$route.path });
       }
+    },
+
+    limparBusca() { 
+      this.searchTerm = '';
     }
   }
 };
@@ -252,56 +283,8 @@ export default {
   position: relative;
 }
 
-/* Logo estilizada */
-.logo-container {
-  position: relative;
-  width: 100%;
-  display: flex;
-  justify-content: center;
+.logo-container { 
   margin-bottom: 15px;
-}
-
-.conectin-logo {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: var(--conectin-blue);
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-  position: relative;
-  z-index: 2;
-}
-
-.conectin-nodes {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  z-index: 1;
-}
-
-.node {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background-color: var(--conectin-blue-light);
-  border-radius: 50%;
-  border: 2px solid white;
-}
-
-.n1 { top: 15%; left: 35%; }
-.n2 { top: 45%; left: 25%; }
-.n3 { top: 65%; left: 40%; }
-.n4 { top: 25%; left: 65%; }
-.n5 { top: 55%; left: 70%; }
-
-.user-node {
-  width: 16px;
-  height: 16px;
-  background-color: var(--conectin-yellow);
-  border: 3px solid white;
-  box-shadow: 0 0 5px rgba(0,0,0,0.2);
-  top: 10%; 
-  left: 50%;
 }
 
 h1 {
@@ -327,7 +310,7 @@ h1:after {
 
 .intro-text {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   color: var(--conectin-text);
   line-height: 1.6;
   font-size: 1.05rem;
@@ -339,16 +322,22 @@ h1:after {
 .filtro-status {
   color: #666;
   font-style: italic;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  text-align: center; /* Adicionado para centralizar */
 }
 
-/* Estilos dos Filtros */
+/* Container para filtros e busca */
+.filtros-e-busca-container {
+  margin-bottom: 30px;
+}
+
+/* Estilos dos Filtros de Categoria/Cidade */
 .filtros {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: center; /* Centraliza os filtros de categoria/cidade */
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 15px; 
   padding: 15px 20px;
   background-color: rgba(26, 119, 181, 0.05);
   border-radius: 10px;
@@ -378,27 +367,73 @@ h1:after {
   box-shadow: 0 1px 3px rgba(26, 119, 181, 0.15);
 }
 
-.limpar-filtro {
-  background-color: #257BB8;
+.limpar-filtro-geral {
+  background-color: #e74c3c;
   color: white;
   border: none;
-  padding: 8px 18px;
+  padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
   box-shadow: 0 2px 5px rgba(231, 76, 60, 0.2);
+  width: 100%; 
+  max-width: 300px; /* Limita a largura máxima */
+  display: block; /* Para que margin auto funcione */
+  margin: 15px auto 20px auto; /* Centraliza e adiciona margens */
 }
 
-.limpar-filtro:hover {
+.limpar-filtro-geral:hover {
   background-color: #c0392b;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
 }
 
-.limpar-filtro:active {
+.limpar-filtro-geral:active {
   transform: translateY(0);
 }
+
+.busca-local-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.busca-input {
+  flex-grow: 1;
+  padding: 10px 15px;
+  font-size: 1rem;
+  border: 1px solid var(--conectin-gray);
+  border-radius: 6px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.busca-input:focus {
+  outline: none;
+  border-color: var(--conectin-blue);
+  box-shadow: 0 0 0 3px rgba(26, 119, 181, 0.15);
+}
+
+.limpar-busca-btn.icon-btn {
+  background-color: transparent;
+  color: #888; 
+  border: none;
+  padding: 0;
+  width: 38px; 
+  height: 38px;
+  font-size: 1.8rem; 
+  line-height: 38px; 
+  text-align: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.limpar-busca-btn.icon-btn:hover {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
 
 /* Estilos de Carregamento */
 .carregando {
@@ -493,7 +528,7 @@ h1:after {
 .prestador-info {
   flex: 1;
   min-width: 250px;
-  padding-left: 10px;
+  padding-left: 10px; 
 }
 
 .prestador-info h3 {
@@ -511,7 +546,6 @@ h1:after {
   gap: 8px;
 }
 
-/* Estilos para os detalhes do prestador */
 .categorias, .cidade, .avaliacao, .disponibilidade {
   margin: 0;
   font-size: 0.95rem;
@@ -539,7 +573,6 @@ h1:after {
   font-weight: 600;
 }
 
-/* Estilo do botão Ver Perfil */
 .ver-perfil-btn {
   background-color: #257BB8;
   color: #FFFFFF;
@@ -550,7 +583,6 @@ h1:after {
   font-weight: bold;
   text-align: center;
   white-space: nowrap;
-  /* box-shadow: 0 3px 6px #257BB8; */
   position: relative;
   overflow: hidden;
 }
@@ -600,11 +632,12 @@ h1:after {
   
   .filtros {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center; /* Centraliza os filtros em mobile */
   }
   
-  .limpar-filtro {
-    width: 100%;
+  .limpar-filtro-geral {
+     width: 90%; /* Ajusta a largura em mobile */
+     max-width: none; /* Remove a largura máxima para mobile */
   }
 }
 </style>
