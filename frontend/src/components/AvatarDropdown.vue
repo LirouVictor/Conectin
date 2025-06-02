@@ -6,7 +6,7 @@
             alt="Avatar" 
             @error="handleImageError"
         />
-        <span v-if="user">{{ user.nome }}</span>
+        <!-- <span v-if="user">{{ user.nome }}</span> -->
         <div v-if="dropdownVisible" class="dropdown-content">
             <template v-if="user">
                 <router-link :to="{ name: 'EditarPerfilUsuario', params: { id: user.id } }">Meu Perfil</router-link>

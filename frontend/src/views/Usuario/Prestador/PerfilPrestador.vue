@@ -10,6 +10,7 @@
           </p>
         </div>
         <div class="perfil-info">
+          <p><strong>Telefone:</strong> {{ prestador.telefone || 'Não informado' }}</p> <!-- Added for visibility -->
           <p class="descricao"><strong>Descrição:</strong> {{ prestador.descricao || 'Não informado' }}</p>
           <p class="disponibilidade">
             <strong>Disponibilidade:</strong> {{ prestador.disponibilidade || 'Não informado' }}
@@ -34,7 +35,8 @@
           <p>Nenhum item no portfólio.</p>
         </div>
         <div class="contact-section">
-          <a :href="whatsappLink" target="_blank" class="contact-btn">Entrar em Contato via WhatsApp</a>
+          <!-- MODIFIED BUTTON -->
+          <button @click="handleContact" class="contact-btn">Entrar em Contato via WhatsApp</button>
         </div>
       </div>
       <div v-else class="loading">
@@ -48,6 +50,8 @@
 <script>
 import api from '@/services/api';
 import { useToast } from 'vue-toastification';
+import { useUserStore } from '@/stores/user'; // <-- ADDED
+import { useRouter } from 'vue-router';   // <-- ADDED
 
 export default {
   name: 'PerfilPrestador',
@@ -58,15 +62,15 @@ export default {
   },
   setup() {
     const toast = useToast();
-    return { toast };
+    const userStore = useUserStore(); // <-- ADDED
+    const router = useRouter();     // <-- ADDED
+    return { toast, userStore, router }; // <-- EXPOSE userStore and router
   },
-  computed: {
-    whatsappLink() {
-      const numero = '+5511999999999'; // Substitua pelo número real ou adicione ao PrestadorDto
-      const mensagem = encodeURIComponent(`Olá, vi seu perfil no Conectin e gostaria de contratar seus serviços!`);
-      return `https://wa.me/${numero}?text=${mensagem}`;
-    },
-  },
+  // computed: { // whatsappLink is now handled dynamically in the method
+    // whatsappLink() {
+      // This logic is now part of handleContact
+    // },
+  // },
   mounted() {
     this.fetchPrestador();
   },
@@ -78,14 +82,115 @@ export default {
         this.prestador = response.data;
       } catch (error) {
         if (error.response && error.response.data) {
-          this.toast.error(error.response.data.message);
+          this.toast.error(error.response.data.message || 'Erro ao carregar dados do prestador.');
         } else {
           this.toast.error('Erro ao carregar perfil do prestador.');
         }
+        console.error("Erro ao buscar prestador:", error);
+      }
+    },
+
+     async handleContact() { // <-- Adicionado async aqui
+      if (!this.prestador) {
+        this.toast.error('Dados do prestador ainda não carregados. Tente novamente em instantes.');
+        return;
+      }
+
+      const currentUser = this.userStore.user;
+
+      if (!currentUser) {
+        this.toast.info('Você precisa estar logado para entrar em contato. Redirecionando para cadastro...');
+        this.router.push({ name: 'Cadastro' }); // Verifique se 'Cadastro' é o nome correto da rota
+        return;
+      }
+
+      if (!currentUser.cliente) {
+        if (currentUser.prestador) {
+          this.toast.error('Sua conta é de PRESTADOR. Apenas usuários do tipo CLIENTE podem solicitar serviços.');
+        } else {
+          this.toast.error('Apenas usuários do tipo CLIENTE podem iniciar um contato e solicitar serviços.');
+        }
+        return;
+      }
+
+      // ---- INÍCIO DA LÓGICA DE CRIAÇÃO DE SOLICITAÇÃO E CONTATO ----
+      const prestadorTelefone = this.prestador.telefone; // Telefone do usuário prestador, vindo do PrestadorDto
+
+      try {
+        // VALIDAÇÃO E SELEÇÃO DE CATEGORIA (MUITO IMPORTANTE!)
+        // Esta é uma implementação simplificada. O ideal é o usuário selecionar.
+        if (!this.prestador.categorias || this.prestador.categorias.length === 0) {
+            this.toast.error("Este prestador não possui categorias de serviço definidas. Não é possível solicitar.");
+            return;
+        }
+        // TODO: Implementar um modal/select para o usuário escolher a categoria do prestador
+        const categoriaSelecionada = this.prestador.categorias[0]; // Exemplo: pega a primeira
+        const categoriaIdParaSolicitacao = categoriaSelecionada.id;
+        const nomeCategoriaSolicitacao = categoriaSelecionada.nome;
+
+        // Montar o DTO para criar a solicitação
+        const solicitacaoDto = {
+          clienteId: parseInt(currentUser.id), // Garanta que o ID é um número se o backend espera Integer/Long
+          prestadorId: parseInt(this.prestador.usuarioId), // ID do USUÁRIO do prestador
+          categoriaId: parseInt(categoriaIdParaSolicitacao),
+          detalhes: `Contato iniciado para ${this.prestador.nome} referente à categoria ${nomeCategoriaSolicitacao}.`
+        };
+
+        // Chamar API para criar a solicitação com status PENDENTE
+        const responseSolicitacao = await api.post('/solicitacoes/criar', solicitacaoDto, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        if (responseSolicitacao.status === 201) {
+          this.toast.success('Solicitação de serviço registrada com status PENDENTE!');
+          // const solicitacaoCriada = responseSolicitacao.data; // Pode ser útil para o futuro
+
+          // Abrir WhatsApp APENAS SE o telefone do prestador existir
+          if (prestadorTelefone && prestadorTelefone.trim() !== '') {
+            let numeroLimpo = prestadorTelefone.replace(/\D/g, '');
+            if (numeroLimpo.length <= 11 && !numeroLimpo.startsWith('55')) { // Checagem básica para celular BR
+              numeroLimpo = '55' + numeroLimpo;
+            }
+            const nomePrestador = this.prestador.nome || 'Prestador';
+            const mensagem = encodeURIComponent(`Olá ${nomePrestador}, vi seu perfil no Conectin e gostaria de mais informações sobre seus serviços (${nomeCategoriaSolicitacao}). Minha solicitação (${responseSolicitacao.data.id}) foi registrada no sistema.`);
+            const whatsappUrl = `https://wa.me/${numeroLimpo}?text=${mensagem}`;
+            window.open(whatsappUrl, '_blank');
+          } else {
+            this.toast.info("A solicitação foi registrada. O prestador não informou WhatsApp para contato direto. Aguarde o contato ou verifique outros meios.");
+          }
+
+          // A lógica de perguntar "Serviço contratado?" (o setTimeout com confirm)
+          // foi REMOVIDA daqui. Ela será tratada pelo sistema de notificações
+          // quando o usuário logar novamente ou trocar de aba.
+
+        } else {
+          // Se a API retornar um status diferente de 201 (Created) mas não um erro
+          this.toast.error(`Não foi possível registrar a solicitação. Status: ${responseSolicitacao.status}`);
+        }
+      } catch (error) {
+        console.error("Erro ao criar solicitação ou contatar:", error.response || error);
+        let errorMsg = 'Falha ao registrar a solicitação de serviço.';
+        if (error.response && error.response.data) {
+            if (error.response.data.message) {
+                errorMsg = error.response.data.message;
+            } else if (typeof error.response.data === 'string') {
+                errorMsg = error.response.data;
+            } else {
+                // Tenta pegar mensagens de erro de validação do Spring Boot se houver
+                const validationErrors = error.response.data.errors;
+                if (validationErrors && Array.isArray(validationErrors) && validationErrors.length > 0) {
+                    errorMsg = validationErrors.map(err => err.defaultMessage || err.field).join(', ');
+                } else {
+                    errorMsg = JSON.stringify(error.response.data);
+                }
+            }
+        }
+        this.toast.error(`Erro: ${errorMsg}`);
       }
     },
   },
 };
+
 </script>
 
 <style scoped>
@@ -249,7 +354,7 @@ h1::after {
 .contact-btn {
   display: inline-block;
   padding: 12px 28px;
-  background-color: #257BB8;
+  background-color: #257BB8; /* Original Conectin Blue */
   color: white;
   text-decoration: none;
   border-radius: 30px;
@@ -258,6 +363,9 @@ h1::after {
   box-shadow: 0 4px 12px rgba(30, 122, 197, 0.3);
   position: relative;
   overflow: hidden;
+  border: none; /* Ensure button style consistency */
+  cursor: pointer; /* Standard cursor for buttons */
+  font-size: 1em; /* Match typical button font size */
 }
 
 .contact-btn::after {
@@ -273,9 +381,9 @@ h1::after {
 }
 
 .contact-btn:hover {
-  background-color: #F4B400;
+  background-color: #F4B400; /* Conectin Yellow */
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(30, 122, 197, 0.4);
+  box-shadow: 0 6px 16px rgba(248, 182, 23, 0.4); /* Shadow color to match hover */
 }
 
 .contact-btn:hover::after {

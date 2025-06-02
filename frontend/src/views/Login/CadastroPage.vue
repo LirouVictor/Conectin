@@ -31,6 +31,11 @@
           <input v-model="usuario.email" type="email" id="email" required class="input-field" />
         </div>
         <div class="input-group">
+          <label for="telefone">Telefone:</label>
+          <input v-model="usuario.telefone" type="tel" id="telefone" required class="input-field"
+            placeholder="Ex: 11987654321" />
+        </div>
+        <div class="input-group">
           <label for="senha">Senha:</label>
           <input v-model="usuario.senha" type="password" id="senha" required class="input-field" />
         </div>
@@ -58,6 +63,7 @@ export default {
         prestador: false,
         cliente: false,
         email: '',
+        telefone: '',
         senha: '',
         confirmarSenha: '',
       },
@@ -95,6 +101,7 @@ export default {
           prestador: this.usuario.prestador,
           cliente: this.usuario.cliente,
           email: this.usuario.email,
+          telefone: this.usuario.telefone,
           senha: this.usuario.senha,
           confirmarSenha: this.usuario.confirmarSenha,
         });
@@ -108,6 +115,7 @@ export default {
           prestador: false,
           cliente: false,
           email: '',
+          telefone: '',
           senha: '',
           confirmarSenha: '',
         };

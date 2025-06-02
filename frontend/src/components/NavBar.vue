@@ -5,7 +5,7 @@
   
         <!-- Menu esquerdo -->
         <nav class="nav-links">
-          <router-link to="/">Home</router-link>
+          <router-link to="/">Inicio</router-link>
           <router-link to="/comofunciona">Como funciona</router-link>
           <router-link to="/ranking-prestadores">Prestadores</router-link>
         </nav>

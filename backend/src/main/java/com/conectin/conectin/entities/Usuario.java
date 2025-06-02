@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,7 +33,7 @@ public class Usuario {
 
     private String fotoPerfil;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String telefone; // Novo campo
 
     @Column(nullable = false, updatable = false)
@@ -42,9 +44,11 @@ public class Usuario {
     private Set<TipoUsuario> tipos = new HashSet<>();
 
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore // Para evitar serializar Cliente a partir de Usuario neste ciclo
     private Prestador prestador;
 
     @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore // Para evitar serializar Cliente a partir de Usuario neste ciclo
     private Cliente cliente;
 
     @PrePersist
