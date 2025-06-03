@@ -8,6 +8,11 @@ const BACKEND_BASE_URL = 'http://localhost:8080';
 export const useUserStore = defineStore('user', {
     state: () => ({
         user: null,
+        mostrarModalNotificacao: false,       // <--- NOVO ESTADO
+        solicitacaoParaNotificar: null,   // <--- NOVO ESTADO
+        mostrarModalSelecaoCategoria: false, // <--- NOVO ESTADO (para PerfilPrestador)
+        prestadorParaSelecaoCategoria: null, // <--- NOVO ESTADO (para PerfilPrestador)
+        resolveSelecaoCategoriaPromise: null, // <--- NOVO ESTADO (para PerfilPrestador)
     }),
     actions: {
 
@@ -55,6 +60,12 @@ export const useUserStore = defineStore('user', {
             this.user = null;
             localStorage.removeItem('token');
             // Não precisa remover 'usuarioLogado' se você não o está usando mais no authStore para popular userStore
+            // Limpar estados relacionados a modais ao deslogar
+            this.mostrarModalNotificacao = false;       // <--- ADICIONADO
+            this.solicitacaoParaNotificar = null;   // <--- ADICIONADO
+            this.mostrarModalSelecaoCategoria = false; // <--- ADICIONADO
+            this.prestadorParaSelecaoCategoria = null; // <--- ADICIONADO
+            this.resolveSelecaoCategoriaPromise = null; // <--- ADICIONADO
         },
 
         async verificarSolicitacoesPendentes() {
@@ -101,16 +112,22 @@ export const useUserStore = defineStore('user', {
             try {
                 switch (type) {
                     case 'CONTRATOU':
-                        await api.put(`/solicitacoes/${solicitacao.id}/status?status=EM_ANDAMENTO`, {}, { /* headers */ });
+                        await api.put(`/solicitacoes/${solicitacao.id}/status?status=EM_ANDAMENTO`, {}, {
+                            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                        });
                         toast.success(`Serviço com ${solicitacao.prestador.nome} marcado como EM ANDAMENTO.`);
                         break;
                     case 'NAO_CONTRATOU':
                         // Poderia ter um passo intermediário aqui para perguntar se quer cancelar
-                        await api.put(`/solicitacoes/${solicitacao.id}/status?status=CANCELADA`, {}, { /* headers */ });
+                        await api.put(`/solicitacoes/${solicitacao.id}/status?status=CANCELADA`, {}, {
+                            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                        });
                         toast.info(`Solicitação para ${solicitacao.prestador.nome} foi CANCELADA.`);
                         break;
                     case 'CONCLUIU':
-                        await api.put(`/solicitacoes/${solicitacao.id}/status?status=AVALIACAO`, {}, { /* headers */ });
+                        await api.put(`/solicitacoes/${solicitacao.id}/status?status=AVALIACAO`, {}, {
+                            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                        });
                         toast.info(`Serviço com ${solicitacao.prestador.nome} aguardando sua avaliação.`);
                         router.push({ name: 'PaginaDeAvaliacao', params: { solicitacaoId: solicitacao.id } });
                         break;
@@ -134,6 +151,10 @@ export const useUserStore = defineStore('user', {
                 sessionStorage.removeItem(`solicitacao_notif_fechada_${solicitacao.id}`); // Permite reaparecer se falhar
             }
 
+            // 3. Reseta o estado do modal de notificação.
+            this.mostrarModalNotificacao = false;
+            this.solicitacaoParaNotificar = null;
+
             // Após uma interação, verificar se há mais alguma pendência (mas não imediatamente para evitar loop)
             setTimeout(() => {
                 this.verificarSolicitacoesPendentes();
@@ -149,6 +170,36 @@ export const useUserStore = defineStore('user', {
             this.solicitacaoParaNotificar = null;
             // Verificar se há outra após um pequeno delay
             setTimeout(() => this.verificarSolicitacoesPendentes(), 500);
+        },
+
+        async solicitarSelecaoCategoria(prestador) {
+            console.log("Solicitando seleção de categoria para:", prestador); // Log para depuração
+            this.prestadorParaSelecaoCategoria = prestador; // Define o prestador para o modal
+            this.mostrarModalSelecaoCategoria = true;
+            console.log("Estado da store após tentar abrir modal de seleção:", this.mostrarModalSelecaoCategoria, this.prestadorParaSelecaoCategoria); // Log    // Abre o modal
+            // Retorna uma Promise que será resolvida quando o usuário selecionar ou cancelar
+            return new Promise((resolve) => {
+                this.resolveSelecaoCategoriaPromise = resolve; // Armazena a função 'resolve' da Promise
+            });
+        },
+        responderSelecaoCategoria(categoriaSelecionada) {
+            if (this.resolveSelecaoCategoriaPromise) {
+                this.resolveSelecaoCategoriaPromise(categoriaSelecionada); // Resolve a Promise com a categoria
+            }
+            // Reseta os estados do modal de seleção
+            this.mostrarModalSelecaoCategoria = false;
+            this.prestadorParaSelecaoCategoria = null;
+            this.resolveSelecaoCategoriaPromise = null;
+        },
+        cancelarSelecaoCategoria() {
+            if (this.resolveSelecaoCategoriaPromise) {
+                this.resolveSelecaoCategoriaPromise(null); // Resolve a Promise com null (cancelado)
+            }
+            // Reseta os estados do modal de seleção
+            this.mostrarModalSelecaoCategoria = false;
+            this.prestadorParaSelecaoCategoria = null;
+            this.resolveSelecaoCategoriaPromise = null;
         }
     },
 });
+
