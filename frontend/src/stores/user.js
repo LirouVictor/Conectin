@@ -59,13 +59,21 @@ export const useUserStore = defineStore('user', {
         logout() {
             this.user = null;
             localStorage.removeItem('token');
-            // Não precisa remover 'usuarioLogado' se você não o está usando mais no authStore para popular userStore
-            // Limpar estados relacionados a modais ao deslogar
-            this.mostrarModalNotificacao = false;       // <--- ADICIONADO
-            this.solicitacaoParaNotificar = null;   // <--- ADICIONADO
-            this.mostrarModalSelecaoCategoria = false; // <--- ADICIONADO
-            this.prestadorParaSelecaoCategoria = null; // <--- ADICIONADO
-            this.resolveSelecaoCategoriaPromise = null; // <--- ADICIONADO
+            // Limpar sessionStorage relacionado às notificações ao deslogar
+            // para que apareçam novamente ao logar se ainda estiverem pendentes.
+            // Iterar sobre as chaves do sessionStorage e remover as que correspondem ao padrão.
+            Object.keys(sessionStorage).forEach(key => {
+                if (key.startsWith('solicitacao_notif_fechada_')) {
+                    sessionStorage.removeItem(key);
+                }
+            });
+
+            this.mostrarModalNotificacao = false;
+            this.solicitacaoParaNotificar = null;
+            this.mostrarModalSelecaoCategoria = false;
+            this.prestadorParaSelecaoCategoria = null;
+            this.resolveSelecaoCategoriaPromise = null;
+            router.push({ name: 'Login' }); // Redirecionar para login após logout
         },
 
         async verificarSolicitacoesPendentes() {
@@ -85,7 +93,8 @@ export const useUserStore = defineStore('user', {
 
                 if (solicitacoesAtivas && solicitacoesAtivas.length > 0) {
                     for (const solicitacao of solicitacoesAtivas) {
-                        const jaProcessadaNestaSessao = sessionStorage.getItem(`solicitacao_notif_fechada_${solicitacao.id}`);
+                        const chaveSessao = `solicitacao_notif_fechada_${solicitacao.id}_${solicitacao.status}`;
+                        const jaProcessadaNestaSessao = sessionStorage.getItem(chaveSessao);
                         if (!jaProcessadaNestaSessao) {
                             this.solicitacaoParaNotificar = solicitacao;
                             this.mostrarModalNotificacao = true;
@@ -105,7 +114,9 @@ export const useUserStore = defineStore('user', {
             const { type, solicitacao } = acao;
 
             // Marcar como "vista" para não reaparecer na mesma sessão se o usuário apenas fechar/adiar
-            sessionStorage.setItem(`solicitacao_notif_fechada_${solicitacao.id}`, 'true');
+            const chaveSessao = `solicitacao_notif_fechada_${solicitacao.id}_${solicitacao.status}`;
+            sessionStorage.setItem(chaveSessao, 'true'); // <-- MANTÉM A CHAVE AQUI PARA TODOS OS CASOS INICIALMENTE
+
             this.mostrarModalNotificacao = false; // Fecha o modal
             this.solicitacaoParaNotificar = null;
 
@@ -129,18 +140,20 @@ export const useUserStore = defineStore('user', {
                             headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
                         });
                         toast.info(`Serviço com ${solicitacao.prestador.nome} aguardando sua avaliação.`);
-                        router.push({ name: 'PaginaDeAvaliacao', params: { solicitacaoId: solicitacao.id } });
+                        // router.push({ name: 'PaginaDeAvaliacao', params: { solicitacaoId: solicitacao.id } });
                         break;
                     case 'AINDA_NAO_CONCLUIU':
-                        toast.info(`Serviço com ${solicitacao.prestador.nome} permanece EM ANDAMENTO.`);
-                        sessionStorage.removeItem(`solicitacao_notif_fechada_${solicitacao.id}`); // Permite reaparecer
+                        toast.info(`Serviço com ${solicitacao.prestador.nome} permanece EM ANDAMENTO. Você será lembrado em uma próxima sessão.`);
+                        // NÃO removemos a chaveSessao. A notificação para ESTE status não aparecerá mais NESTA SESSÃO.
+                        // Ela reaparecerá em uma nova sessão (quando o sessionStorage for limpo).
                         break;
                     case 'AVALIAR_AGORA':
                         router.push({ name: 'PaginaDeAvaliacao', params: { solicitacaoId: solicitacao.id } });
                         break;
                     case 'AVALIAR_DEPOIS':
-                        toast.info(`Avaliação do serviço com ${solicitacao.prestador.nome} adiada.`);
-                        sessionStorage.removeItem(`solicitacao_notif_fechada_${solicitacao.id}`); // Permite reaparecer
+                        toast.info(`Avaliação do serviço com ${solicitacao.prestador.nome} adiada. Você será lembrado em uma próxima sessão.`);
+                        // NÃO removemos a chaveSessao. A notificação para ESTE status não aparecerá mais NESTA SESSÃO.
+                        // Ela reaparecerá em uma nova sessão.
                         break;
                     default:
                         console.warn("Tipo de ação desconhecida:", type);
@@ -148,7 +161,9 @@ export const useUserStore = defineStore('user', {
             } catch (err) {
                 console.error(`Erro ao processar ação ${type}:`, err.response?.data || err.message);
                 toast.error('Ocorreu um erro ao processar sua resposta.');
-                sessionStorage.removeItem(`solicitacao_notif_fechada_${solicitacao.id}`); // Permite reaparecer se falhar
+                // <-- ALTERADO: Remove a chave específica do status em caso de erro para tentar novamente
+                sessionStorage.removeItem(chaveSessao);
+                // sessionStorage.removeItem(`solicitacao_notif_fechada_${solicitacao.id}`); // Permite reaparecer se falhar
             }
 
             // 3. Reseta o estado do modal de notificação.
@@ -163,8 +178,11 @@ export const useUserStore = defineStore('user', {
 
         fecharModalNotificacao() {
             if (this.solicitacaoParaNotificar) {
+                // <-- ALTERADO: Usa a chave com status ao fechar pelo 'Esc' ou 'X'
+                const chaveSessao = `solicitacao_notif_fechada_${this.solicitacaoParaNotificar.id}_${this.solicitacaoParaNotificar.status}`;
+                sessionStorage.setItem(chaveSessao, 'true');
                 // Marca como "vista" para não reaparecer imediatamente se o usuário fechar pelo 'Esc' ou 'X'
-                sessionStorage.setItem(`solicitacao_notif_fechada_${this.solicitacaoParaNotificar.id}`, 'true');
+                // sessionStorage.setItem(`solicitacao_notif_fechada_${this.solicitacaoParaNotificar.id}`, 'true');
             }
             this.mostrarModalNotificacao = false;
             this.solicitacaoParaNotificar = null;
