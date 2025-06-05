@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
@@ -18,9 +19,7 @@ import com.conectin.conectin.config.JwtUtil;
 import com.conectin.conectin.dto.EsqueceuSenhaRequestDto;
 import com.conectin.conectin.dto.ResetarSenhaRequestDto;
 import com.conectin.conectin.dto.UsuarioDto;
-import com.conectin.conectin.entities.Cliente;
 import com.conectin.conectin.entities.Prestador;
-import com.conectin.conectin.entities.TipoUsuario;
 import com.conectin.conectin.entities.Usuario;
 import com.conectin.conectin.exception.CustomException;
 import com.conectin.conectin.exception.ErrorMessages;
@@ -39,6 +38,9 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/usuarios")
 public class UsuarioController {
 
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     @Autowired
     private UsuarioService usuarioService;
 
@@ -47,9 +49,6 @@ public class UsuarioController {
 
     @Autowired
     private PrestadorRepository prestadorRepository;
-
-    @Autowired
-    private ClienteRepository clienteRepository;
 
     @Autowired
     private FileStorageService fileStorageService;
@@ -291,7 +290,8 @@ public ResponseEntity<?> editarUsuario(@PathVariable Long id, @Valid @RequestBod
             if (usuario != null) {
                 String token = resetarSenhaTokenService.criarTokerParaUsuario(usuario);
                 // Adapte a URL base para o seu ambiente de frontend
-                String resetLink = "http://localhost:8080/resetar-senha?token=" + token; // Exemplo de URL do frontend
+                String resetLink = frontendUrl + "/resetar-senha?token=" + token;
+                 // Exemplo de URL do frontend
                 emailService.enviarSenhaRecuperarEmail(usuario.getEmail(), usuario.getNome(), resetLink);
             }
 

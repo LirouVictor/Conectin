@@ -7,7 +7,8 @@ import RankingPrestadores from '../views/Usuario/Prestador/RankingPrestadores.vu
 import PerfilPrestador from '../views/Usuario/Prestador/PerfilPrestador.vue';
 import { useUserStore } from '../stores/user'; // Add this import
 import EditarPerfilUsuario from '../views/Usuario/EditarPerfilUsuario.vue'; // Import the EditarUsuario component
-import RecuperarSenha from '../views//Login/RecuperarSenha';
+import RecuperarSenha from '../views/Login/Senha/RecuperarSenha';
+import ResetarSenha from '../views/Login/Senha/ResetarSenha'; // Import the ResetarSenha component
 
 const routes = [
   { path: '/', name: 'Home', component: HomePage },
@@ -37,6 +38,15 @@ const routes = [
     component: RecuperarSenha,
     
   },
+
+   {
+    path: '/resetar-senha', // Este é o caminho que virá no link do e-mail
+    name: 'ResetarSenha',
+    component: ResetarSenha,
+    // Esta opção passa o parâmetro 'token' da URL (ex: ?token=abc) diretamente como uma 'prop' para o componente
+    props: route => ({ token: route.query.token })
+  }
+  
 ];
 
 const router = createRouter({

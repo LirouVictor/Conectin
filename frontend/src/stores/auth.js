@@ -60,5 +60,17 @@ export const useAuthStore = defineStore('auth', {
       throw error; // Re-lança o erro para ser tratado no componente
     }
   },
+  async resetPassword(payload) {
+      // payload deve ser um objeto: { token, novaSenha, confirmarNovaSenha }
+      try {
+        // A rota deve corresponder ao seu backend: /api/usuarios/password/reset
+        // Use a configuração de URL que funcionou para o 'forgotPassword'
+        const response = await api.post('/usuarios/password/reset', payload);
+        return response.data;
+      } catch (error) {
+        console.error("Erro na ação resetPassword:", error.response || error);
+        throw error;
+      }
+    }
   },
 });
