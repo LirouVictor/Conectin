@@ -7,6 +7,7 @@ import RankingPrestadores from '../views/Usuario/Prestador/RankingPrestadores.vu
 import PerfilPrestador from '../views/Usuario/Prestador/PerfilPrestador.vue';
 import { useUserStore } from '../stores/user'; // Add this import
 import EditarPerfilUsuario from '../views/Usuario/EditarPerfilUsuario.vue'; // Import the EditarUsuario component
+import RecuperarSenha from '../views//Login/RecuperarSenha';
 
 const routes = [
   { path: '/', name: 'Home', component: HomePage },
@@ -29,6 +30,12 @@ const routes = [
     name: 'EditarPerfilUsuario',
     component: EditarPerfilUsuario,
     meta: { requiresAuth: true }, // Optional: Mark as protected
+  },
+  {
+    path: '/recuperar-senha',
+    name: 'RecuperarSenha',
+    component: RecuperarSenha,
+    
   },
 ];
 

@@ -11,8 +11,8 @@
         </div>
         <button type="submit" class="login-btn">Entrar</button>
       </form>
-      <div v-if="showForgotPassword" class="forgot-password">
-        <p>Você esqueceu sua senha? <a href="/recuperar-senha">Clique aqui!</a></p>
+      <div class="forgot-password">
+        <p>Você esqueceu sua senha? <router-link to="/recuperar-senha">Clique aqui!</router-link></p>
       </div>
     </div>
   </div>

@@ -48,5 +48,17 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('token');
       localStorage.removeItem('usuarioLogado');
     },
+
+    async requestPasswordRecovery(email) {
+    try {
+      // Substitua 'apiClient' pelo seu cliente HTTP configurado (axios, fetch, etc.)
+      // e '/api/password/email' pelo seu endpoint de backend real
+      const response = await api.post('usuarios/password/forgot', { email });
+      return response.data; // Ou a estrutura de resposta que seu backend envia
+    } catch (error) {
+      console.error("Erro na ação requestPasswordRecovery:", error.response || error);
+      throw error; // Re-lança o erro para ser tratado no componente
+    }
+  },
   },
 });

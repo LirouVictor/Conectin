@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 import com.conectin.conectin.config.JwtUtil;
+import com.conectin.conectin.dto.EsqueceuSenhaRequestDto;
+import com.conectin.conectin.dto.ResetarSenhaRequestDto;
 import com.conectin.conectin.dto.UsuarioDto;
 import com.conectin.conectin.entities.Cliente;
 import com.conectin.conectin.entities.Prestador;
@@ -26,7 +28,9 @@ import com.conectin.conectin.payload.SuccessMessage;
 import com.conectin.conectin.repository.ClienteRepository;
 import com.conectin.conectin.repository.PrestadorRepository;
 import com.conectin.conectin.repository.UsuarioRepository;
+import com.conectin.conectin.services.EmailService;
 import com.conectin.conectin.services.FileStorageService;
+import com.conectin.conectin.services.ResetarSenhaTokenService;
 import com.conectin.conectin.services.UsuarioService;
 
 import jakarta.validation.Valid;
@@ -52,6 +56,11 @@ public class UsuarioController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    EmailService emailService;
+
+    @Autowired ResetarSenhaTokenService resetarSenhaTokenService;
 
     @PostMapping("/cadastrar")
     public ResponseEntity<?> cadastrarUsuario(@Valid @RequestBody UsuarioDto usuarioDto) {
@@ -272,5 +281,55 @@ public ResponseEntity<?> editarUsuario(@PathVariable Long id, @Valid @RequestBod
 
         java.util.List<Usuario> usuarios = usuarioService.listarUsuarios();
         return ResponseEntity.ok(usuarios);
+    }
+
+@PostMapping("/password/forgot")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody EsqueceuSenhaRequestDto requestDto) {
+        try {
+            Usuario usuario = usuarioService.findByEmail(requestDto.getEmail());
+
+            if (usuario != null) {
+                String token = resetarSenhaTokenService.criarTokerParaUsuario(usuario);
+                // Adapte a URL base para o seu ambiente de frontend
+                String resetLink = "http://localhost:8080/resetar-senha?token=" + token; // Exemplo de URL do frontend
+                emailService.enviarSenhaRecuperarEmail(usuario.getEmail(), usuario.getNome(), resetLink);
+            }
+
+            // Resposta genérica por segurança
+            return ResponseEntity.ok(new SuccessMessage(
+                    "Se o seu endereço de e-mail existir em nosso banco de dados, você receberá um link de recuperação de senha em breve.",
+                    "PASSWORD_RESET_LINK_SENT"));
+
+        } catch (Exception e) {
+            // Log e.getMessage() ou use um logger
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new CustomException("Erro ao processar solicitação de recuperação de senha.", "SERVER_ERROR_002"));
+        }
+    }
+
+    @PostMapping("/password/reset")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetarSenhaRequestDto requestDto) {
+        try {
+            if (!requestDto.isSenhasCoincidem()) {
+                throw new CustomException("As novas senhas não coincidem.", "VALIDATION_ERROR_002");
+            }
+
+            Optional<Usuario> usuarioOpt = resetarSenhaTokenService.validarResetarSenhaToken(requestDto.getToken());
+            if (usuarioOpt.isEmpty()) {
+                throw new CustomException("Token de redefinição de senha inválido ou expirado.", "TOKEN_INVALID_OR_EXPIRED");
+            }
+
+            Usuario usuario = usuarioOpt.get();
+            resetarSenhaTokenService.trocarSenhaUsuario(usuario, requestDto.getNovaSenha());
+
+            return ResponseEntity.ok(new SuccessMessage("Sua senha foi redefinida com sucesso.", "PASSWORD_RESET_SUCCESS"));
+
+        } catch (CustomException e) {
+            throw e; // Re-lança para o ExceptionHandler global, se houver
+        } catch (Exception e) {
+            // Log e.getMessage() ou use um logger
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new CustomException("Erro ao redefinir a senha.", "SERVER_ERROR_003"));
+        }
     }
 }
