@@ -9,6 +9,7 @@ import { useUserStore } from '../stores/user'; // Add this import
 import EditarPerfilUsuario from '../views/Usuario/EditarPerfilUsuario.vue'; // Import the EditarUsuario component
 import RecuperarSenha from '../views/Login/Senha/RecuperarSenha';
 import ResetarSenha from '../views/Login/Senha/ResetarSenha'; // Import the ResetarSenha component
+import PaginaAvaliacao from '../views/Usuario/PaginaAvaliacao.vue'; // <-- IMPORTAR NOVO COMPONENTE
 
 const routes = [
   { path: '/', name: 'Home', component: HomePage },
@@ -36,17 +37,25 @@ const routes = [
     path: '/recuperar-senha',
     name: 'RecuperarSenha',
     component: RecuperarSenha,
-    
   },
 
-   {
+  {
     path: '/resetar-senha', // Este é o caminho que virá no link do e-mail
     name: 'ResetarSenha',
     component: ResetarSenha,
     // Esta opção passa o parâmetro 'token' da URL (ex: ?token=abc) diretamente como uma 'prop' para o componente
     props: route => ({ token: route.query.token })
-  }
-  
+  },
+
+  // NOVA ROTA
+  {
+    path: '/avaliar/:solicitacaoId',
+    name: 'PaginaAvaliacao',
+    component: PaginaAvaliacao,
+    props: true, // Passa o :solicitacaoId como prop para o componente
+    meta: { requiresAuth: true },
+  },
+
 ];
 
 const router = createRouter({

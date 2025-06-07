@@ -16,11 +16,9 @@ public class AvaliacaoDto {
     @NotNull(message = "O ID do avaliador é obrigatório")
     private Integer avaliadorId;
 
-    @NotNull(message = "O ID do avaliado é obrigatório")
-    private Integer avaliadoId;
-
     @Min(value = 1, message = "A nota deve ser no mínimo 1")
     @Max(value = 5, message = "A nota deve ser no máximo 5")
+    @NotNull(message = "A nota é obrigatória")
     private Float nota; // Alterado de Integer para Float
 
     private String comentario;

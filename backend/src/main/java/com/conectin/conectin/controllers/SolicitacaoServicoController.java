@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.conectin.conectin.dto.SolicitacaoServicoDto;
 import com.conectin.conectin.entities.SolicitacaoServico;
 import com.conectin.conectin.entities.StatusSolicitacao;
+import com.conectin.conectin.repository.SolicitacaoServicoRepository;
 import com.conectin.conectin.services.SolicitacaoServicoService;
 
 import jakarta.validation.Valid;
@@ -27,6 +28,10 @@ public class SolicitacaoServicoController {
 
     @Autowired
     private SolicitacaoServicoService solicitacaoServicoService;
+
+    // Injetar o repository se ainda não estiver injetado diretamente no controller
+    @Autowired
+    private SolicitacaoServicoRepository solicitacaoServicoRepository; 
 
     @PostMapping("/criar")
     public ResponseEntity<SolicitacaoServico> criarSolicitacao(@Valid @RequestBody SolicitacaoServicoDto dto) {
@@ -65,6 +70,14 @@ public class SolicitacaoServicoController {
         List<SolicitacaoServico> solicitacoes = solicitacaoServicoService.findSolicitacoesAtivasPorUsuario(usuarioId,
                 tipoUsuario);
         return ResponseEntity.ok(solicitacoes);
+    }
+
+    // NOVO ENDPOINT
+    @GetMapping("/{id}")
+    public ResponseEntity<SolicitacaoServico> getSolicitacaoPorId(@PathVariable Integer id) {
+        return solicitacaoServicoRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
 }

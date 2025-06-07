@@ -82,17 +82,29 @@ export const useUserStore = defineStore('user', {
                 return;
             }
 
-            let tipoUsuarioParaConsulta = this.user.cliente ? 'cliente' : null;
-            if (!tipoUsuarioParaConsulta) return;
+            // ALTERADO: Verificar para ambos os papéis se o usuário tiver
+            const tiposParaConsulta = [];
+            if (this.user.cliente) tiposParaConsulta.push('cliente');
+            if (this.user.prestador) tiposParaConsulta.push('prestador');
+
+            if (tiposParaConsulta.length === 0) return;
 
             try {
-                const response = await api.get(`/solicitacoes/usuario/${this.user.id}/ativas?tipoUsuario=${tipoUsuarioParaConsulta}`, {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-                });
-                const solicitacoesAtivas = response.data;
+                // Pode fazer as chamadas em paralelo
+                const promises = tiposParaConsulta.map(tipo =>
+                    api.get(`/solicitacoes/usuario/${this.user.id}/ativas?tipoUsuario=${tipo}`, {
+                        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                    })
+                );
+
+                const responses = await Promise.all(promises);
+                const solicitacoesAtivas = responses.flatMap(response => response.data);
 
                 if (solicitacoesAtivas && solicitacoesAtivas.length > 0) {
                     for (const solicitacao of solicitacoesAtivas) {
+                        // Adicionar uma verificação para não notificar o usuário para se auto-avaliar se ele já tiver avaliado.
+                        // Esta lógica pode ser adicionada no backend no endpoint de busca de ativas, para não retornar
+                        // solicitações em AVALIACAO que o usuário logado já avaliou. (Melhoria futura)
                         const chaveSessao = `solicitacao_notif_fechada_${solicitacao.id}_${solicitacao.status}`;
                         const jaProcessadaNestaSessao = sessionStorage.getItem(chaveSessao);
                         if (!jaProcessadaNestaSessao) {
@@ -148,7 +160,12 @@ export const useUserStore = defineStore('user', {
                         // Ela reaparecerá em uma nova sessão (quando o sessionStorage for limpo).
                         break;
                     case 'AVALIAR_AGORA':
-                        router.push({ name: 'PaginaDeAvaliacao', params: { solicitacaoId: solicitacao.id } });
+                        // ALTERADO: Navegar para a página de avaliação na mesma aba
+                        router.push({
+                            name: 'PaginaAvaliacao',
+                            params: { solicitacaoId: solicitacao.id }
+                        });
+                        toast.info(`Redirecionando para a página de avaliação.`);
                         break;
                     case 'AVALIAR_DEPOIS':
                         toast.info(`Avaliação do serviço com ${solicitacao.prestador.nome} adiada. Você será lembrado em uma próxima sessão.`);

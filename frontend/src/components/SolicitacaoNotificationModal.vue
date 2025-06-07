@@ -54,11 +54,14 @@ const mensagem = computed(() => {
     if (!props.solicitacao) return '';
     switch (props.solicitacao.status) {
         case 'PENDENTE':
-            return `Olá <b>${infoCliente.value}</b>, você contratou os serviços de <b>${infoPrestador.value}</b> para <i>${infoCategoria.value}</i>?`;
+            return `Por favor, confirme o acordo de serviço de <i>${infoCategoria.value}</i> entre <b>${infoCliente.value}</b> e <b>${infoPrestador.value}</b>.`;
+
         case 'EM_ANDAMENTO':
-            return `Olá <b>${infoCliente.value}</b>, o serviço de <i>${infoCategoria.value}</i> com <b>${infoPrestador.value}</b> foi concluído?`;
+            return `O serviço de <i>${infoCategoria.value}</i> entre <b>${infoCliente.value}</b> e <b>${infoPrestador.value}</b> foi concluído?`;
+
         case 'AVALIACAO':
-            return `Olá <b>${infoCliente.value}</b>, você tem um serviço de <i>${infoCategoria.value}</i> com <b>${infoPrestador.value}</b> pendente de avaliação. Deseja avaliar agora?`;
+            return `Existe uma avaliação pendente para o serviço de <i>${infoCategoria.value}</i> realizado entre <b>${infoCliente.value}</b> e <b>${infoPrestador.value}</b>. Deseja avaliar agora?`;
+
         default:
             return 'Você tem uma notificação sobre um serviço.';
     }
@@ -69,7 +72,7 @@ const acaoPrimaria = computed(() => {
     if (!props.solicitacao) return null;
     switch (props.solicitacao.status) {
         case 'PENDENTE':
-            return { label: 'Sim, Contratei', type: 'CONTRATOU' };
+            return { label: 'Serviço Contratado', type: 'CONTRATOU' };
         case 'EM_ANDAMENTO':
             return { label: 'Sim, Concluído', type: 'CONCLUIU' };
         case 'AVALIACAO':
@@ -82,7 +85,7 @@ const acaoSecundaria = computed(() => {
     if (!props.solicitacao) return null;
     switch (props.solicitacao.status) {
         case 'PENDENTE':
-            return { label: 'Não Contratei', type: 'NAO_CONTRATOU' };
+            return { label: 'Não Contratado', type: 'NAO_CONTRATOU' };
         case 'EM_ANDAMENTO':
             return { label: 'Ainda Não', type: 'AINDA_NAO_CONCLUIU' }; // Ou 'Cancelar' se apropriado
         case 'AVALIACAO':

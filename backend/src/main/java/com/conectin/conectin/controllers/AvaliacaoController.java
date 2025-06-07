@@ -35,7 +35,7 @@ public class AvaliacaoController {
     }
 
     @GetMapping("/usuario/{usuarioId}")
-    public ResponseEntity<List<Avaliacao>> listarAvaliacoesPorUsuario(@PathVariable Integer usuarioId) {
+    public ResponseEntity<List<Avaliacao>> listarAvaliacoesPorUsuario(@PathVariable Long usuarioId) {
         List<Avaliacao> avaliacoes = avaliacaoRepository.findByAvaliadoId(usuarioId);
         return ResponseEntity.ok(avaliacoes);
     }

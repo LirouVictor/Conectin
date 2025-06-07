@@ -11,8 +11,11 @@ import com.conectin.conectin.entities.Avaliacao;
 @Repository
 public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Integer> {
 
-    List<Avaliacao> findByAvaliadoId(Integer avaliadoId);
+    List<Avaliacao> findByAvaliadoId(Long avaliadoId);
 
     @Query("SELECT AVG(a.nota) FROM Avaliacao a WHERE a.avaliado.id = :avaliadoId")
     Float calcularMediaAvaliacoes(Long avaliadoId);
+
+    // NOVO MÉTODO
+    long countBySolicitacaoId(Integer solicitacaoId);
 }
