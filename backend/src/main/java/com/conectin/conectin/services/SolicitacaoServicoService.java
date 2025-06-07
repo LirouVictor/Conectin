@@ -5,14 +5,16 @@ import com.conectin.conectin.entities.Categoria;
 import com.conectin.conectin.entities.SolicitacaoServico;
 import com.conectin.conectin.entities.StatusSolicitacao;
 import com.conectin.conectin.entities.Usuario;
+import com.conectin.conectin.repository.AvaliacaoRepository;
 import com.conectin.conectin.repository.CategoriaRepository;
 import com.conectin.conectin.repository.SolicitacaoServicoRepository;
 import com.conectin.conectin.repository.UsuarioRepository;
 import java.time.LocalDateTime;
 import java.util.List;
-
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 @Service
 public class SolicitacaoServicoService {
 
@@ -24,6 +26,9 @@ public class SolicitacaoServicoService {
 
         @Autowired
         private CategoriaRepository categoriaRepository;
+
+        @Autowired
+        private AvaliacaoRepository avaliacaoRepository;
 
         public SolicitacaoServico criarSolicitacao(SolicitacaoServicoDto dto) {
                 Usuario cliente = usuarioRepository.findById(dto.getClienteId())
@@ -89,13 +94,31 @@ public class SolicitacaoServicoService {
                                 StatusSolicitacao.EM_ANDAMENTO,
                                 StatusSolicitacao.AVALIACAO);
 
+                List<SolicitacaoServico> solicitacoesCandidatas;
+
                 if ("cliente".equalsIgnoreCase(tipoUsuario)) {
-                        return solicitacaoServicoRepository.findByClienteAndStatusIn(usuario, statusParaBuscar);
+                        solicitacoesCandidatas = solicitacaoServicoRepository.findByClienteAndStatusIn(usuario,
+                                        statusParaBuscar);
                 } else if ("prestador".equalsIgnoreCase(tipoUsuario)) {
-                        // Se prestadores também precisam ser notificados (não está claro no seu
-                        // requisito, mas é uma possibilidade)
-                        return solicitacaoServicoRepository.findByPrestadorAndStatusIn(usuario, statusParaBuscar);
+                        solicitacoesCandidatas = solicitacaoServicoRepository.findByPrestadorAndStatusIn(usuario,
+                                        statusParaBuscar);
+                } else {
+                        return List.of();
                 }
-                return List.of(); // Ou lançar exceção
+
+                // Filtra a lista para remover as solicitações que o usuário já avaliou
+                return solicitacoesCandidatas.stream()
+                                .filter(solicitacao -> {
+                                        // Se o status NÃO é AVALIACAO, mantém a solicitação na lista.
+                                        if (solicitacao.getStatus() != StatusSolicitacao.AVALIACAO) {
+                                                return true;
+                                        }
+                                        // Se o status É AVALIACAO, verifica se o usuário já avaliou.
+                                        // Mantém na lista APENAS se ele AINDA NÃO avaliou.
+                                        boolean jaAvaliou = avaliacaoRepository.existsBySolicitacaoIdAndAvaliadorId(
+                                                        solicitacao.getId(), usuarioId);
+                                        return !jaAvaliou; // Retorna true (mantém) se jaAvaliou for false.
+                                })
+                                .collect(Collectors.toList());
         }
 }
