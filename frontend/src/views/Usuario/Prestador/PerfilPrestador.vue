@@ -36,7 +36,10 @@
         </div>
         <div class="contact-section">
           <!-- O botão continua o mesmo, a mágica acontece no método 'handleContact' -->
-          <button @click="handleContact" class="contact-btn">Entrar em Contato via WhatsApp</button>
+          <button @click="handleContact" class="contact-btn">
+    <i class="bi bi-whatsapp"></i>
+    <span>Entrar em Contato via WhatsApp</span>
+</button> 
         </div>
       </div>
       <div v-else class="loading">
@@ -52,6 +55,7 @@ import api from '@/services/api';
 import { useToast } from 'vue-toastification';
 import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 export default {
   name: 'PerfilPrestador',
@@ -70,7 +74,7 @@ export default {
     this.fetchPrestador();
   },
   methods: {
-    async fetchPrestador() {
+    async fetchPrestador() {  
       try {
         const id = this.$route.params.id;
         const response = await api.get(`/prestadores/${id}`);
@@ -156,7 +160,7 @@ export default {
             const nomePrestador = this.prestador.nome || 'Prestador';
             
             // A mensagem do WhatsApp agora inclui a categoria específica selecionada pelo usuário
-            const mensagem = encodeURIComponent(`Olá ${nomePrestador}, vi seu perfil no Conectin e gostaria de mais informações sobre seus serviços (${categoriaSelecionada.nome}). Minha solicitação (ID: ${responseSolicitacao.data.id}) foi registrada no sistema.`);
+            const mensagem = encodeURIComponent(`Olá ${nomePrestador}, vi seu perfil no Conectin e gostaria de mais informações sobre seus serviços (${categoriaSelecionada.nome}). Minha solicitação (ID: ${responseSolicitacao.data.id}) foi registrada no sistema.\n\nMensagem enviada pelo cliente: ${solicitacaoDto.detalhes}`);
             
             const whatsappUrl = `https://wa.me/${numeroLimpo}?text=${mensagem}`;
             window.open(whatsappUrl, '_blank');
@@ -339,10 +343,12 @@ h1::after {
 }
 
 .contact-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   padding: 12px 28px;
-  background-color: #257BB8;
-  /* Original Conectin Blue */
+  background-color: #1ee23f; /* Verde do WhatsApp */
   color: white;
   text-decoration: none;
   border-radius: 30px;
@@ -352,11 +358,9 @@ h1::after {
   position: relative;
   overflow: hidden;
   border: none;
-  /* Ensure button style consistency */
   cursor: pointer;
-  /* Standard cursor for buttons */
   font-size: 1em;
-  /* Match typical button font size */
+
 }
 
 .contact-btn::after {
@@ -381,6 +385,10 @@ h1::after {
 
 .contact-btn:hover::after {
   right: 120%;
+}
+
+.contact-btn i.bi-whatsapp {
+  font-size: 1.5em;
 }
 
 .loading {

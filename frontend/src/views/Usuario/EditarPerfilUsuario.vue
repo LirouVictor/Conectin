@@ -355,98 +355,125 @@ export default {
       return categoria ? categoria.nome : 'ID: ' + categoriaId;
     },
 
-   async salvarPerfil() {
-            if (!this.usuario.prestador && !this.usuario.cliente) {
-                this.toast.error('Selecione pelo menos um tipo de usuário (Prestador ou Cliente).');
+       async salvarPerfil() {
+        // 1. Validação do tipo de usuário (mantida)
+        if (!this.usuario.prestador && !this.usuario.cliente) {
+            this.toast.error('Selecione pelo menos um tipo de usuário (Prestador ou Cliente).');
+            return;
+        }
+      
+        // 2. Validação da senha, se aplicável
+        if (this.alterarSenhaVisivel) {
+            // --- Início da Nova Validação de Senha ---
+            const erros = [];
+            const novaSenha = this.usuario.senha;
+        
+            // Verifica a senha atual
+            if (!this.usuario.senhaAtual) {
+                erros.push('A senha atual é obrigatória para realizar a alteração.');
+            }
+          
+            // Verifica se uma nova senha foi inserida
+            if (!novaSenha) {
+                erros.push('O campo "Nova Senha" é obrigatório.');
+            } else {
+                // Se uma nova senha foi inserida, aplica todas as regras
+                if (novaSenha.length < 8) { // ATUALIZADO de 6 para 8 caracteres
+                    erros.push('A nova senha deve ter pelo menos 8 caracteres.');
+                }
+                if (!/[A-Z]/.test(novaSenha)) {
+                    erros.push('A nova senha deve conter pelo menos uma letra maiúscula.');
+                }
+                if (!/[a-z]/.test(novaSenha)) {
+                    erros.push('A nova senha deve conter pelo menos uma letra minúscula.');
+                }
+                if (!/\d/.test(novaSenha)) {
+                    erros.push('A nova senha deve conter pelo menos um número.');
+                }
+                if (!/[!@#$%^&*(),.?":{}|<>]/.test(novaSenha)) {
+                    erros.push('A nova senha deve conter um caractere especial (ex: !@#$).');
+                }
+                if (novaSenha !== this.usuario.confirmarSenha) {
+                    erros.push('A nova senha e a confirmação não coincidem.');
+                }
+            }
+          
+            if (erros.length > 0) {
+                this.toast.error(erros[0]);
+                return; // Interrompe a execução se houver erros de senha
+            }
+            // --- Fim da Nova Validação de Senha ---
+        }
+      
+        // 3. Preparação dos dados para envio (mantido)
+        const dadosParaEnviar = {
+            nome: this.usuario.nome,
+            endereco: this.usuario.endereco,
+            email: this.usuario.email,
+            telefone: this.usuario.telefone,
+            fotoPerfil: this.usuario.fotoPerfil,
+            prestador: this.usuario.prestador,
+            cliente: this.usuario.cliente,
+            descricao: this.usuario.prestador ? this.usuario.descricao : null,
+            disponibilidade: this.usuario.prestador ? this.usuario.disponibilidade : null,
+            categorias: this.usuario.prestador ? this.usuario.categoriasSelecionadas.map(id => ({ id })) : [],
+            cidades: this.usuario.prestador ? this.usuario.cidadesSelecionadas.map(id => ({ id })) : [],
+            portfolios: this.usuario.prestador ? this.usuario.portfolios.map(p => ({
+                id: p.id || null,
+                urlImagem: p.urlImagem,
+                descricao: p.descricao
+            })) : [],
+        };
+      
+        if (this.alterarSenhaVisivel) {
+            dadosParaEnviar.senhaAtual = this.usuario.senhaAtual;
+            dadosParaEnviar.senha = this.usuario.senha;
+        }
+      
+        // 4. Chamada à API e tratamento de resposta (mantido)
+        try {
+            if (!this.userStore.user || !this.userStore.user.id) {
+                this.toast.error("ID do usuário não encontrado. Por favor, faça login novamente.");
                 return;
             }
-
-            if (this.alterarSenhaVisivel) {
-                if (!this.usuario.senhaAtual) {
-                    this.toast.error('A senha atual é obrigatória para alterar a senha.');
-                    return;
-                }
-                if (!this.usuario.senha) {
-                    this.toast.error('A nova senha é obrigatória.');
-                    return;
-                }
-                if (this.usuario.senha.length < 6) {
-                    this.toast.error('A nova senha deve ter pelo menos 6 caracteres.');
-                    return;
-                }
-                if (this.usuario.senha !== this.usuario.confirmarSenha) {
-                    this.toast.error('A nova senha e a confirmação de senha não coincidem.');
-                    return;
-                }
-            }
-
-            const dadosParaEnviar = {
-                nome: this.usuario.nome,
-                endereco: this.usuario.endereco,
-                email: this.usuario.email,
-                telefone: this.usuario.telefone,
-                fotoPerfil: this.usuario.fotoPerfil,
-                prestador: this.usuario.prestador,
-                cliente: this.usuario.cliente,
-                descricao: this.usuario.prestador ? this.usuario.descricao : null,
-                disponibilidade: this.usuario.prestador ? this.usuario.disponibilidade : null,
-                categorias: this.usuario.prestador ? this.usuario.categoriasSelecionadas.map(id => ({ id })) : [],
-                cidades: this.usuario.prestador ? this.usuario.cidadesSelecionadas.map(id => ({ id })) : [],
-                portfolios: this.usuario.prestador ? this.usuario.portfolios.map(p => ({
-                    id: p.id || null,
-                    urlImagem: p.urlImagem,
-                    descricao: p.descricao
-                })) : [],
-            };
-
-            if (this.alterarSenhaVisivel) {
-                dadosParaEnviar.senhaAtual = this.usuario.senhaAtual;
-                dadosParaEnviar.senha = this.usuario.senha;
-            }
-
+            const userId = this.userStore.user.id;
+          
+            const response = await api.put(`/usuarios/editar/${userId}`, dadosParaEnviar, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+          
+            this.userStore.setUser({
+                nome: dadosParaEnviar.nome,
+                email: dadosParaEnviar.email,
+                endereco: dadosParaEnviar.endereco,
+                telefone: dadosParaEnviar.telefone,
+                foto: response.data.fotoPerfilUrl,
+                prestador: dadosParaEnviar.prestador,
+                cliente: dadosParaEnviar.cliente,
+            });
+          
+            this.toast.success(response.data.message || 'Perfil atualizado com sucesso!');
+          
             try {
-                if (!this.userStore.user || !this.userStore.user.id) {
-                    this.toast.error("ID do usuário não encontrado. Por favor, faça login novamente.");
-                    return;
-                }
-                const userId = this.userStore.user.id;
-
-                const response = await api.put(`/usuarios/editar/${userId}`, dadosParaEnviar, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                this.userStore.setUser({
-                    nome: dadosParaEnviar.nome,
-                    email: dadosParaEnviar.email,
-                    endereco: dadosParaEnviar.endereco,
-                    telefone: dadosParaEnviar.telefone,
-                    foto: response.data.fotoPerfilUrl, // Absolute URL from backend
-                    prestador: dadosParaEnviar.prestador,
-                    cliente: dadosParaEnviar.cliente,
-                });
-
-                this.toast.success(response.data.message || 'Perfil atualizado com sucesso!');
-
-                try {
-                    await this.router.push({ name: 'EditarPerfilUsuario', params: { id: userId } });
-                } catch (error) {
-                    console.error('Navigation error:', error);
-                    this.toast.error('Rota de perfil não encontrada. Redirecionando para a página inicial.');
-                    await this.router.push({ name: 'Home' });
-                }
+                await this.router.push({ name: 'EditarPerfilUsuario', params: { id: userId } });
             } catch (error) {
-                console.error("Erro ao salvar perfil:", error.response || error);
-                const errorMessage = error.response?.data?.message ||
-                    (error.response?.data?.errors ? Object.values(error.response.data.errors).join(', ') : null) ||
-                    error.response?.data?.error ||
-                    'Falha ao atualizar o perfil. Verifique os dados e tente novamente.';
-                this.toast.error(errorMessage);
+                console.error('Navigation error:', error);
+                this.toast.error('Rota de perfil não encontrada. Redirecionando para a página inicial.');
+                await this.router.push({ name: 'Home' });
             }
-        },
+        } catch (error) {
+            console.error("Erro ao salvar perfil:", error.response || error);
+            const errorMessage = error.response?.data?.message ||
+                (error.response?.data?.errors ? Object.values(error.response.data.errors).join(', ') : null) ||
+                error.response?.data?.error ||
+                'Falha ao atualizar o perfil. Verifique os dados e tente novamente.';
+            this.toast.error(errorMessage);
+        }
     },
+  },
 };
 </script>
 

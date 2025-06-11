@@ -1,7 +1,9 @@
 <template>
     <header class="navbar">
       <div class="navbar-container">
-        <img src="../../public/images/logoConectin-removebg.png" alt="Conectin Logo" class="logo" />
+        <router-link to="/">
+          <img src="../../public/images/logoConectin-removebg.png" alt="Conectin Logo" class="logo" />
+        </router-link>
   
         <!-- Menu esquerdo -->
         <nav class="nav-links">
