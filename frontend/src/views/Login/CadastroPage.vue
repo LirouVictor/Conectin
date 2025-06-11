@@ -166,18 +166,23 @@ export default {
     }
   
     try {
-      const response = await api.post('/usuarios/cadastrar', {
-        nome: this.usuario.nome,
-        endereco: this.usuario.endereco,
-        prestador: this.usuario.prestador,
-        cliente: this.usuario.cliente,
-        email: this.usuario.email,
-        telefone: this.usuario.telefone,
-        senha: this.usuario.senha,
-        confirmarSenha: this.usuario.confirmarSenha,
-      });
+        const telefoneLimpoParaApi = this.usuario.telefone.replace(/\D/g, '');
+
+    // 2. Monta o payload (os dados a serem enviados) com o telefone já limpo.
+    const payloadParaApi = {
+      nome: this.usuario.nome,
+      endereco: this.usuario.endereco,
+      prestador: this.usuario.prestador,
+      cliente: this.usuario.cliente,
+      email: this.usuario.email,
+      telefone: telefoneLimpoParaApi, // <<< Usa o valor sem máscara
+      senha: this.usuario.senha,
+      confirmarSenha: this.usuario.confirmarSenha,
+    };
     
-      this.toast.success(response.data.message);
+     const response = await api.post('/usuarios/cadastrar', payloadParaApi);
+    
+    this.toast.success(response.data.message);
     
       // Limpar formulário
       this.usuario = {
