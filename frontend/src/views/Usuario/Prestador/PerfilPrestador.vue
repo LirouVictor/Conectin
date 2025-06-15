@@ -10,7 +10,6 @@
           </p>
         </div>
         <div class="perfil-info">
-          <p><strong>Telefone:</strong> {{ prestador.telefone || 'Não informado' }}</p>
           <p class="descricao"><strong>Descrição:</strong> {{ prestador.descricao || 'Não informado' }}</p>
           <p class="disponibilidade">
             <strong>Disponibilidade:</strong> {{ prestador.disponibilidade || 'Não informado' }}
@@ -56,6 +55,8 @@
 
           <div v-else-if="avaliacoesOrdenadas.length > 0">
             <div v-for="avaliacao in avaliacoesOrdenadas" :key="avaliacao.data" class="avaliacao-card">
+              <router-link :to="{ name: 'PerfilUsuario', params: { id: avaliacao.avaliadorId } }"
+                class="avaliador-info-link">
               <div class="avaliador-info">
                 <img :src="getFotoUrl(avaliacao.fotoAvaliador)" alt="Foto do Avaliador" class="avaliador-foto" />
                 <div class="avaliador-detalhes">
@@ -63,6 +64,7 @@
                   <span class="avaliacao-data">{{ formatarData(avaliacao.data) }}</span>
                 </div>
               </div>
+            </router-link>
               <div class="avaliacao-conteudo">
                 <div class="nota-estrelas">
                   <span v-for="n in 5" :key="n" class="estrela" :class="{ 'preenchida': n <= avaliacao.nota }">★</span>
@@ -266,10 +268,12 @@ export default {
               numeroLimpo = '55' + numeroLimpo;
             }
             const nomePrestador = this.prestador.nome || 'Prestador';
+            const nomeCliente = currentUser.nome || 'um cliente'; // Pega o nome do usuário logado
 
-            // A mensagem do WhatsApp agora inclui a categoria específica selecionada pelo usuário
-            const mensagem = encodeURIComponent(`Olá ${nomePrestador}, vi seu perfil no Conectin e gostaria de mais informações sobre seus serviços (${categoriaSelecionada.nome}). Minha solicitação (ID: ${responseSolicitacao.data.id}) foi registrada no sistema.\n\nMensagem enviada pelo cliente: ${solicitacaoDto.detalhes}`);
+            // 2. Montamos a nova mensagem personalizada
+            const mensagem = encodeURIComponent(`Olá ${nomePrestador}, sou ${nomeCliente}, vi seu perfil no Conectin e gostaria de mais informações sobre seus serviços de "${categoriaSelecionada.nome}"`);
 
+            // A linha abaixo permanece a mesma
             const whatsappUrl = `https://wa.me/${numeroLimpo}?text=${mensagem}`;
             window.open(whatsappUrl, '_blank');
           } else {
@@ -634,6 +638,17 @@ h1::after {
   display: inline-block;
   vertical-align: middle;
   margin-right: 10px;
+}
+
+.avaliador-info-link {
+  text-decoration: none; /* Remove o sublinhado do link */
+  color: inherit; /* Faz o texto herdar a cor do pai */
+  transition: transform 0.2s ease-in-out;
+  display: block;
+}
+
+.avaliador-info-link:hover {
+  transform: scale(1.02); /* Efeito sutil de zoom no hover */
 }
 
 @keyframes spin {

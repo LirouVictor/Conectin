@@ -130,4 +130,13 @@ public class PrestadorController {
         return ResponseEntity.ok(dto);
     }
 
+    @GetMapping("/usuario/{usuarioId}")
+    public ResponseEntity<PrestadorDto> getPrestadorByUsuarioId(@PathVariable Long usuarioId) {
+        Prestador prestador = prestadorRepository.findByUsuarioId(usuarioId)
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Perfil de prestador não encontrado para este usuário"));
+        PrestadorDto dto = convertToDto(prestador);
+        return ResponseEntity.ok(dto);
+    }
+
 }

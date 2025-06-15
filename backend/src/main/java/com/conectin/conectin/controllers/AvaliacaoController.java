@@ -64,7 +64,7 @@ public class AvaliacaoController {
     private AvaliacaoResponseDto convertToResponseDto(Avaliacao avaliacao) {
         AvaliacaoResponseDto dto = new AvaliacaoResponseDto();
         Usuario avaliador = avaliacao.getAvaliador();
-
+        dto.setAvaliadorId(avaliador.getId());
         dto.setNomeAvaliador(avaliador.getNome());
         dto.setFotoAvaliador(avaliador.getFotoPerfil()); // O frontend cuidará de adicionar a URL base
         dto.setComentario(avaliacao.getComentario());

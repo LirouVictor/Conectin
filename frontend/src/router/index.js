@@ -10,6 +10,7 @@ import EditarPerfilUsuario from '../views/Usuario/EditarPerfilUsuario.vue'; // I
 import RecuperarSenha from '../views/Login/Senha/RecuperarSenha';
 import ResetarSenha from '../views/Login/Senha/ResetarSenha'; // Import the ResetarSenha component
 import PaginaAvaliacao from '../views/Usuario/PaginaAvaliacao.vue'; // <-- IMPORTAR NOVO COMPONENTE
+import PerfilUsuario from '../views/Usuario/PerfilUsuario.vue'; // <<< IMPORTAR NOVO COMPONENTE
 
 const routes = [
   { path: '/', name: 'Home', component: HomePage },
@@ -27,6 +28,14 @@ const routes = [
     component: PerfilPrestador,
     props: true, // Pass route params as props to the component
   },
+
+  {
+    path: '/usuario/:id',
+    name: 'PerfilUsuario',
+    component: PerfilUsuario,
+    props: true, // Passa o :id da URL como prop para o componente
+  },
+
   {
     path: '/EditarPerfilUsuario/:id',
     name: 'EditarPerfilUsuario',

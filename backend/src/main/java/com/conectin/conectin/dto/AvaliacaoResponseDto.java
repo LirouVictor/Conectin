@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class AvaliacaoResponseDto {
+    private Long avaliadorId;
     private String nomeAvaliador;
     private String fotoAvaliador;
     private String comentario;
