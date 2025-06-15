@@ -16,10 +16,10 @@
             <strong>Disponibilidade:</strong> {{ prestador.disponibilidade || 'Não informado' }}
           </p>
           <p class="categorias" v-if="prestador.categorias && prestador.categorias.length">
-            <strong>Categorias:</strong> {{ prestador.categorias.map(c => c.nome).join(', ') }}
+            <strong>Categorias:</strong> {{prestador.categorias.map(c => c.nome).join(', ')}}
           </p>
           <p class="cidades" v-if="prestador.cidades && prestador.cidades.length">
-            <strong>Cidades Atendidas:</strong> {{ prestador.cidades.map(c => c.nome).join(', ') }}
+            <strong>Cidades Atendidas:</strong> {{prestador.cidades.map(c => c.nome).join(', ')}}
           </p>
         </div>
         <div class="portfolio-section" v-if="prestador.portfolios && prestador.portfolios.length">
@@ -34,12 +34,56 @@
         <div class="portfolio-section" v-else>
           <p>Nenhum item no portfólio.</p>
         </div>
+
+        <!-- ======================= NOVA SEÇÃO DE AVALIAÇÕES ====================== -->
+        <div class="avaliacoes-section">
+          <div class="avaliacoes-header">
+            <h3>Comentários e Avaliações</h3>
+            <div class="filtro-ordenacao" v-if="avaliacoes.length > 1">
+              <label for="filtro">Ordenar por:</label>
+              <select id="filtro" v-model="ordemFiltro">
+                <option value="maior">Maior Nota</option>
+                <option value="menor">Menor Nota</option>
+                <option value="recente">Mais Recente</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="loadingAvaliacoes" class="loading-avaliacoes">
+            <div class="loading-spinner-small"></div>
+            Carregando avaliações...
+          </div>
+
+          <div v-else-if="avaliacoesOrdenadas.length > 0">
+            <div v-for="avaliacao in avaliacoesOrdenadas" :key="avaliacao.data" class="avaliacao-card">
+              <div class="avaliador-info">
+                <img :src="getFotoUrl(avaliacao.fotoAvaliador)" alt="Foto do Avaliador" class="avaliador-foto" />
+                <div class="avaliador-detalhes">
+                  <span class="avaliador-nome">{{ avaliacao.nomeAvaliador }}</span>
+                  <span class="avaliacao-data">{{ formatarData(avaliacao.data) }}</span>
+                </div>
+              </div>
+              <div class="avaliacao-conteudo">
+                <div class="nota-estrelas">
+                  <span v-for="n in 5" :key="n" class="estrela" :class="{ 'preenchida': n <= avaliacao.nota }">★</span>
+                </div>
+                <p class="comentario-texto">{{ avaliacao.comentario || 'Nenhum comentário deixado.' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div v-else class="sem-avaliacoes">
+            <p>Este prestador ainda não possui avaliações.</p>
+          </div>
+        </div>
+        <!-- ===================== FIM DA NOVA SEÇÃO DE AVALIAÇÕES =================== -->
+
         <div class="contact-section">
           <!-- O botão continua o mesmo, a mágica acontece no método 'handleContact' -->
           <button @click="handleContact" class="contact-btn">
-    <i class="bi bi-whatsapp"></i>
-    <span>Entrar em Contato via WhatsApp</span>
-</button> 
+            <i class="bi bi-whatsapp"></i>
+            <span>Entrar em Contato via WhatsApp</span>
+          </button>
         </div>
       </div>
       <div v-else class="loading">
@@ -62,6 +106,10 @@ export default {
   data() {
     return {
       prestador: null,
+      avaliacoes: [],
+      loadingAvaliacoes: true,
+      ordemFiltro: 'maior', // 'maior', 'menor', ou 'recente'
+      backendUrl: process.env.VUE_APP_API_BASE_URL || 'http://localhost:8080',
     };
   },
   setup() {
@@ -70,11 +118,32 @@ export default {
     const router = useRouter();
     return { toast, userStore, router };
   },
+
+  computed: {
+    avaliacoesOrdenadas() {
+      // Cria uma cópia do array para não modificar o original
+      const sorted = [...this.avaliacoes];
+
+      if (this.ordemFiltro === 'maior') {
+        return sorted.sort((a, b) => b.nota - a.nota);
+      }
+      if (this.ordemFiltro === 'menor') {
+        return sorted.sort((a, b) => a.nota - b.nota);
+      }
+      if (this.ordemFiltro === 'recente') {
+        // Compara as datas, convertendo para objetos Date
+        return sorted.sort((a, b) => new Date(b.data) - new Date(a.data));
+      }
+      return this.avaliacoes;
+    },
+  },
+
   mounted() {
     this.fetchPrestador();
+    this.fetchAvaliacoes();
   },
   methods: {
-    async fetchPrestador() {  
+    async fetchPrestador() {
       try {
         const id = this.$route.params.id;
         const response = await api.get(`/prestadores/${id}`);
@@ -87,6 +156,45 @@ export default {
         }
         console.error("Erro ao buscar prestador:", error);
       }
+    },
+
+    async fetchAvaliacoes() {
+      this.loadingAvaliacoes = true;
+      try {
+        const prestadorId = this.$route.params.id;
+        const response = await api.get(`/avaliacoes/prestador/${prestadorId}`);
+        this.avaliacoes = response.data;
+      } catch (error) {
+        this.toast.error('Não foi possível carregar as avaliações.');
+        console.error("Erro ao buscar avaliações:", error);
+      } finally {
+        this.loadingAvaliacoes = false;
+      }
+    },
+
+    // ===== NOVO MÉTODO PARA FORMATAR URL DA FOTO =====
+    getFotoUrl(fotoPath) {
+      if (!fotoPath) {
+        // Retorna uma imagem padrão caso o usuário não tenha foto
+        return 'https://www.gravatar.com/avatar/?d=mp';
+      }
+      // Verifica se o caminho já é uma URL completa
+      if (fotoPath.startsWith('http')) {
+        return fotoPath;
+      }
+      // Adiciona a URL base do backend ao caminho relativo da imagem
+      return `${this.backendUrl}${fotoPath}`;
+    },
+
+    // ===== NOVO MÉTODO PARA FORMATAR A DATA =====
+    formatarData(dataString) {
+      if (!dataString) return '';
+      const data = new Date(dataString);
+      return data.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
     },
 
     // AQUI ESTÁ A LÓGICA ATUALIZADA
@@ -151,17 +259,17 @@ export default {
 
         if (responseSolicitacao.status === 201) {
           this.toast.success('Solicitação de serviço registrada com sucesso!');
-          
+
           if (prestadorTelefone && prestadorTelefone.trim() !== '') {
             let numeroLimpo = prestadorTelefone.replace(/\D/g, '');
             if (numeroLimpo.length <= 11 && !numeroLimpo.startsWith('55')) {
               numeroLimpo = '55' + numeroLimpo;
             }
             const nomePrestador = this.prestador.nome || 'Prestador';
-            
+
             // A mensagem do WhatsApp agora inclui a categoria específica selecionada pelo usuário
             const mensagem = encodeURIComponent(`Olá ${nomePrestador}, vi seu perfil no Conectin e gostaria de mais informações sobre seus serviços (${categoriaSelecionada.nome}). Minha solicitação (ID: ${responseSolicitacao.data.id}) foi registrada no sistema.\n\nMensagem enviada pelo cliente: ${solicitacaoDto.detalhes}`);
-            
+
             const whatsappUrl = `https://wa.me/${numeroLimpo}?text=${mensagem}`;
             window.open(whatsappUrl, '_blank');
           } else {
@@ -175,7 +283,7 @@ export default {
         console.error("Erro ao criar solicitação ou contatar:", error.response || error);
         let errorMsg = 'Falha ao registrar a solicitação de serviço.';
         if (error.response && error.response.data && error.response.data.message) {
-            errorMsg = error.response.data.message;
+          errorMsg = error.response.data.message;
         }
         this.toast.error(`Erro: ${errorMsg}`);
       }
@@ -348,7 +456,8 @@ h1::after {
   justify-content: center;
   gap: 10px;
   padding: 12px 28px;
-  background-color: #1ee23f; /* Verde do WhatsApp */
+  background-color: #1ee23f;
+  /* Verde do WhatsApp */
   color: white;
   text-decoration: none;
   border-radius: 30px;
@@ -408,6 +517,123 @@ h1::after {
   border-right-color: var(--conectin-yellow);
   animation: spin 1s linear infinite;
   margin-bottom: 15px;
+}
+
+.avaliacoes-section {
+  margin-top: 40px;
+  padding-top: 25px;
+  border-top: 1px solid var(--conectin-gray);
+}
+
+.avaliacoes-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.avaliacoes-header h3 {
+  color: var(--conectin-blue);
+  font-size: 20px;
+  margin: 0;
+}
+
+.filtro-ordenacao label {
+  margin-right: 8px;
+  font-size: 14px;
+  color: #555;
+}
+
+.filtro-ordenacao select {
+  padding: 6px 10px;
+  border: 1px solid var(--conectin-gray);
+  border-radius: 6px;
+  background-color: var(--conectin-white);
+  font-size: 14px;
+}
+
+.avaliacao-card {
+  background-color: var(--conectin-light-gray);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 15px;
+  border-left: 4px solid var(--conectin-yellow);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.avaliador-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.avaliador-foto {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--conectin-white);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.avaliador-detalhes {
+  display: flex;
+  flex-direction: column;
+}
+
+.avaliador-nome {
+  font-weight: bold;
+  color: var(--conectin-blue-dark);
+}
+
+.avaliacao-data {
+  font-size: 12px;
+  color: #777;
+}
+
+.avaliacao-conteudo .nota-estrelas {
+  margin-bottom: 8px;
+  color: var(--conectin-yellow);
+  font-size: 18px;
+}
+
+.nota-estrelas .estrela {
+  color: #ccc;
+  /* Estrela vazia */
+}
+
+.nota-estrelas .estrela.preenchida {
+  color: var(--conectin-yellow);
+  /* Estrela cheia */
+}
+
+.comentario-texto {
+  margin: 0;
+  line-height: 1.6;
+  color: #333;
+}
+
+.sem-avaliacoes,
+.loading-avaliacoes {
+  text-align: center;
+  padding: 20px;
+  background-color: var(--conectin-light-gray);
+  border-radius: 8px;
+  color: #777;
+}
+
+.loading-spinner-small {
+  width: 25px;
+  height: 25px;
+  border: 3px solid var(--conectin-gray);
+  border-radius: 50%;
+  border-top-color: var(--conectin-blue);
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 10px;
 }
 
 @keyframes spin {
