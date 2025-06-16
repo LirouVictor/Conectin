@@ -231,15 +231,15 @@ public Optional<Usuario> editarUsuario(Long id, UsuarioDto usuarioDto) {
             }
         }
 
-        prestador.getPortfolios().clear();
-        if (usuarioDto.getPortfolios() != null && !usuarioDto.getPortfolios().isEmpty()) {
-            for (PortfolioDto portfolioDto : usuarioDto.getPortfolios()) {
-                Portfolio portfolio = new Portfolio();
-                portfolio.setDescricao(portfolioDto.getDescricao());
-                portfolio.setPrestador(prestador);
-                prestador.getPortfolios().add(portfolio);
-            }
-        }
+        // prestador.getPortfolios().clear();
+        // if (usuarioDto.getPortfolios() != null && !usuarioDto.getPortfolios().isEmpty()) {
+        //     for (PortfolioDto portfolioDto : usuarioDto.getPortfolios()) {
+        //         Portfolio portfolio = new Portfolio();
+        //         portfolio.setDescricao(portfolioDto.getDescricao());
+        //         portfolio.setPrestador(prestador);
+        //         prestador.getPortfolios().add(portfolio);
+        //     }
+        // }
     } else if (eraPrestador) {
         prestadorRepository.findByUsuarioId(usuario.getId()).ifPresent(prestadorParaDeletar -> {
             usuario.setPrestador(null);

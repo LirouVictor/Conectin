@@ -3,6 +3,8 @@ package com.conectin.conectin.entities;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +20,7 @@ public class Portfolio {
 
     @ManyToOne
     @JoinColumn(name = "prestador_id", nullable = false)
+    @JsonBackReference
     private Prestador prestador;
 
     @Column(nullable = false)

@@ -21,12 +21,17 @@
             <strong>Cidades Atendidas:</strong> {{prestador.cidades.map(c => c.nome).join(', ')}}
           </p>
         </div>
+        <h3>Portfólio</h3>
         <div class="portfolio-section" v-if="prestador.portfolios && prestador.portfolios.length">
-          <h3>Portfólio</h3>
-          <div class="portfolio-grid">
-            <div class="portfolio-item" v-for="item in prestador.portfolios" :key="item.id">
-              <img v-if="item.urlImagem" :src="item.urlImagem" alt="Portfolio" class="portfolio-image" />
-              <p>{{ item.descricao || 'Sem descrição' }}</p>
+          <div class="portfolio-item-container" v-for="item in prestador.portfolios" :key="item.id">
+            <!-- <h4 class="portfolio-item-title">{{ item.titulo }}</h4>
+            <p class="portfolio-item-description">{{ item.descricao }}</p> -->
+
+            <div class="portfolio-fotos-horizontal">
+              <div v-for="fotoUrl in item.fotos" :key="fotoUrl" class="thumbnail-wrapper"
+                @click="abrirGaleria(item.fotos, item.titulo)">
+                <img :src="getAbsoluteUrl(fotoUrl)" :alt="item.titulo" class="portfolio-thumbnail" />
+              </div>
             </div>
           </div>
         </div>
@@ -57,14 +62,14 @@
             <div v-for="avaliacao in avaliacoesOrdenadas" :key="avaliacao.data" class="avaliacao-card">
               <router-link :to="{ name: 'PerfilUsuario', params: { id: avaliacao.avaliadorId } }"
                 class="avaliador-info-link">
-              <div class="avaliador-info">
-                <img :src="getFotoUrl(avaliacao.fotoAvaliador)" alt="Foto do Avaliador" class="avaliador-foto" />
-                <div class="avaliador-detalhes">
-                  <span class="avaliador-nome">{{ avaliacao.nomeAvaliador }}</span>
-                  <span class="avaliacao-data">{{ formatarData(avaliacao.data) }}</span>
+                <div class="avaliador-info">
+                  <img :src="getFotoUrl(avaliacao.fotoAvaliador)" alt="Foto do Avaliador" class="avaliador-foto" />
+                  <div class="avaliador-detalhes">
+                    <span class="avaliador-nome">{{ avaliacao.nomeAvaliador }}</span>
+                    <span class="avaliacao-data">{{ formatarData(avaliacao.data) }}</span>
+                  </div>
                 </div>
-              </div>
-            </router-link>
+              </router-link>
               <div class="avaliacao-conteudo">
                 <div class="nota-estrelas">
                   <span v-for="n in 5" :key="n" class="estrela" :class="{ 'preenchida': n <= avaliacao.nota }">★</span>
@@ -93,6 +98,19 @@
         <p>Carregando perfil...</p>
       </div>
     </div>
+
+    <div v-if="galeriaVisivel" class="galeria-overlay" @click="fecharGaleria">
+      <div class="galeria-content" @click.stop>
+        <button class="galeria-close-btn" @click="fecharGaleria">×</button>
+        <h3 class="galeria-title">{{ galeriaTitulo }}</h3>
+        <div class="galeria-grid">
+          <div v-for="fotoUrl in fotosDaGaleria" :key="fotoUrl" class="galeria-image-wrapper">
+            <img :src="getAbsoluteUrl(fotoUrl)" :alt="galeriaTitulo" class="galeria-image" />
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -112,6 +130,9 @@ export default {
       loadingAvaliacoes: true,
       ordemFiltro: 'maior', // 'maior', 'menor', ou 'recente'
       backendUrl: process.env.VUE_APP_API_BASE_URL || 'http://localhost:8080',
+      galeriaVisivel: false,
+      fotosDaGaleria: [],
+      galeriaTitulo: '',
     };
   },
   setup() {
@@ -145,6 +166,13 @@ export default {
     this.fetchAvaliacoes();
   },
   methods: {
+    getAbsoluteUrl(relativeUrl) {
+      if (!relativeUrl || relativeUrl.startsWith('http')) {
+        return relativeUrl;
+      }
+      return `${this.backendUrl}${relativeUrl}`;
+    },
+
     async fetchPrestador() {
       try {
         const id = this.$route.params.id;
@@ -172,6 +200,19 @@ export default {
       } finally {
         this.loadingAvaliacoes = false;
       }
+    },
+
+    abrirGaleria(fotos, titulo) {
+      this.fotosDaGaleria = fotos;
+      this.galeriaTitulo = titulo;
+      this.galeriaVisivel = true;
+      document.body.style.overflow = 'hidden'; // Impede o scroll da página de fundo
+    },
+    fecharGaleria() {
+      this.galeriaVisivel = false;
+      this.fotosDaGaleria = [];
+      this.galeriaTitulo = '';
+      document.body.style.overflow = ''; // Restaura o scroll da página
     },
 
     // ===== NOVO MÉTODO PARA FORMATAR URL DA FOTO =====
@@ -395,60 +436,6 @@ h1::after {
   margin-right: 5px;
 }
 
-.portfolio-section h3 {
-  color: var(--conectin-blue);
-  margin-bottom: 15px;
-  font-size: 20px;
-  position: relative;
-  padding-left: 16px;
-}
-
-.portfolio-section h3::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 8px;
-  height: 20px;
-  background-color: var(--conectin-yellow);
-  border-radius: 4px;
-}
-
-.portfolio-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.portfolio-item {
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.portfolio-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-.portfolio-image {
-  width: 100%;
-  height: 150px;
-  object-fit: cover;
-  border-bottom: 3px solid var(--conectin-yellow);
-}
-
-.portfolio-item p {
-  padding: 12px;
-  margin: 0;
-  font-size: 14px;
-  color: #444;
-}
-
 .contact-section {
   text-align: center;
   margin-top: 30px;
@@ -641,14 +628,179 @@ h1::after {
 }
 
 .avaliador-info-link {
-  text-decoration: none; /* Remove o sublinhado do link */
-  color: inherit; /* Faz o texto herdar a cor do pai */
+  text-decoration: none;
+  /* Remove o sublinhado do link */
+  color: inherit;
+  /* Faz o texto herdar a cor do pai */
   transition: transform 0.2s ease-in-out;
   display: block;
 }
 
 .avaliador-info-link:hover {
-  transform: scale(1.02); /* Efeito sutil de zoom no hover */
+  transform: scale(1.02);
+  /* Efeito sutil de zoom no hover */
+}
+
+/* ================== NOVOS ESTILOS PARA O PORTFÓLIO HORIZONTAL ================== */
+
+.portfolio-section {
+  display: flex;
+    display: flex;
+  /* ESSENCIAL: Alinha os filhos (fotos) lado a lado */
+  overflow-x: auto;
+  /* ESSENCIAL: Adiciona a barra de rolagem horizontal */
+  gap: 15px;
+  /* Cria um espaço entre as fotos */
+  scrollbar-width: thin;
+  /* Barra de rolagem mais fina (Firefox) */
+  scrollbar-color: var(--conectin-gray) transparent;
+  padding: 5px 0 15px 0;
+  margin-top: 40px;
+  padding-top: 25px;
+  border-top: 1px solid var(--conectin-gray);
+}
+
+.portfolio-section h3 {
+  color: var(--conectin-blue);
+  margin-bottom: 25px;
+  font-size: 20px;
+  position: relative;
+  padding-left: 16px;
+}
+
+.portfolio-section h3::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 20px;
+  background-color: var(--conectin-yellow);
+  border-radius: 4px;
+}
+
+.portfolio-item-container {
+  margin-bottom: 35px;
+  /* Espaço entre diferentes projetos do portfólio */
+}
+
+.portfolio-item-container:last-child {
+  margin-bottom: 0;
+}
+
+.portfolio-item-title {
+  font-size: 1.2em;
+  font-weight: 500;
+  color: var(--conectin-blue-dark);
+  margin: 0 0 5px 0;
+}
+
+.portfolio-item-description {
+  margin: 0 0 15px 0;
+  /* Espaço entre a descrição e as fotos */
+  color: #555;
+  line-height: 1.5;
+}
+
+/* 2. O WRAPPER DE CADA FOTO */
+.thumbnail-wrapper {
+  flex-shrink: 0;
+  /* CRÍTICO: Impede que as fotos encolham ou quebrem a linha */
+  width: 150px;
+  /* Largura fixa da miniatura */
+  height: 150px;
+  /* Altura fixa da miniatura */
+  border-radius: 8px;
+  overflow: hidden;
+  /* Garante que a imagem respeite o border-radius */
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.thumbnail-wrapper:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(30, 122, 197, 0.15);
+}
+
+/* 3. A IMAGEM DENTRO DO WRAPPER */
+.portfolio-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Garante que a imagem preencha o espaço sem distorcer */
+}
+
+/* ================== FIM DOS NOVOS ESTILOS ================== */
+
+
+/* ======================= ESTILOS PARA A GALERIA EXPANDIDA ====================== */
+.galeria-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  /* Z-index maior que o resto do conteúdo */
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.galeria-content {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 95vw;
+  max-height: 95vh;
+  overflow-y: auto;
+  /* Permite scroll se as fotos não couberem */
+  position: relative;
+  width: 100%;
+}
+
+.galeria-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 2.5em;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.galeria-title {
+  margin-top: 0;
+  margin-bottom: 25px;
+  color: var(--conectin-blue, #1e7ac5);
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.galeria-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.galeria-image-wrapper {
+  width: 100%;
+  height: 250px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.galeria-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 @keyframes spin {
@@ -670,10 +822,6 @@ h1::after {
 
   .perfil-header h2 {
     margin-bottom: 10px;
-  }
-
-  .portfolio-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   }
 }
 </style>

@@ -3,6 +3,8 @@ package com.conectin.conectin.entities;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +29,7 @@ public class Prestador {
     private Float avaliacaoMedia;
 
     @OneToMany(mappedBy = "prestador", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Portfolio> portfolios = new ArrayList<>();
 
     @OneToMany(mappedBy = "prestador", cascade = CascadeType.ALL, orphanRemoval = true)

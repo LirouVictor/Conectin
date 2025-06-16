@@ -1,36 +1,34 @@
 <template>
-    <div class="editar-perfil-container">
-        <div class="editar-perfil-box">
-            <h1>Editar Perfil</h1>
-            <form @submit.prevent="salvarPerfil">
-                <div class="input-group">
-                    <label for="nome">Nome:</label>
-                    <input v-model="usuario.nome" type="text" id="nome" required class="input-field" />
-                </div>
-                <div class="input-group">
-                    <label for="endereco">Endereço:</label>
-                    <input v-model="usuario.endereco" type="text" id="endereco" required class="input-field" />
-                </div>
-                <div class="input-group">
-                    <label for="email">Email:</label>
-                    <input v-model="usuario.email" type="email" id="email" required class="input-field" />
-                </div>
-                <div class="input-group">
-                    <label for="telefone">Telefone:</label>
-                    <input v-model="usuario.telefone" type="tel" id="telefone" required class="input-field" placeholder="Ex: 11987654321" />
-                </div>
-                <div class="input-group">
-                    <label for="fotoPerfil">Foto de Perfil:</label>
-                    <input type="file" id="fotoPerfil" accept="image/*" @change="handleFotoUpload" class="input-field" />
-                    <img 
-                        v-if="usuario.fotoPerfil || userStore.user?.foto" 
-                        :src="usuario.fotoPerfil || userStore.user.foto" 
-                        alt="Foto de Perfil" 
-                        class="foto-preview" 
-                        @error="handleImageError"
-                    />
-                    </div>
+  <div class="editar-perfil-container">
+    <div class="editar-perfil-box">
+      <h1>Editar Perfil</h1>
+      <!-- CORREÇÃO: O <form> agora envolve todos os campos relevantes -->
+      <form @submit.prevent="salvarPerfil">
+        <div class="input-group">
+          <label for="nome">Nome:</label>
+          <input v-model="usuario.nome" type="text" id="nome" required class="input-field" />
+        </div>
+        <div class="input-group">
+          <label for="endereco">Endereço:</label>
+          <input v-model="usuario.endereco" type="text" id="endereco" required class="input-field" />
+        </div>
+        <div class="input-group">
+          <label for="email">Email:</label>
+          <input v-model="usuario.email" type="email" id="email" required class="input-field" />
+        </div>
+        <div class="input-group">
+          <label for="telefone">Telefone:</label>
+          <input v-model="usuario.telefone" type="tel" id="telefone" required class="input-field"
+            placeholder="Ex: 11987654321" />
+        </div>
+        <div class="input-group">
+          <label for="fotoPerfil">Foto de Perfil:</label>
+          <input type="file" id="fotoPerfil" accept="image/*" @change="handleFotoUpload" class="input-field" />
+          <img v-if="usuario.fotoPerfil || userStore.user?.foto" :src="usuario.fotoPerfil || userStore.user.foto"
+            alt="Foto de Perfil" class="foto-preview" @error="handleImageError" />
+        </div>
 
+        <!-- Seção do Prestador -->
         <div v-if="usuario.prestador" class="prestador-section">
           <h3>Dados do Prestador</h3>
           <div class="input-group">
@@ -42,6 +40,7 @@
             <input v-model="usuario.disponibilidade" type="text" id="disponibilidade" class="input-field" />
           </div>
 
+          <!-- Categorias -->
           <div class="input-group">
             <label>Categorias (Serviços):</label>
             <div class="categorias-selecionadas">
@@ -53,8 +52,8 @@
                   <span class="tag-name">{{ getCategoriaNome(categoriaId) }}</span>
                   <span class="trash-icon" @click="removerCategoria(categoriaId)" title="Remover">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#e74c3c" viewBox="0 0 16 16">
-                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
                     </svg>
                   </span>
                 </span>
@@ -71,6 +70,7 @@
             </div>
           </div>
 
+          <!-- Cidades -->
           <div class="input-group">
             <label>Cidades Atendidas:</label>
             <div class="cidades-selecionadas">
@@ -82,8 +82,8 @@
                   <span class="tag-name">{{ getCidadeNome(cidadeId) }}</span>
                   <span class="trash-icon" @click="removerCidade(cidadeId)" title="Remover">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#e74c3c" viewBox="0 0 16 16">
-                      <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                       <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                      <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
                     </svg>
                   </span>
                 </span>
@@ -99,19 +99,9 @@
               <button type="button" @click="adicionarCidade" :disabled="!novaCidade" class="add-btn">Adicionar</button>
             </div>
           </div>
-
-          <div class="portfolio-section">
-            <h4>Portfólio</h4>
-            <div v-for="(item, index) in usuario.portfolios" :key="index" class="portfolio-item">
-              <input type="file" accept="image/*" @change="handlePortfolioUpload($event, index)" class="input-field" />
-              <input v-model="item.descricao" type="text" placeholder="Descrição" class="input-field" />
-              <button type="button" @click="removerPortfolio(index)" class="remove-btn">Remover</button>
-              <img v-if="item.urlImagem" :src="item.urlImagem" alt="Portfolio" class="portfolio-preview" />
-            </div>
-            <button type="button" @click="adicionarPortfolio" class="add-btn">Adicionar Item ao Portfólio</button>
-          </div>
         </div>
-
+        
+        <!-- Seção de Tipo de Usuário e Senha -->
         <div class="input-group">
           <label>Tipo de Usuário:</label>
           <div class="checkbox-group">
@@ -134,20 +124,83 @@
         <div v-if="alterarSenhaVisivel" class="senha-section">
           <div class="input-group">
             <label for="senhaAtual">Senha Atual:</label>
-            <input v-model="usuario.senhaAtual" type="password" id="senhaAtual" required class="input-field" />
+            <input v-model="usuario.senhaAtual" type="password" id="senhaAtual" class="input-field" />
           </div>
           <div class="input-group">
             <label for="senha">Nova Senha:</label>
-            <input v-model="usuario.senha" type="password" id="senha" required class="input-field" />
+            <input v-model="usuario.senha" type="password" id="senha" class="input-field" />
           </div>
           <div class="input-group">
             <label for="confirmarSenha">Confirmar Nova Senha:</label>
-            <input v-model="usuario.confirmarSenha" type="password" id="confirmarSenha" required class="input-field" />
+            <input v-model="usuario.confirmarSenha" type="password" id="confirmarSenha" class="input-field" />
           </div>
         </div>
 
         <button type="submit" class="save-btn">Salvar Perfil</button>
       </form>
+
+      <!-- CORREÇÃO: A seção de portfólio agora fica FORA do form principal, mas dentro da área do prestador -->
+       <div v-if="usuario.prestador" class="portfolio-section">
+          <h4>Portfólio de Trabalhos</h4>
+          <div v-if="loadingPortfolio" class="loading-text">Carregando portfólio...</div>
+
+          <div v-for="(item, index) in portfolios" :key="item.id || `new-${index}`" class="portfolio-item">
+            <div class="portfolio-item-header">
+              <h5>Item de Portfólio {{ index + 1 }}</h5>
+              <button type="button" @click="removerPortfolio(item, index)" class="remove-btn-portfolio"
+                title="Remover este item do portfólio">
+                ×
+              </button>
+            </div>
+
+            <div class="input-group">
+              <label :for="`portfolio-titulo-${index}`">Título do Trabalho:</label>
+              <input v-model="item.titulo" type="text" :id="`portfolio-titulo-${index}`"
+                placeholder="Ex: Reforma de Cozinha" class="input-field" />
+            </div>
+
+            <div class="input-group">
+              <label :for="`portfolio-desc-${index}`">Descrição:</label>
+              <textarea v-model="item.descricao" :id="`portfolio-desc-${index}`"
+                placeholder="Descreva o trabalho realizado" class="input-field"></textarea>
+            </div>
+
+            <div class="input-group">
+              <label>Fotos:</label>
+              <div class="portfolio-fotos-container">
+                <div v-for="(fotoUrl, fotoIndex) in item.fotos" :key="fotoUrl" class="thumbnail-wrapper">
+                  <img :src="getAbsoluteUrl(fotoUrl)" alt="Miniatura" class="thumbnail"
+                    @click="ampliarImagem(fotoUrl)" />
+                  <button @click="removerFoto(item, fotoIndex)" class="remove-btn-foto" title="Remover foto">×</button>
+                </div>
+                <div class="thumbnail-wrapper add-foto-wrapper">
+                  <input type="file" :id="`portfolio-upload-${index}`" multiple accept="image/*"
+                    @change="handlePortfolioUpload($event, item)" class="add-foto-input" :disabled="item.uploading" />
+                  <label :for="`portfolio-upload-${index}`" class="add-foto-label">
+                    <span v-if="!item.uploading">+</span>
+                    <div v-if="item.uploading" class="spinner"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <button type="button" @click="salvarItemPortfolio(item)" class="save-item-btn" :disabled="item.uploading">
+              {{ item.id ? 'Atualizar Item' : 'Salvar Novo Item' }}
+            </button>
+          </div>
+
+          <button type="button" @click="adicionarPortfolio" class="add-btn">
+            + Adicionar Item ao Portfólio
+          </button>
+        </div>
+
+    </div> <!-- Fim de .editar-perfil-box -->
+  </div> <!-- Fim de .editar-perfil-container -->
+
+  <!-- MODAL DE VISUALIZAÇÃO DE IMAGEM -->
+  <div v-if="imagemAmpliadaUrl" class="modal-overlay" @click="fecharAmpliacao">
+    <div class="modal-content" @click.stop>
+      <span class="modal-close" @click="fecharAmpliacao">×</span>
+      <img :src="getAbsoluteUrl(imagemAmpliadaUrl)" alt="Imagem Ampliada" class="imagem-ampliada" />
     </div>
   </div>
 </template>
@@ -158,95 +211,102 @@ import { useToast } from 'vue-toastification';
 import { useUserStore } from '@/stores/user';
 import { useRouter } from 'vue-router';
 
+const BACKEND_URL = 'http://localhost:8080';
+
 export default {
-    name: 'EditarPerfil',
-    setup() {
-        const toast = useToast();
-        const userStore = useUserStore();
-        const router = useRouter();
-        return { toast, userStore, router };
+  name: 'EditarPerfilUsuario',
+  setup() {
+    const toast = useToast();
+    const userStore = useUserStore();
+    const router = useRouter();
+    return { toast, userStore, router };
+  },
+  data() {
+    return {
+      usuario: {
+        nome: '',
+        endereco: '',
+        email: '',
+        telefone: '',
+        fotoPerfil: null,
+        prestador: false,
+        cliente: false,
+        descricao: '',
+        disponibilidade: '',
+        categoriasSelecionadas: [],
+        cidadesSelecionadas: [],
+        senhaAtual: '',
+        senha: '',
+        confirmarSenha: '',
+      },
+      // CORREÇÃO: Removidos dados duplicados daqui
+      categoriasDisponiveis: [],
+      cidadesDisponiveis: [],
+      novaCidade: '',
+      novaCategoria: '',
+      alterarSenhaVisivel: false,
+      fotoPerfilFile: null,
+
+      // Dados para a nova lógica de portfólio
+      prestadorId: null,
+      portfolios: [],
+      loadingPortfolio: false,
+      imagemAmpliadaUrl: null,
+    };
+  },
+  async mounted() {
+    await this.carregarPerfil();
+    this.carregarCategorias();
+    this.carregarCidades();
+    // A chamada para carregarPortfolio agora é feita dentro de carregarPerfil
+  },
+  methods: {
+    getAbsoluteUrl(relativeUrl) {
+      if (!relativeUrl || relativeUrl.startsWith('http') || relativeUrl.startsWith('data:image')) {
+        return relativeUrl;
+      }
+      return `${BACKEND_URL}${relativeUrl}`;
     },
-    data() {
-        return {
-            usuario: {
-                nome: '',
-                endereco: '',
-                email: '',
-                telefone: '',
-                fotoPerfil: null,
-                prestador: false,
-                cliente: false,
-                descricao: '',
-                disponibilidade: '',
-                portfolios: [],
-                categoriasSelecionadas: [],
-                cidadesSelecionadas: [],
-                senhaAtual: '',
-                senha: '',
-                confirmarSenha: '',
-            },
-            categoriasDisponiveis: [],
-            cidadesDisponiveis: [],
-            novaCidade: '',
-            novaCategoria: '',
-            alterarSenhaVisivel: false,
-            fotoPerfilFile: null,
-            portfolioFiles: {},
-        };
+
+    async carregarPerfil() {
+      try {
+        const response = await api.get('/usuarios/perfil');
+        const data = response.data;
+
+        this.usuario.nome = data.nome || '';
+        this.usuario.endereco = data.endereco || '';
+        this.usuario.email = data.email || '';
+        this.usuario.telefone = data.telefone || '';
+        this.usuario.fotoPerfil = null;
+
+        this.usuario.prestador = data.tipos?.includes('PRESTADOR');
+        this.usuario.cliente = data.tipos?.includes('CLIENTE');
+
+        if (this.usuario.prestador && data.prestador) {
+          this.prestadorId = data.prestador.id; // Define o ID do prestador
+          const prestadorData = data.prestador;
+          this.usuario.descricao = prestadorData.descricao || '';
+          this.usuario.disponibilidade = prestadorData.disponibilidade || '';
+          this.usuario.categoriasSelecionadas = (prestadorData.categorias || []).map(cat => cat.id);
+          this.usuario.cidadesSelecionadas = (prestadorData.cidades || []).map(cid => cid.id);
+          
+          this.carregarPortfolio(); // Chama o carregamento do portfólio aqui
+        }
+
+        this.usuario.senhaAtual = '';
+        this.usuario.senha = '';
+        this.usuario.confirmarSenha = '';
+        this.alterarSenhaVisivel = false;
+      } catch (error) {
+        console.error('Erro ao carregar perfil:', error.response || error);
+        this.toast.error(error.response?.data?.message || 'Não foi possível carregar os dados do perfil.');
+      }
     },
-    mounted() {
-        this.carregarPerfil();
-        this.carregarCategorias();
-        this.carregarCidades();
-    },
-    methods: {
-        async carregarPerfil() {
-            try {
-                const response = await api.get('/usuarios/perfil', {
-                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-                });
-                const data = response.data;
-
-                this.usuario.nome = data.nome || '';
-                this.usuario.endereco = data.endereco || '';
-                this.usuario.email = data.email || '';
-                this.usuario.telefone = data.telefone || '';
-                this.usuario.fotoPerfil = null; // Will be set by file input
-
-                const isPrestador = data.tipos?.includes('PRESTADOR') || (data.prestador && typeof data.prestador === 'object');
-                const isCliente = data.tipos?.includes('CLIENTE') || false;
-
-                this.usuario.prestador = isPrestador;
-                this.usuario.cliente = isCliente;
-
-                if (this.usuario.prestador && data.prestador && typeof data.prestador === 'object') {
-                    const prestadorData = data.prestador;
-                    this.usuario.descricao = prestadorData.descricao || '';
-                    this.usuario.disponibilidade = prestadorData.disponibilidade || '';
-                    this.usuario.portfolios = (prestadorData.portfolios || []).map(p => ({
-                        id: p.id || null,
-                        urlImagem: p.urlImagem || p.imagemUrl || '',
-                        descricao: p.descricao || ''
-                    }));
-                    this.usuario.categoriasSelecionadas = (prestadorData.categorias || []).map(cat => cat.id);
-                    this.usuario.cidadesSelecionadas = (prestadorData.cidades || []).map(cid => cid.id);
-                }
-
-                this.usuario.senhaAtual = '';
-                this.usuario.senha = '';
-                this.usuario.confirmarSenha = '';
-                this.alterarSenhaVisivel = false;
-            } catch (error) {
-                console.error('Erro ao carregar perfil:', error.response || error);
-                this.toast.error(error.response?.data?.message || 'Não foi possível carregar os dados do perfil.');
-            }
-        },
     async carregarCategorias() {
       try {
         const response = await api.get('/categorias');
         this.categoriasDisponiveis = response.data;
       } catch (error) {
-        console.error('Erro ao carregar categorias:', error.response || error);
         this.toast.error('Erro ao carregar lista de categorias.');
       }
     },
@@ -256,54 +316,129 @@ export default {
         const response = await api.get('/cidades');
         this.cidadesDisponiveis = response.data;
       } catch (error) {
-        console.error('Erro ao carregar cidades:', error.response || error);
         this.toast.error('Erro ao carregar lista de cidades.');
       }
     },
 
-    handleFotoUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                this.fotoPerfilFile = file;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.usuario.fotoPerfil = e.target.result; // Base64 for preview
-                };
-                reader.readAsDataURL(file);
-            } else {
-                this.fotoPerfilFile = null;
-                this.usuario.fotoPerfil = null;
-            }
-        },
-        handleImageError(event) {
-            console.error('Erro ao carregar imagem:', event.target.src);
-            event.target.src = 'https://www.gravatar.com/avatar/?d=mp';
-        },
-
-    handlePortfolioUpload(event, index) {
-      const file = event.target.files[0];
-      if (file) {
-        this.portfolioFiles[index] = file;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          if (!this.usuario.portfolios[index]) {
-            this.usuario.portfolios[index] = { id: null, urlImagem: '', descricao: '' };
-          }
-          this.usuario.portfolios[index].urlImagem = e.target.result;
-        };
-        reader.readAsDataURL(file);
-      } else {
-        delete this.portfolioFiles[index];
+    async carregarPortfolio() {
+      if (!this.prestadorId) return;
+      this.loadingPortfolio = true;
+      try {
+        const response = await api.get(`/portfolios/prestador/${this.prestadorId}`);
+        this.portfolios = response.data.map(p => ({ ...p, uploading: false }));
+      } catch (error) {
+        this.toast.error("Erro ao carregar o portfólio.");
+      } finally {
+        this.loadingPortfolio = false;
       }
     },
 
-    adicionarPortfolio() {
-      this.usuario.portfolios.push({ id: null, urlImagem: '', descricao: '' });
+    ampliarImagem(url) {
+      this.imagemAmpliadaUrl = url;
+    },
+    fecharAmpliacao() {
+      this.imagemAmpliadaUrl = null;
     },
 
-    removerPortfolio(index) {
-      this.usuario.portfolios.splice(index, 1);
-      delete this.portfolioFiles[index];
+    // CORREÇÃO: Mantendo apenas a versão correta de adicionarPortfolio
+    adicionarPortfolio() {
+      this.portfolios.push({
+        id: null,
+        titulo: '',
+        descricao: '',
+        fotos: [],
+        prestadorId: this.prestadorId,
+        uploading: false,
+      });
+    },
+
+    // CORREÇÃO: Mantendo apenas a versão correta de removerPortfolio
+    async removerPortfolio(item, index) {
+      if (!confirm('Tem certeza que deseja remover este item do portfólio?')) return;
+      if (item.id) {
+        try {
+          await api.delete(`/portfolios/${item.id}`);
+          this.toast.success("Item do portfólio removido.");
+        } catch (error) {
+          this.toast.error("Erro ao remover o item do portfólio.");
+          return;
+        }
+      }
+      this.portfolios.splice(index, 1);
+    },
+
+    removerFoto(item, fotoIndex) {
+      if (!confirm('Remover esta foto?')) return;
+      item.fotos.splice(fotoIndex, 1);
+      if (item.id) {
+        this.salvarItemPortfolio(item, false);
+      }
+    },
+
+    async handlePortfolioUpload(event, item) {
+      const files = event.target.files;
+      if (!files.length) return;
+      item.uploading = true;
+      try {
+        for (const file of files) {
+          const formData = new FormData();
+          formData.append('file', file);
+          const response = await api.post('/upload/foto', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+          item.fotos.push(response.data);
+        }
+      } catch (error) {
+        this.toast.error("Erro no upload de uma ou mais fotos.");
+      } finally {
+        item.uploading = false;
+        event.target.value = '';
+      }
+    },
+
+    async salvarItemPortfolio(item, showSuccessToast = true) {
+      if (!item.titulo || !this.prestadorId) {
+        this.toast.error("O título do trabalho é obrigatório.");
+        return;
+      }
+      const dto = {
+        id: item.id,
+        titulo: item.titulo,
+        descricao: item.descricao,
+        fotos: item.fotos,
+        prestadorId: this.prestadorId,
+      };
+      try {
+        if (item.id) {
+          const response = await api.put(`/portfolios/${item.id}`, dto);
+          Object.assign(item, response.data);
+          if (showSuccessToast) this.toast.success("Item do portfólio atualizado!");
+        } else {
+          const response = await api.post('/portfolios', dto);
+          Object.assign(item, response.data);
+          if (showSuccessToast) this.toast.success("Novo item do portfólio salvo!");
+        }
+      } catch (error) {
+        this.toast.error("Falha ao salvar o item do portfólio.");
+      }
+    },
+
+    handleFotoUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.fotoPerfilFile = file;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.usuario.fotoPerfil = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        this.fotoPerfilFile = null;
+        this.usuario.fotoPerfil = null;
+      }
+    },
+    handleImageError(event) {
+      event.target.src = 'https://www.gravatar.com/avatar/?d=mp';
     },
 
     toggleAlterarSenha() {
@@ -325,11 +460,9 @@ export default {
         this.toast.error('Selecione uma cidade para adicionar.');
       }
     },
-
     removerCidade(cidadeId) {
       this.usuario.cidadesSelecionadas = this.usuario.cidadesSelecionadas.filter(id => id !== cidadeId);
     },
-
     getCidadeNome(cidadeId) {
       const cidade = this.cidadesDisponiveis.find(c => c.id === cidadeId);
       return cidade ? cidade.nome : 'ID: ' + cidadeId;
@@ -345,139 +478,75 @@ export default {
         this.toast.error('Selecione uma categoria para adicionar.');
       }
     },
-
     removerCategoria(categoriaId) {
       this.usuario.categoriasSelecionadas = this.usuario.categoriasSelecionadas.filter(id => id !== categoriaId);
     },
-
     getCategoriaNome(categoriaId) {
       const categoria = this.categoriasDisponiveis.find(c => c.id === categoriaId);
       return categoria ? categoria.nome : 'ID: ' + categoriaId;
     },
 
-       async salvarPerfil() {
-        // 1. Validação do tipo de usuário (mantida)
-        if (!this.usuario.prestador && !this.usuario.cliente) {
-            this.toast.error('Selecione pelo menos um tipo de usuário (Prestador ou Cliente).');
-            return;
+    async salvarPerfil() {
+      if (!this.usuario.prestador && !this.usuario.cliente) {
+        this.toast.error('Selecione pelo menos um tipo de usuário (Prestador ou Cliente).');
+        return;
+      }
+      if (this.alterarSenhaVisivel) {
+        if (!this.usuario.senhaAtual || !this.usuario.senha) {
+          this.toast.error('Para alterar a senha, a senha atual e a nova senha são obrigatórias.');
+          return;
         }
-      
-        // 2. Validação da senha, se aplicável
-        if (this.alterarSenhaVisivel) {
-            // --- Início da Nova Validação de Senha ---
-            const erros = [];
-            const novaSenha = this.usuario.senha;
-        
-            // Verifica a senha atual
-            if (!this.usuario.senhaAtual) {
-                erros.push('A senha atual é obrigatória para realizar a alteração.');
-            }
-          
-            // Verifica se uma nova senha foi inserida
-            if (!novaSenha) {
-                erros.push('O campo "Nova Senha" é obrigatório.');
-            } else {
-                // Se uma nova senha foi inserida, aplica todas as regras
-                if (novaSenha.length < 8) { // ATUALIZADO de 6 para 8 caracteres
-                    erros.push('A nova senha deve ter pelo menos 8 caracteres.');
-                }
-                if (!/[A-Z]/.test(novaSenha)) {
-                    erros.push('A nova senha deve conter pelo menos uma letra maiúscula.');
-                }
-                if (!/[a-z]/.test(novaSenha)) {
-                    erros.push('A nova senha deve conter pelo menos uma letra minúscula.');
-                }
-                if (!/\d/.test(novaSenha)) {
-                    erros.push('A nova senha deve conter pelo menos um número.');
-                }
-                if (!/[!@#$%^&*(),.?":{}|<>]/.test(novaSenha)) {
-                    erros.push('A nova senha deve conter um caractere especial (ex: !@#$).');
-                }
-                if (novaSenha !== this.usuario.confirmarSenha) {
-                    erros.push('A nova senha e a confirmação não coincidem.');
-                }
-            }
-          
-            if (erros.length > 0) {
-                this.toast.error(erros[0]);
-                return; // Interrompe a execução se houver erros de senha
-            }
-            // --- Fim da Nova Validação de Senha ---
+        if (this.usuario.senha !== this.usuario.confirmarSenha) {
+           this.toast.error('A nova senha e a confirmação não coincidem.');
+           return;
         }
-      
-        // 3. Preparação dos dados para envio (mantido)
-        const dadosParaEnviar = {
-            nome: this.usuario.nome,
-            endereco: this.usuario.endereco,
-            email: this.usuario.email,
-            telefone: this.usuario.telefone,
-            fotoPerfil: this.usuario.fotoPerfil,
-            prestador: this.usuario.prestador,
-            cliente: this.usuario.cliente,
-            descricao: this.usuario.prestador ? this.usuario.descricao : null,
-            disponibilidade: this.usuario.prestador ? this.usuario.disponibilidade : null,
-            categorias: this.usuario.prestador ? this.usuario.categoriasSelecionadas.map(id => ({ id })) : [],
-            cidades: this.usuario.prestador ? this.usuario.cidadesSelecionadas.map(id => ({ id })) : [],
-            portfolios: this.usuario.prestador ? this.usuario.portfolios.map(p => ({
-                id: p.id || null,
-                urlImagem: p.urlImagem,
-                descricao: p.descricao
-            })) : [],
-        };
-      
-        if (this.alterarSenhaVisivel) {
-            dadosParaEnviar.senhaAtual = this.usuario.senhaAtual;
-            dadosParaEnviar.senha = this.usuario.senha;
-        }
-      
-        // 4. Chamada à API e tratamento de resposta (mantido)
-        try {
-            if (!this.userStore.user || !this.userStore.user.id) {
-                this.toast.error("ID do usuário não encontrado. Por favor, faça login novamente.");
-                return;
-            }
-            const userId = this.userStore.user.id;
-          
-            const response = await api.put(`/usuarios/editar/${userId}`, dadosParaEnviar, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-          
-            this.userStore.setUser({
-                nome: dadosParaEnviar.nome,
-                email: dadosParaEnviar.email,
-                endereco: dadosParaEnviar.endereco,
-                telefone: dadosParaEnviar.telefone,
-                foto: response.data.fotoPerfilUrl,
-                prestador: dadosParaEnviar.prestador,
-                cliente: dadosParaEnviar.cliente,
-            });
-          
-            this.toast.success(response.data.message || 'Perfil atualizado com sucesso!');
-          
-            try {
-                await this.router.push({ name: 'EditarPerfilUsuario', params: { id: userId } });
-            } catch (error) {
-                console.error('Navigation error:', error);
-                this.toast.error('Rota de perfil não encontrada. Redirecionando para a página inicial.');
-                await this.router.push({ name: 'Home' });
-            }
-        } catch (error) {
-            console.error("Erro ao salvar perfil:", error.response || error);
-            const errorMessage = error.response?.data?.message ||
-                (error.response?.data?.errors ? Object.values(error.response.data.errors).join(', ') : null) ||
-                error.response?.data?.error ||
-                'Falha ao atualizar o perfil. Verifique os dados e tente novamente.';
-            this.toast.error(errorMessage);
-        }
+      }
+
+      const dadosParaEnviar = {
+        nome: this.usuario.nome,
+        endereco: this.usuario.endereco,
+        email: this.usuario.email,
+        telefone: this.usuario.telefone,
+        fotoPerfil: this.usuario.fotoPerfil,
+        prestador: this.usuario.prestador,
+        cliente: this.usuario.cliente,
+        descricao: this.usuario.prestador ? this.usuario.descricao : null,
+        disponibilidade: this.usuario.prestador ? this.usuario.disponibilidade : null,
+        categorias: this.usuario.prestador ? this.usuario.categoriasSelecionadas.map(id => ({ id })) : [],
+        cidades: this.usuario.prestador ? this.usuario.cidadesSelecionadas.map(id => ({ id })) : [],
+      };
+
+      if (this.alterarSenhaVisivel) {
+        dadosParaEnviar.senhaAtual = this.usuario.senhaAtual;
+        dadosParaEnviar.senha = this.usuario.senha;
+      }
+
+      try {
+        const userId = this.userStore.user.id;
+        const response = await api.put(`/usuarios/editar/${userId}`, dadosParaEnviar);
+
+        this.userStore.setUser({
+          nome: dadosParaEnviar.nome,
+          email: dadosParaEnviar.email,
+          endereco: dadosParaEnviar.endereco,
+          telefone: dadosParaEnviar.telefone,
+          foto: response.data.fotoPerfilUrl,
+          prestador: dadosParaEnviar.prestador,
+          cliente: dadosParaEnviar.cliente,
+        });
+
+        this.toast.success(response.data.message || 'Perfil atualizado com sucesso!');
+        this.router.push({ name: 'EditarPerfilUsuario', params: { id: userId } });
+      } catch (error) {
+        this.toast.error(error.response?.data?.message || 'Falha ao atualizar o perfil.');
+      }
     },
   },
 };
 </script>
 
 <style scoped>
+/* SEU CSS EXISTENTE VAI AQUI (NÃO PRECISA MUDAR NADA NO CSS) */
 .editar-perfil-container {
   max-width: 600px;
   margin: 50px auto;
@@ -535,23 +604,25 @@ textarea.input-field {
   gap: 25px;
   align-items: center;
 }
+
 .checkbox-group div {
   display: flex;
   align-items: center;
 }
+
 .checkbox-group input[type="checkbox"] {
   margin-right: 8px;
   width: 18px;
   height: 18px;
   accent-color: #007bff;
 }
+
 .checkbox-group label {
   margin-bottom: 0;
   font-weight: normal;
 }
 
-.foto-preview,
-.portfolio-preview {
+.foto-preview {
   max-width: 120px;
   height: auto;
   margin-top: 12px;
@@ -562,28 +633,15 @@ textarea.input-field {
 }
 
 .prestador-section,
-.senha-section,
-.portfolio-section {
+.senha-section {
   margin-top: 30px;
   padding-top: 20px;
   border-top: 1px solid #eee;
 }
 
-.prestador-section h3,
-.portfolio-section h4 {
+.prestador-section h3 {
   margin-bottom: 20px;
   color: #333;
-}
-
-.portfolio-item {
-  margin-bottom: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 15px;
-  border: 1px solid #e7e7e7;
-  border-radius: 6px;
-  background-color: #fdfdfd;
 }
 
 .cidades-selecionadas,
@@ -636,21 +694,6 @@ textarea.input-field {
   justify-content: center;
 }
 
-.trash-icon:hover::after {
-  content: 'Remover';
-  position: absolute;
-  top: -30px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #333;
-  color: #fff;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.8em;
-  white-space: nowrap;
-  z-index: 10;
-}
-
 .trash-icon:hover svg {
   opacity: 0.8;
 }
@@ -662,13 +705,10 @@ textarea.input-field {
   align-items: center;
   margin-top: 10px;
 }
+
 .adicionar-cidade .input-field,
 .adicionar-categoria .input-field {
   flex-grow: 1;
-}
-
-.remove-btn {
-  display: none; /* Oculta o botão original */
 }
 
 .add-btn {
@@ -726,5 +766,192 @@ textarea.input-field {
 
 .save-btn:hover {
   background-color: #0056b3;
+}
+
+/* CSS para a nova Seção de Portfólio */
+.portfolio-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+.portfolio-section h4 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.portfolio-item {
+  margin-bottom: 25px;
+  padding: 20px;
+  border: 1px solid #e7e7e7;
+  border-radius: 8px;
+  background-color: #fdfdfd;
+  position: relative;
+}
+
+.portfolio-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.portfolio-item-header h5 {
+    margin: 0;
+    font-size: 1.1em;
+    color: #444;
+}
+
+.remove-btn-portfolio {
+    background: transparent;
+    border: none;
+    color: #e74c3c;
+    font-size: 1.8em;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 5px;
+}
+.remove-btn-portfolio:hover {
+    color: #c0392b;
+}
+
+.portfolio-fotos-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.thumbnail-wrapper {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.thumbnail:hover {
+  transform: scale(1.05);
+}
+
+.remove-btn-foto {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 22px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.add-foto-wrapper {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.add-foto-input {
+  display: none;
+}
+.add-foto-label {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 2.5em;
+  font-weight: 300;
+}
+.add-foto-label:hover {
+  background-color: #f9f9f9;
+  color: #888;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border-left-color: #007bff;
+    animation: spin 1s ease infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.save-item-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    margin-top: 15px;
+}
+.save-item-btn:hover {
+    background-color: #218838;
+}
+.save-item-btn:disabled {
+    background-color: #bdc3c7;
+    cursor: not-allowed;
+}
+
+/* Estilos do Modal de Imagem */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+.imagem-ampliada {
+  display: block;
+  max-width: 100%;
+  max-height: 90vh;
+  border-radius: 5px;
+}
+.modal-close {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  color: #fff;
+  font-size: 2em;
+  cursor: pointer;
+  background: rgba(0,0,0,0.5);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
 }
 </style>
