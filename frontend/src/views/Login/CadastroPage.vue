@@ -33,16 +33,39 @@
         <div class="input-group">
           <label for="telefone">Telefone:</label>
           <input v-model="usuario.telefone" type="tel" id="telefone" required class="input-field"
-            placeholder="Ex: 11987654321" />
+            placeholder="Ex: (11) 98765-4321" />
         </div>
+
         <div class="input-group">
           <label for="senha">Senha:</label>
-          <input v-model="usuario.senha" type="password" id="senha" required class="input-field" />
+          <div class="password-wrapper">
+            <input v-model="usuario.senha" :type="senhaFieldType" id="senha" required class="input-field" />
+            <i 
+              class="password-toggle-icon bi"
+              :class="senhaVisivel ? 'bi-eye' : 'bi-eye-slash'"
+              @mousedown="toggleVisibilidade('senha', true)"
+              @mouseup="toggleVisibilidade('senha', false)"
+              @mouseleave="toggleVisibilidade('senha', false)"
+              title="Segure para ver a senha"
+            ></i>
+          </div>
         </div>
+
         <div class="input-group">
           <label for="confirmarSenha">Confirmar Senha:</label>
-          <input v-model="usuario.confirmarSenha" type="password" id="confirmarSenha" required class="input-field" />
+          <div class="password-wrapper">
+            <input v-model="usuario.confirmarSenha" :type="confirmarSenhaFieldType" id="confirmarSenha" required class="input-field" />
+            <i
+              class="password-toggle-icon bi"
+              :class="confirmarSenhaVisivel ? 'bi-eye' : 'bi-eye-slash'"
+              @mousedown="toggleVisibilidade('confirmar', true)"
+              @mouseup="toggleVisibilidade('confirmar', false)"
+              @mouseleave="toggleVisibilidade('confirmar', false)"
+              title="Segure para ver a senha"
+            ></i>
+          </div>
         </div>
+        
         <button type="submit" class="register-btn">Cadastrar</button>
       </form>
     </div>
@@ -52,6 +75,9 @@
 <script>
 import api from '@/services/api';
 import { useToast } from 'vue-toastification';
+// Se o Bootstrap Icons não for importado globalmente no seu projeto (main.js),
+// esta linha garante que os ícones de olho funcionarão neste componente.
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 export default {
   name: 'CadastroPage',
@@ -67,149 +93,139 @@ export default {
         senha: '',
         confirmarSenha: '',
       },
+      // Novas propriedades para controlar a visibilidade da senha
+      senhaVisivel: false,
+      confirmarSenhaVisivel: false,
     };
   },
   setup() {
     const toast = useToast();
     return { toast };
   },
+  computed: {
+    // Propriedades computadas para mudar o tipo do input (text/password)
+    senhaFieldType() {
+      return this.senhaVisivel ? 'text' : 'password';
+    },
+    confirmarSenhaFieldType() {
+      return this.confirmarSenhaVisivel ? 'text' : 'password';
+    }
+  },
   watch: {
     'usuario.telefone'(novoValor) {
-      // Esta função será chamada sempre que o telefone for alterado
       if (!novoValor) return '';
-      
-      // 1. Remove tudo que não for dígito
       let numeros = novoValor.replace(/\D/g, '');
-
-      // 2. Limita a 11 dígitos para não exceder o tamanho do celular com DDD
       if (numeros.length > 11) {
         numeros = numeros.slice(0, 11);
       }
-
-      // 3. Aplica a máscara dinamicamente
       if (numeros.length > 10) {
-        // Formato (XX) XXXXX-XXXX
         numeros = numeros.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
       } else if (numeros.length > 6) {
-        // Formato (XX) XXXX-XXXX
         numeros = numeros.replace(/(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
       } else if (numeros.length > 2) {
-        // Formato (XX) XXXXX
         numeros = numeros.replace(/(\d{2})(\d{0,5})/, '($1) $2');
       } else {
-        // Formato (XX
         if (numeros.length > 0) {
             numeros = numeros.replace(/(\d{0,2})/, '($1');
         }
       }
-
-      // 4. Atualiza o valor no v-model sem causar um loop infinito
       if (novoValor !== numeros) {
         this.usuario.telefone = numeros;
       }
     }
   },
   methods: {
+    // Novo método para alternar a visibilidade da senha
+    toggleVisibilidade(campo, visivel) {
+      if (campo === 'senha') {
+        this.senhaVisivel = visivel;
+      } else if (campo === 'confirmar') {
+        this.confirmarSenhaVisivel = visivel;
+      }
+    },
+
     async cadastrarUsuario() {
-  // --- Início da Nova Validação de Senha ---
-    const erros = [];
-    const senha = this.usuario.senha;
-
-    if (this.usuario.nome.length > 50) {
-      erros.push('O nome deve ter no máximo 50 caracteres.');
-    }
-
-    // 2. Validação de Endereço (máx 50 caracteres)
-    if (this.usuario.endereco.length > 50) {
-      erros.push('O endereço deve ter no máximo 50 caracteres.');
-    }
-
-    // 3. Validação de Email (formato)
-    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-    if (!emailRegex.test(this.usuario.email)) {
-      erros.push('Por favor, insira um formato de email válido.');
-    }
-
-    // 4. Validação de Telefone (10 ou 11 dígitos)
-    const telefoneLimpo = this.usuario.telefone.replace(/\D/g, ''); // Remove a máscara
-    if (telefoneLimpo.length < 10 || telefoneLimpo.length > 11) {
-      erros.push('O telefone deve ter 10 ou 11 dígitos (incluindo DDD).');
-    }
-      
-    if (senha.length < 8) {
-      erros.push('A senha deve ter pelo menos 8 caracteres.');
-    }
-    if (!/[A-Z]/.test(senha)) {
-      erros.push('A senha deve conter pelo menos uma letra maiúscula.');
-    }
-    if (!/[a-z]/.test(senha)) {
-      erros.push('A senha deve conter pelo menos uma letra minúscula.');
-    }
-    if (!/\d/.test(senha)) {
-      erros.push('A senha deve conter pelo menos um número.');
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(senha)) {
-      erros.push('A senha deve conter pelo menos um caractere especial (ex: !@#$).');
-    }
+      // --- Validações de frontend ---
+      const erros = [];
+      const senha = this.usuario.senha;
+      if (this.usuario.nome.length > 50) {
+        erros.push('O nome deve ter no máximo 50 caracteres.');
+      }
+      if (this.usuario.endereco.length > 50) {
+        erros.push('O endereço deve ter no máximo 50 caracteres.');
+      }
+      const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      if (!emailRegex.test(this.usuario.email)) {
+        erros.push('Por favor, insira um formato de email válido.');
+      }
+      const telefoneLimpo = this.usuario.telefone.replace(/\D/g, '');
+      if (telefoneLimpo.length < 10 || telefoneLimpo.length > 11) {
+        erros.push('O telefone deve ter 10 ou 11 dígitos (incluindo DDD).');
+      }
+      if (senha.length < 8) {
+        erros.push('A senha deve ter pelo menos 8 caracteres.');
+      }
+      if (!/[A-Z]/.test(senha)) {
+        erros.push('A senha deve conter pelo menos uma letra maiúscula.');
+      }
+      if (!/[a-z]/.test(senha)) {
+        erros.push('A senha deve conter pelo menos uma letra minúscula.');
+      }
+      if (!/\d/.test(senha)) {
+        erros.push('A senha deve conter pelo menos um número.');
+      }
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(senha)) {
+        erros.push('A senha deve conter pelo menos um caractere especial (ex: !@#$).');
+      }
+      if (this.usuario.senha !== this.usuario.confirmarSenha) {
+        erros.push('As senhas não coincidem.');
+      }
+      if (!this.usuario.prestador && !this.usuario.cliente) {
+        this.toast.error('Selecione pelo menos um tipo de usuário.');
+        return;
+      }
+      if (erros.length > 0) {
+        this.toast.error(erros[0]);
+        return; 
+      }
     
-    if (this.usuario.senha !== this.usuario.confirmarSenha) {
-      erros.push('As senhas não coincidem.');
-    }
-  
-    if (!this.usuario.prestador && !this.usuario.cliente) {
-      this.toast.error('Selecione pelo menos um tipo de usuário.');
-      return;
-    }
-        if (erros.length > 0) {
-      this.toast.error(erros[0]);
-      return; 
-    }
-  
-    try {
+      try {
         const telefoneLimpoParaApi = this.usuario.telefone.replace(/\D/g, '');
-
-    // 2. Monta o payload (os dados a serem enviados) com o telefone já limpo.
-    const payloadParaApi = {
-      nome: this.usuario.nome,
-      endereco: this.usuario.endereco,
-      prestador: this.usuario.prestador,
-      cliente: this.usuario.cliente,
-      email: this.usuario.email,
-      telefone: telefoneLimpoParaApi, // <<< Usa o valor sem máscara
-      senha: this.usuario.senha,
-      confirmarSenha: this.usuario.confirmarSenha,
-    };
-    
-     const response = await api.post('/usuarios/cadastrar', payloadParaApi);
-    
-    this.toast.success(response.data.message);
-    
-      // Limpar formulário
-      this.usuario = {
-        nome: '',
-        endereco: '',
-        prestador: false,
-        cliente: false,
-        email: '',
-        telefone: '',
-        senha: '',
-        confirmarSenha: '',
-      };
-    
-      setTimeout(() => {
-        this.$router.push('/login');
-      }, 2000);
-    } catch (error) {
-      if (error.response && error.response.data) {
-        this.toast.error(error.response.data.message);
-      } else {
-        this.toast.error('Erro ao cadastrar usuário. Tente novamente.');
+        const payloadParaApi = {
+          nome: this.usuario.nome,
+          endereco: this.usuario.endereco,
+          prestador: this.usuario.prestador,
+          cliente: this.usuario.cliente,
+          email: this.usuario.email,
+          telefone: telefoneLimpoParaApi,
+          senha: this.usuario.senha,
+          confirmarSenha: this.usuario.confirmarSenha,
+        };
+        const response = await api.post('/usuarios/cadastrar', payloadParaApi);
+        this.toast.success(response.data.message);
+        this.usuario = {
+          nome: '',
+          endereco: '',
+          prestador: false,
+          cliente: false,
+          email: '',
+          telefone: '',
+          senha: '',
+          confirmarSenha: '',
+        };
+        setTimeout(() => {
+          this.$router.push('/login');
+        }, 2000);
+      } catch (error) {
+        if (error.response && error.response.data) {
+          this.toast.error(error.response.data.message);
+        } else {
+          this.toast.error('Erro ao cadastrar usuário. Tente novamente.');
+        }
       }
     }
   }
-  }
 };
-
 </script>
 
 <style scoped>
@@ -229,12 +245,39 @@ export default {
   margin-bottom: 15px;
 }
 
+/* NOVO: Container para o input de senha e o ícone */
+.password-wrapper {
+  position: relative;
+}
+
 .input-field {
   width: 95.5%;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
+/* Adiciona um espaço à direita no input de senha para o ícone não sobrepor o texto */
+.password-wrapper .input-field {
+  width: 100%; /* Ocupa todo o espaço do wrapper */
+  box-sizing: border-box; /* Garante que o padding não aumente a largura total */
+  padding-right: 40px; /* Espaço para o ícone */
+}
+
+/* NOVO: Estilo e posicionamento do ícone de olho */
+.password-toggle-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px; /* Distância da borda direita */
+  transform: translateY(-50%); /* Alinhamento vertical perfeito */
+  cursor: pointer;
+  color: #888;
+}
+
+.password-toggle-icon:hover {
+    color: #333;
+}
+
 
 .checkbox-group {
   display: flex;
