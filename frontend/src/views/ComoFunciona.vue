@@ -83,7 +83,7 @@ export default {
 </script>
 
 <style scoped>
-.how-it-works-container {
+/* .how-it-works-container {
     background-color: #f7f9fc;
     display: flex;
     justify-content: center;
@@ -104,7 +104,32 @@ export default {
     border: none;
     position: relative;
     overflow: hidden;
+} */
+
+
+
+.how-it-works-container {
+  background-color: #f7f9fc;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 100%;
+  min-height: calc(100vh - 80px);
+  padding: 40px 20px;
+  font-family: 'Roboto', 'Arial', sans-serif;
 }
+
+.how-it-works-box {
+  width: 60%;
+  padding: 30px;
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(26, 119, 181, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+
 
 .how-it-works-box::before {
     content: '';
@@ -113,7 +138,6 @@ export default {
     left: 0;
     right: 0;
     height: 5px;
-    background: #F4B400; /* Borda amarela no topo */
 }
 
 h1 {
@@ -176,7 +200,6 @@ h1::after {
     left: 0;
     width: 5px;
     height: 100%;
-    background-color: #257BB8; /* Borda lateral azul */
 }
 
 .step-card:hover {

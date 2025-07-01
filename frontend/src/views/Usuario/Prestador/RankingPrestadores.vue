@@ -406,7 +406,7 @@ h1:after {
   align-items: center;
 }
 
-.busca-input {
+/* .busca-input {
   flex-grow: 1;
   padding: 10px 15px;
   font-size: 1rem;
@@ -420,6 +420,25 @@ h1:after {
   outline: none;
   border-color: var(--conectin-blue);
   box-shadow: 0 0 0 3px rgba(26, 119, 181, 0.15);
+} */
+
+.busca-input {
+  padding: 15px 20px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 40px;
+  display: block;
+  font-size: 1.1rem;
+  border: 2px solid #257BB8;
+  border-radius: 30px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.busca-input:focus {
+  outline: none;
+  border-color: #F4B400;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .limpar-busca-btn.icon-btn {

@@ -180,20 +180,28 @@ export default {
   Bordas: #E0E6ED
 */
 
+
 .perfil-container {
-    max-width: 900px;
-    margin: 40px auto;
-    font-family: 'Roboto', Arial, sans-serif;
-    color: #2c3e50;
+    background-color: #f7f9fc;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 100%;
+    min-height: calc(100vh - 80px);
+    padding: 40px 20px;
+    font-family: 'Roboto', 'Arial', sans-serif;
 }
 
 .perfil-box {
-    padding: 35px;
-    border-radius: 16px;
-    background-color: #ffffff;
-    box-shadow: 0 10px 30px rgba(30, 122, 197, 0.1);
-    border: 1px solid #E0E6ED;
+    width: 60%;
+    padding: 30px;
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(26, 119, 181, 0.15);
+    position: relative;
+    overflow: hidden;
 }
+
 
 .usuario-header {
     display: flex;
@@ -201,7 +209,6 @@ export default {
     gap: 25px;
     margin-bottom: 30px;
     padding-bottom: 30px;
-    border-bottom: 1px solid #E0E6ED;
 }
 
 .usuario-foto-grande {
@@ -274,7 +281,6 @@ export default {
 }
 
 .avaliacao-card {
-    background-color: #F7F9FC;
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 15px;

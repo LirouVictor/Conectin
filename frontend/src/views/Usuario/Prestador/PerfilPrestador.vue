@@ -359,14 +359,24 @@ export default {
 /* ==========================================================================
    ESTRUTURA BASE E CONTAINER
    ========================================================================== */
-.perfil-container {
-  max-width: 900px;
+
+.perfil-container {  
+  background-color: #f7f9fc;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 100%;
+  min-height: calc(100vh - 80px);
+  padding: 40px 20px;
+  font-family: 'Roboto', 'Arial', sans-serif;
+  /* max-width: 900px;
   margin: 50px auto;
   padding: 0 15px;
-  font-family: 'Roboto', Arial, sans-serif;
+  font-family: 'Roboto', Arial, sans-serif; */
 }
 
 .perfil-box {
+  width: 60%;
   padding: 30px;
   border-radius: 12px;
   background-color: #FFFFFF;
@@ -397,24 +407,23 @@ export default {
   align-items: center;
   text-align: center;
   padding: 40px 30px;
-  background: linear-gradient(180deg, var(--fundo-secundario) 0%, var(--fundo-primario) 100%);
-  border-bottom: 1px solid var(--borda-neutra);
+  background: linear-gradient(180deg, var(--fundo-secundario) 0%, #FFFFFF 100%);
 }
 
 .perfil-foto {
-  width: 140px;
-  height: 140px;
+  width: 250px;
+  height: 250px;
   border-radius: 50%;
   object-fit: cover;
-  border: 6px solid var(--fundo-primario);
-  box-shadow: 0 0 0 4px var(--azul-principal), 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 6px solid #FFFFFF;
+  box-shadow: 0 0 0 4px #1E7AC5, 0 10px 30px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
 }
 
 .perfil-header h2 {
   font-size: 2rem;
   font-weight: 700;
-  color: var(--texto-principal);
+  color: #2c3e50;
   margin: 0 0 10px 0;
 }
 
@@ -422,13 +431,12 @@ export default {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: var(--amarelo-destaque);
-  color: var(--texto-principal);
+  color: #2c3e50;
   /* TEXTO ESCURO NO FUNDO AMARELO */
   font-weight: bold;
   padding: 8px 18px;
   border-radius: 50px;
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   border: none;
 }
 
@@ -447,8 +455,8 @@ h1 {
 
 /* Bloco de informações */
 .perfil-info {
-  padding: 25px;
-  background-color: var(--fundo-secundario);
+  padding: 50px;
+  background-color: #F7F9FC;
   border-radius: 12px;
   margin-bottom: 30px;
 }
@@ -456,7 +464,7 @@ h1 {
 .perfil-info p {
   margin: 0 0 12px 0;
   line-height: 1.7;
-  color: var(--texto-secundario);
+  color: #5A6A7B;
 }
 
 .perfil-info p:last-child {
@@ -464,7 +472,7 @@ h1 {
 }
 
 .perfil-info strong {
-  color: var(--azul-escuro);
+  color: #155e8f;
   font-weight: 500;
 }
 
@@ -531,7 +539,7 @@ h1 {
 h3 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--azul-principal);
+  color: #1E7AC5;
   margin: 50px 0 25px 0;
   text-align: center;
   position: relative;
@@ -542,7 +550,7 @@ h3::after {
   display: block;
   width: 50px;
   height: 3px;
-  background-color: var(--amarelo-destaque);
+  background-color: #F8B617;
   border-radius: 2px;
   margin: 10px auto 0;
 }
@@ -554,7 +562,7 @@ h3::after {
   padding: 10px 5px 20px 5px;
   /* Padding para a sombra aparecer */
   scrollbar-width: thin;
-  scrollbar-color: var(--borda-neutra) transparent;
+  scrollbar-color: transparent;
 }
 
 .thumbnail-wrapper {
@@ -569,7 +577,7 @@ h3::after {
 
 .thumbnail-wrapper:hover {
   transform: translateY(-8px);
-  box-shadow: 0 10px 25px var(--sombra-cor);
+  box-shadow: 0 10px 25px rgba(30, 122, 197, 0.1);
 }
 
 .portfolio-thumbnail {
@@ -593,29 +601,28 @@ h3::after {
   padding: 8px 12px;
   border: 1px solid var(--borda-neutra);
   border-radius: 8px;
-  background-color: var(--fundo-primario);
+  background-color: #FFFFFF;
   font-size: 14px;
   cursor: pointer;
 }
 
 .filtro-ordenacao select:focus {
   outline: none;
-  border-color: var(--amarelo-destaque);
+  border-color: #F8B617;
 }
 
 .avaliacao-card {
-  background-color: var(--fundo-primario);
+  background-color: #FFFFFF;
   border-radius: 16px;
   padding: 25px;
   margin-bottom: 20px;
-  border: 1px solid var(--borda-neutra);
   transition: all 0.3s ease;
 }
 
 .avaliacao-card:hover {
   transform: translateY(-5px);
-  border-color: var(--azul-principal);
-  box-shadow: 0 8px 25px var(--sombra-cor);
+  border-color: #1E7AC5;
+  box-shadow: 0 8px 25px rgba(30, 122, 197, 0.1);
 }
 
 .avaliador-info {
@@ -638,17 +645,16 @@ h3::after {
 
 .avaliador-nome {
   font-weight: bold;
-  color: var(--texto-principal);
+  color: #2c3e50;
 }
 
 .avaliacao-data {
   font-size: 0.8rem;
-  color: var(--texto-secundario);
+  color: #5A6A7B;
 }
 
 .avaliacao-conteudo {
   margin-top: 15px;
-  border-top: 1px solid var(--borda-neutra);
   padding-top: 15px;
 }
 
@@ -661,13 +667,13 @@ h3::after {
 }
 
 .nota-estrelas .estrela.preenchida {
-  color: var(--amarelo-destaque);
+  color: #F8B617;
 }
 
 .comentario-texto {
   margin: 10px 0 0 0;
   line-height: 1.6;
-  color: var(--texto-secundario);
+  color: #5A6A7B;
 }
 
 .avaliador-info-link {
@@ -693,15 +699,15 @@ h3::after {
 .portfolio-section p {
   text-align: center;
   padding: 40px;
-  color: var(--texto-secundario);
+  color: #5A6A7B;
   font-style: italic;
 }
 
 .loading-spinner,
 .loading-spinner-small {
-  border: 4px solid var(--sombra-cor);
+  border: 4px solid rgba(30, 122, 197, 0.1);
   border-radius: 50%;
-  border-top-color: var(--amarelo-destaque);
+  border-top-color: #F8B617;
   animation: spin 1s linear infinite;
   display: inline-block;
   margin: 0 auto;

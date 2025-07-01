@@ -546,19 +546,20 @@ export default {
 </script>
 
 <style scoped>
-/* SEU CSS EXISTENTE VAI AQUI (NÃO PRECISA MUDAR NADA NO CSS) */
+
 .editar-perfil-container {
-  max-width: 800px;
-  margin: 50px auto;
-  font-family: 'Inter', sans-serif;
+  background-color: #f7f9fc;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 100%;
+  min-height: calc(100vh - 80px);
+  padding: 40px 20px;
+  font-family: 'Roboto', 'Arial', sans-serif;
 }
 
 .editar-perfil-box {
-  /* padding: 30px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); */
+  width: 50%;
   padding: 30px;
   background-color: #FFFFFF;
   border-radius: 12px;

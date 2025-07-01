@@ -128,23 +128,25 @@ const submeterAvaliacao = async () => {
 
 <style scoped>
 .evaluation-page-container {
+    background-color: #f7f9fc;
     display: flex;
     justify-content: center;
-    align-items: center;
-    min-height: 80vh;
-    padding: 20px;
-    background-color: #FFFFFF;
+    align-items: flex-start;
+    max-width: 100%;
+    min-height: calc(100vh - 190px);
+    padding: 40px 20px;
+    font-family: 'Roboto', 'Arial', sans-serif;
 }
 
 .evaluation-form-card {
+    width: 40%;
+    margin-top: 3%;
     padding: 30px;
     background-color: #FFFFFF;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(26, 119, 181, 0.15);
     position: relative;
     overflow: hidden;
-    width: 100%;
-    max-width: 500px;
 }
 
 .title {
@@ -172,23 +174,25 @@ label {
 }
 
 textarea {
-  width: 100%;
-  padding: 14px 16px;
-  border: 1px solid #E0E6ED;
-  border-radius: 8px;
-  font-size: 16px;
-  box-sizing: border-box;
-  transition: border-color 0.3s, box-shadow 0.3s;
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #E0E6ED;
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 textarea::placeholder {
-  color: #aab5c0;
+    color: #aab5c0;
 }
 
 textarea:focus {
-  outline: none;
-  border-color: #F8B617; /* **MUDANÇA:** Borda de foco amarela */
-  box-shadow: 0 0 0 4px rgba(248, 182, 23, 0.2); /* Sombra de foco amarela */
+    outline: none;
+    border-color: #F8B617;
+    /* **MUDANÇA:** Borda de foco amarela */
+    box-shadow: 0 0 0 4px rgba(248, 182, 23, 0.2);
+    /* Sombra de foco amarela */
 }
 
 .star-rating {
@@ -233,45 +237,47 @@ textarea:focus {
 
 
 .submit-btn {
-  width: 100%;
-  padding: 15px;
-  background-color: #F8B617; /* **MUDANÇA PRINCIPAL:** Botão de login é amarelo */
-  color: #FFFFFF;
-  font-size: 16px;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-top: 10px;
+    width: 100%;
+    padding: 15px;
+    background-color: #F8B617;
+    /* **MUDANÇA PRINCIPAL:** Botão de login é amarelo */
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
 }
 
 .submit-btn:hover {
-  background-color: #1E7AC5; /* **MUDANÇA:** Hover state agora é o azul principal */
-  transform: translateY(-3px);
-  box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
-  color: #fff;
-  text-decoration: none;
-  transform: translateY(-2px);
+    background-color: #1E7AC5;
+    /* **MUDANÇA:** Hover state agora é o azul principal */
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-2px);
 }
 
 .submit-btn:before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.7s;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.7s;
 }
 
 .submit-btn:hover:before {
-  left: 100%;
+    left: 100%;
 }
 
 .submit-btn::active {
-  transform: translateY(0);
+    transform: translateY(0);
 }
 
 
