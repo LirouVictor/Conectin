@@ -65,83 +65,139 @@ export default {
 </script>
 
 <style scoped>
+/*
+  --- PALETA DE CORES E FONTES PADRÃO ---
+  Azul Estrutural: #1E7AC5
+  Amarelo Ação/Destaque: #F8B617
+  Fundo: #F7F9FC
+  Fonte Principal: 'Roboto', Arial, sans-serif
+*/
+
+/* Container e Box (Padrão da aplicação) */
 .recovery-container {
-  max-width: 400px;
-  margin: 50px auto;
-  font-family: Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  background-color: #f7f9fc;
+  padding: 20px;
+  font-family: 'Roboto', Arial, sans-serif;
 }
 
 .recovery-box {
-  padding: 25px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(30, 122, 197, 0.1);
   text-align: center;
 }
 
+/* Títulos e Textos Instrutivos */
 .recovery-box h2 {
+  color: #2c3e50;
   margin-bottom: 15px;
-  color: #333;
+  font-size: 28px;
+  font-weight: 700;
 }
 
 .recovery-instructions {
-  margin-bottom: 25px;
-  color: #555;
-  font-size: 0.95em;
-  line-height: 1.6;
+  margin-bottom: 30px;
+  color: #5A6A7B;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
+/* Inputs e Labels (Padrão da aplicação) */
 .input-group {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
   text-align: left;
 }
 
 .input-group label {
   display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #444;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .input-field {
-  width: calc(100% - 20px); /* Considera padding */
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #E0E6ED;
+  border-radius: 8px;
+  font-size: 16px;
   box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
+.input-field::placeholder {
+  color: #aab5c0;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #F8B617;
+  box-shadow: 0 0 0 4px rgba(248, 182, 23, 0.2);
+}
+
+/* Botão de Ação Principal (Padrão da aplicação) */
 .recovery-btn {
   width: 100%;
-  padding: 12px;
-  background-color: #28a745; /* Verde para ação positiva */
-  color: white;
-  font-size: 1em;
+  padding: 15px;
+  background-color: #F8B617;
+  color: #FFFFFF;
+  font-size: 16px;
   font-weight: bold;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  position: relative;
+  overflow: hidden;
 }
 
-.recovery-btn:hover {
-  background-color: #218838;
+.recovery-btn:hover:not(:disabled) {
+  background-color: #1E7AC5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+}
+
+.recovery-btn:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.7s;
+}
+
+.recovery-btn:hover:not(:disabled):before {
+  left: 100%;
 }
 
 .recovery-btn:disabled {
-  background-color: #cccccc;
+  background-color: #f8b617;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
+/* Link Secundário (Padrão da aplicação) */
 .back-to-login {
   margin-top: 25px;
-  font-size: 0.9em;
+  font-size: 14px;
+  color: #5A6A7B;
 }
 
 .back-to-login a {
-  color: #007bff;
+  color: #1E7AC5;
   text-decoration: none;
+  font-weight: 500;
 }
 
 .back-to-login a:hover {

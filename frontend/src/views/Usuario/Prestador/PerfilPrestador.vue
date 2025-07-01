@@ -250,8 +250,8 @@ export default {
 
       const currentUser = this.userStore.user;
       if (!currentUser) {
-        this.toast.info('Você precisa estar cadastrado para entrar em contato. Redirecionando para cadastro...');
-        this.router.push({ name: 'Cadastro' });
+        this.toast.info('Você precisa estar logado para entrar em contato. Redirecionando para login...');
+        this.router.push({ name: 'Login' });
         return;
       }
 
