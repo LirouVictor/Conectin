@@ -229,73 +229,167 @@ export default {
 </script>
 
 <style scoped>
+/* ==========================================================================
+   PALETA E ESTRUTURA - REPLICAÇÃO DO LOGIN.VUE (COM CORREÇÃO DE BORDAS)
+   ========================================================================== */
+:root {
+  --azul-principal: #1E7AC5;
+  --amarelo-destaque: #F8B617;
+  --fundo-pagina: #F7F9FC;
+  --fundo-box: #FFFFFF;
+  --texto-principal: #2c3e50;
+  --texto-secundario: #5A6A7B;
+  --borda-neutra: #E0E6ED; /* A COR DA BORDA QUE FALTAVA */
+}
+
 .register-container {
-  max-width: 500px;
-  margin: 50px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  background-color: #f7f9fc;
+  padding: 40px 20px;
+  font-family: 'Roboto', Arial, sans-serif;
 }
 
 .register-box {
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 550px;
+  padding: 40px;
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(30, 122, 197, 0.1);
+  text-align: left;
 }
 
+.register-box h1 {
+  text-align: center;
+  color: var(--texto-principal);
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 35px 0;
+}
+
+/* ==========================================================================
+   INPUTS E LABELS (COM CORREÇÃO DE BORDA)
+   ========================================================================== */
 .input-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
-/* NOVO: Container para o input de senha e o ícone */
+.input-group label {
+  display: block;
+  font-weight: 500;
+  color: var(--texto-secundario);
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+/* CORREÇÃO APLICADA AQUI */
+.input-field {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #E0E6ED;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-field::placeholder {
+  color: #aab5c0;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #F8B617; /* **MUDANÇA:** Borda de foco amarela */
+  box-shadow: 0 0 0 4px rgba(248, 182, 23, 0.2); /* Sombra de foco amarela */
+}
+
 .password-wrapper {
   position: relative;
 }
 
-.input-field {
-  width: 95.5%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-/* Adiciona um espaço à direita no input de senha para o ícone não sobrepor o texto */
 .password-wrapper .input-field {
-  width: 100%; /* Ocupa todo o espaço do wrapper */
-  box-sizing: border-box; /* Garante que o padding não aumente a largura total */
-  padding-right: 40px; /* Espaço para o ícone */
+  padding-right: 50px;
 }
 
-/* NOVO: Estilo e posicionamento do ícone de olho */
 .password-toggle-icon {
   position: absolute;
   top: 50%;
-  right: 10px; /* Distância da borda direita */
-  transform: translateY(-50%); /* Alinhamento vertical perfeito */
+  right: 15px;
+  transform: translateY(-50%);
   cursor: pointer;
-  color: #888;
+  color: #999;
 }
 
-.password-toggle-icon:hover {
-    color: #333;
-}
-
-
+/* ==========================================================================
+   CHECKBOXES
+   ========================================================================== */
 .checkbox-group {
   display: flex;
   gap: 20px;
+  padding-top: 5px;
+}
+.checkbox-group div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.checkbox-group br { display: none; }
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--azul-principal);
+}
+.checkbox-group label {
+  margin-bottom: 0;
+  font-weight: 400;
+  color: var(--texto-principal);
 }
 
+/* ==========================================================================
+   BOTÃO DE CADASTRO
+   ========================================================================== */
 .register-btn {
   width: 100%;
-  padding: 10px;
-  background-color: #ffc107;
-  color: white;
-  font-size: large;
+  padding: 15px;
+  background-color: #F8B617; /* **MUDANÇA PRINCIPAL:** Botão de register é amarelo */
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
 }
 
 .register-btn:hover {
-  background-color: #257bb8;
+  background-color: #1E7AC5; /* **MUDANÇA:** Hover state agora é o azul principal */
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.register-btn:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.7s;
+}
+
+.register-btn:hover:before {
+  left: 100%;
+}
+
+.register-btn::active {
+  transform: translateY(0);
 }
 </style>

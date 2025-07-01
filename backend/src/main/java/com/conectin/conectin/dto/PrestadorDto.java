@@ -17,6 +17,7 @@ public class PrestadorDto {
     private String descricao;
     private String disponibilidade;
     private Float avaliacaoMedia;
+    private String fotoPerfil;
     private List<Categoria> categorias;
     private List<Portfolio> portfolios;
     private List<Cidade> cidades; 

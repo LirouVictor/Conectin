@@ -65,8 +65,126 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/*
+  --- PALETA DE CORES REVISADA - CONECTIN ---
+  Azul Estrutural: #1E7AC5
+  Amarelo Ação/Destaque: #F8B617
+  Fundo: #F7F9FC
+*/
+
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 120px);
+  background-color: #f7f9fc;
+  padding: 20px;
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+.login-box {
+  width: 100%;
+  max-width: 420px;
+  padding: 40px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(30, 122, 197, 0.1);
+  text-align: center;
+}
+
+.login-box h2 {
+  color: #2c3e50;
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #E0E6ED;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-field::placeholder {
+  color: #aab5c0;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #F8B617; /* **MUDANÇA:** Borda de foco amarela */
+  box-shadow: 0 0 0 4px rgba(248, 182, 23, 0.2); /* Sombra de foco amarela */
+}
+
+.login-btn {
+  width: 100%;
+  padding: 15px;
+  background-color: #F8B617; /* **MUDANÇA PRINCIPAL:** Botão de login é amarelo */
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.login-btn:hover {
+  background-color: #1E7AC5; /* **MUDANÇA:** Hover state agora é o azul principal */
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.login-btn:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.7s;
+}
+
+.login-btn:hover:before {
+  left: 100%;
+}
+
+.login-btn::active {
+  transform: translateY(0);
+}
+
+.forgot-password {
+  margin-top: 25px;
+  font-size: 14px;
+  color: #5A6A7B;
+}
+
+.forgot-password a {
+  color: #1E7AC5; /* Link secundário permanece azul para não competir com a ação principal */
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.forgot-password a:hover {
+  text-decoration: underline;
+}
+</style>
   
-  <style scoped>
+  <!-- <style scoped>
   .login-container {
     max-width: 400px;
     margin: 50px auto;
@@ -105,4 +223,4 @@ export default {
   .login-btn:hover {
     background-color: #257bb8; /* azul ao hover */
   }
-</style>
+</style> -->

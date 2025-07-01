@@ -169,94 +169,94 @@ export default {
 </script>
 
 <style scoped>
-/* Estilos podem ser reutilizados de PerfilPrestador.vue para consistência */
+/*
+  --- PALETA DE CORES REVISADA - CONECTIN ---
+  Azul Estrutural: #1E7AC5 (azul forte e profissional da logo)
+  Amarelo Ação/Destaque: #F8B617 (amarelo-ouro vibrante da logo)
+  Fundo Principal: #FFFFFF (branco)
+  Fundo Secundário: #F7F9FC (um cinza ainda mais claro e neutro)
+  Texto Principal: #2c3e50
+  Texto Secundário: #5A6A7B
+  Bordas: #E0E6ED
+*/
+
 .perfil-container {
     max-width: 900px;
-    margin: 30px auto;
+    margin: 40px auto;
     font-family: 'Roboto', Arial, sans-serif;
+    color: #2c3e50;
 }
 
 .perfil-box {
-    padding: 30px;
-    border-radius: 12px;
+    padding: 35px;
+    border-radius: 16px;
     background-color: #ffffff;
-    box-shadow: 0 8px 24px rgba(30, 122, 197, 0.12);
+    box-shadow: 0 10px 30px rgba(30, 122, 197, 0.1);
+    border: 1px solid #E0E6ED;
 }
 
 .usuario-header {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 25px;
     margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e1e5eb;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #E0E6ED;
 }
 
 .usuario-foto-grande {
-    width: 100px;
-    height: 100px;
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #1e7ac5;
+    border: 4px solid #1E7AC5;
+    /* Azul como cor de base do perfil */
 }
 
 .usuario-info h1 {
-    margin: 0;
-    color: #156cb2;
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+    font-size: 28px;
+    font-weight: 700;
 }
 
 .link-prestador {
     display: inline-block;
-    margin-top: 10px;
-    padding: 5px 10px;
-    background-color: #f8b617;
-    color: #fff;
-    border-radius: 5px;
+    padding: 9px 18px;
+    background-color: #F8B617;
+    /* **MUDANÇA:** Amarelo como ação principal */
+    color: #FFFFFF;
+    /* Texto branco para melhor contraste no amarelo */
+    border-radius: 8px;
     text-decoration: none;
-    font-weight: 500;
-    transition: background-color 0.3s;
+    font-weight: bold;
+    transition: all 0.3s ease;
 }
 
 .link-prestador:hover {
     background-color: #e0a800;
-}
-
-/* Reutilizando estilos de avaliações */
-.avaliacoes-section,
-.avaliacoes-header,
-.filtro-ordenacao,
-.avaliacao-card,
-.avaliador-info,
-.avaliador-foto,
-.avaliador-detalhes,
-.avaliador-nome,
-.avaliacao-data,
-.avaliacao-conteudo,
-.nota-estrelas,
-.estrela,
-.estrela.preenchida,
-.comentario-texto,
-.sem-avaliacoes,
-.loading-avaliacoes,
-.loading-spinner-small {
-    /* Cole os estilos correspondentes de PerfilPrestador.vue aqui para manter a consistência */
+    /* Amarelo mais escuro no hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .avaliacoes-section {
-    margin-top: 20px;
+    margin-top: 30px;
 }
 
 .avaliacoes-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .avaliacoes-header h3 {
-    color: #1e7ac5;
-    font-size: 20px;
+    color: #1E7AC5;
+    /* Título da seção permanece azul para estrutura */
+    font-size: 22px;
     margin: 0;
+    font-weight: 700;
 }
 
 .filtro-ordenacao label {
@@ -267,18 +267,26 @@ export default {
 
 .filtro-ordenacao select {
     padding: 6px 10px;
-    border: 1px solid #e1e5eb;
+    border: 1px solid var(--conectin-gray);
     border-radius: 6px;
-    background-color: #ffffff;
+    background-color: var(--conectin-white);
     font-size: 14px;
 }
 
 .avaliacao-card {
-    background-color: #f5f7fa;
-    border-radius: 8px;
+    background-color: #F7F9FC;
+    border-radius: 12px;
     padding: 20px;
     margin-bottom: 15px;
-    border-left: 4px solid #f8b617;
+    /* border-left: 4px solid #1E7AC5;
+    border-bottom: 3px solid #1E7AC5; */
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.avaliacao-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(26, 119, 181, 0.15);
+    border-color: var(--conectin-blue-light);
 }
 
 .avaliador-info {
@@ -293,80 +301,71 @@ export default {
     height: 50px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.avaliador-detalhes {
-    display: flex;
-    flex-direction: column;
-}
-
-.avaliador-nome {
+.avaliador-detalhes .avaliador-nome {
     font-weight: bold;
-    color: #156cb2;
+    color: #2c3e50;
 }
 
 .avaliacao-data {
-    font-size: 12px;
-    color: #777;
+    font-size: 13px;
+    color: #5A6A7B;
 }
 
 .nota-estrelas {
-    margin-bottom: 8px;
-    color: #f8b617;
-    font-size: 18px;
+    margin-bottom: 10px;
+    color: #F8B617;
+    /* Estrelas mantêm o amarelo */
+    font-size: 20px;
 }
 
 .nota-estrelas .estrela {
-    color: #ccc;
+    color: #E0E6ED;
 }
 
 .nota-estrelas .estrela.preenchida {
-    color: #f8b617;
+    color: #F8B617;
 }
 
 .comentario-texto {
     margin: 0;
     line-height: 1.6;
-    color: #333;
+    color: #34495e;
 }
 
-.sem-avaliacoes,
-.loading-avaliacoes {
-    text-align: center;
-    padding: 20px;
-    background-color: #f5f7fa;
-    border-radius: 8px;
-    color: #777;
-}
-
+.loading-spinner,
 .loading-spinner-small {
-    width: 25px;
-    height: 25px;
-    border: 3px solid #e1e5eb;
+    border: 4px solid rgba(30, 122, 197, 0.2);
+    /* Fundo do spinner azul claro */
     border-radius: 50%;
-    border-top-color: #1e7ac5;
+    border-top-color: #F8B617;
+    /* **MUDANÇA:** Spinner agora é amarelo */
     animation: spin 1s linear infinite;
     display: inline-block;
     vertical-align: middle;
-    margin-right: 10px;
-}
-
-.loading,
-.error-message {
-    text-align: center;
-    padding: 50px;
 }
 
 .loading-spinner {
     width: 50px;
     height: 50px;
-    border: 5px solid #e1e5eb;
-    border-radius: 50%;
-    border-top-color: #1e7ac5;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 15px;
+    margin: 0 auto 20px;
+}
+
+.loading-spinner-small {
+    width: 25px;
+    height: 25px;
+    margin-right: 10px;
+}
+
+/* Demais estilos (sem-avaliacoes, loading, error-message) podem ser mantidos ou ajustados conforme acima */
+.sem-avaliacoes,
+.loading-avaliacoes,
+.loading,
+.error-message {
+    text-align: center;
+    padding: 40px;
+    color: #5A6A7B;
 }
 
 @keyframes spin {

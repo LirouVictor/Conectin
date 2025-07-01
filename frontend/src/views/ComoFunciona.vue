@@ -84,6 +84,7 @@ export default {
 
 <style scoped>
 .how-it-works-container {
+    background-color: #f7f9fc;
     display: flex;
     justify-content: center;
     align-items: flex-start;

@@ -7,9 +7,9 @@
   
         <!-- Menu esquerdo -->
         <nav class="nav-links">
-          <router-link to="/">Inicio</router-link>
-          <router-link to="/comofunciona">Como funciona</router-link>
+          <router-link to="/">Categorias</router-link>
           <router-link to="/ranking-prestadores">Prestadores</router-link>
+          <router-link to="/comofunciona">Como funciona</router-link>
         </nav>
   
         <!-- Menu direito (avatar/login) -->

@@ -4,6 +4,8 @@
       <h1>Perfil do Prestador</h1>
       <div v-if="prestador" class="perfil-content">
         <div class="perfil-header">
+          <!-- Foto do Perfil -->
+          <img :src="getFotoUrl(prestador.fotoPerfil)" alt="Foto de perfil" class="perfil-foto">
           <h2>{{ prestador.nome }}</h2>
           <p class="avaliacao">
             Avaliação: {{ prestador.avaliacaoMedia ? prestador.avaliacaoMedia.toFixed(1) : 'Sem avaliações' }} ⭐
@@ -21,6 +23,15 @@
             <strong>Cidades Atendidas:</strong> {{prestador.cidades.map(c => c.nome).join(', ')}}
           </p>
         </div>
+
+        <div class="contact-section">
+          <!-- O botão continua o mesmo, a mágica acontece no método 'handleContact' -->
+          <button @click="handleContact" class="contact-btn">
+            <i class="bi bi-whatsapp"></i>
+            <span>Entrar em Contato via WhatsApp</span>
+          </button>
+        </div>
+
         <h3>Portfólio</h3>
         <div class="portfolio-section" v-if="prestador.portfolios && prestador.portfolios.length">
           <div class="portfolio-item-container" v-for="item in prestador.portfolios" :key="item.id">
@@ -85,13 +96,6 @@
         </div>
         <!-- ===================== FIM DA NOVA SEÇÃO DE AVALIAÇÕES =================== -->
 
-        <div class="contact-section">
-          <!-- O botão continua o mesmo, a mágica acontece no método 'handleContact' -->
-          <button @click="handleContact" class="contact-btn">
-            <i class="bi bi-whatsapp"></i>
-            <span>Entrar em Contato via WhatsApp</span>
-          </button>
-        </div>
       </div>
       <div v-else class="loading">
         <div class="loading-spinner"></div>
@@ -215,17 +219,14 @@ export default {
       document.body.style.overflow = ''; // Restaura o scroll da página
     },
 
-    // ===== NOVO MÉTODO PARA FORMATAR URL DA FOTO =====
+    // ===== MÉTODO ADICIONADO PARA FOTO DE PERFIL (CONSISTÊNCIA) =====
     getFotoUrl(fotoPath) {
       if (!fotoPath) {
-        // Retorna uma imagem padrão caso o usuário não tenha foto
         return 'https://www.gravatar.com/avatar/?d=mp';
       }
-      // Verifica se o caminho já é uma URL completa
       if (fotoPath.startsWith('http')) {
         return fotoPath;
       }
-      // Adiciona a URL base do backend ao caminho relativo da imagem
       return `${this.backendUrl}${fotoPath}`;
     },
 
@@ -338,27 +339,37 @@ export default {
 </script>
 
 <style scoped>
-/* Seu CSS permanece o mesmo, sem necessidade de alteração */
+
+/* ==========================================================================
+   PALETA DE CORES E VARIÁVEIS - CONECTIN (VERSÃO PREMIUM)
+   ========================================================================== */
 :root {
-  --conectin-blue: #1e7ac5;
-  --conectin-blue-dark: #156cb2;
-  --conectin-yellow: #f8b617;
-  --conectin-yellow-light: #ffd266;
-  --conectin-white: #ffffff;
-  --conectin-light-gray: #f5f7fa;
-  --conectin-gray: #e1e5eb;
+  --azul-principal: #1E7AC5;
+  --azul-escuro: #155e8f;
+  --amarelo-destaque: #F8B617;
+  --amarelo-escuro: #e0a800;
+  --fundo-primario: #FFFFFF;
+  --fundo-secundario: #F7F9FC;
+  --texto-principal: #2c3e50;
+  --texto-secundario: #5A6A7B;
+  --borda-neutra: #E0E6ED;
+  --sombra-cor: rgba(30, 122, 197, 0.1);
 }
 
+/* ==========================================================================
+   ESTRUTURA BASE E CONTAINER
+   ========================================================================== */
 .perfil-container {
   max-width: 900px;
-  margin: 30px auto;
+  margin: 50px auto;
+  padding: 0 15px;
   font-family: 'Roboto', Arial, sans-serif;
 }
 
 .perfil-box {
   padding: 30px;
   border-radius: 12px;
-  background-color: var(--conectin-white);
+  background-color: #FFFFFF;
   box-shadow: 0 8px 24px rgba(30, 122, 197, 0.12);
   position: relative;
   overflow: hidden;
@@ -374,71 +385,94 @@ export default {
   background: linear-gradient(90deg, var(--conectin-blue) 70%, var(--conectin-yellow) 100%);
 }
 
-h1 {
-  color: var(--conectin-blue);
-  font-size: 28px;
-  margin-bottom: 30px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--conectin-gray);
-  position: relative;
-}
 
-h1::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  width: 80px;
-  height: 3px;
-  background-color: var(--conectin-yellow);
-}
 
+
+/* ==========================================================================
+   CABEÇALHO DO PERFIL (PONTO FOCAL)
+   ========================================================================== */
 .perfil-header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
+  padding: 40px 30px;
+  background: linear-gradient(180deg, var(--fundo-secundario) 0%, var(--fundo-primario) 100%);
+  border-bottom: 1px solid var(--borda-neutra);
+}
+
+.perfil-foto {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 6px solid var(--fundo-primario);
+  box-shadow: 0 0 0 4px var(--azul-principal), 0 10px 30px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
-  flex-wrap: wrap;
 }
 
 .perfil-header h2 {
-  color: var(--conectin-blue-dark);
-  font-size: 24px;
-  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--texto-principal);
+  margin: 0 0 10px 0;
 }
 
 .avaliacao {
-  background-color: var(--conectin-light-gray);
-  padding: 6px 12px;
-  border-radius: 20px;
   display: inline-flex;
   align-items: center;
-  font-weight: 500;
-  color: #555;
-  border: 1px solid var(--conectin-gray);
+  gap: 8px;
+  background-color: var(--amarelo-destaque);
+  color: var(--texto-principal);
+  /* TEXTO ESCURO NO FUNDO AMARELO */
+  font-weight: bold;
+  padding: 8px 18px;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  border: none;
 }
 
+/* ==========================================================================
+   CONTEÚDO PRINCIPAL (LAYOUT INTERNO)
+   ========================================================================== */
+.perfil-content {
+  padding: 30px;
+}
+
+h1 {
+  display: none;
+}
+
+/* O título principal já está claro pelo contexto */
+
+/* Bloco de informações */
 .perfil-info {
-  background-color: var(--conectin-light-gray);
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 25px;
-  border-left: 4px solid var(--conectin-blue);
+  padding: 25px;
+  background-color: var(--fundo-secundario);
+  border-radius: 12px;
+  margin-bottom: 30px;
 }
 
 .perfil-info p {
-  margin: 10px 0;
-  line-height: 1.6;
+  margin: 0 0 12px 0;
+  line-height: 1.7;
+  color: var(--texto-secundario);
+}
+
+.perfil-info p:last-child {
+  margin-bottom: 0;
 }
 
 .perfil-info strong {
-  color: var(--conectin-blue-dark);
-  margin-right: 5px;
+  color: var(--azul-escuro);
+  font-weight: 500;
 }
 
+/* Botão de Contato - Call to Action Principal */
 .contact-section {
   text-align: center;
-  margin-top: 30px;
+  margin: 0 0 40px 0;
+  /* Espaçamento antes das seções */
 }
 
 .contact-btn {
@@ -491,67 +525,97 @@ h1::after {
   font-size: 1.5em;
 }
 
-.loading {
+/* ==========================================================================
+   TÍTULOS DE SEÇÃO E PORTFÓLIO
+   ========================================================================== */
+h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--azul-principal);
+  margin: 50px 0 25px 0;
+  text-align: center;
+  position: relative;
+}
+
+h3::after {
+  content: '';
+  display: block;
+  width: 50px;
+  height: 3px;
+  background-color: var(--amarelo-destaque);
+  border-radius: 2px;
+  margin: 10px auto 0;
+}
+
+.portfolio-section {
+  display: flex;
+  overflow-x: auto;
+  gap: 20px;
+  padding: 10px 5px 20px 5px;
+  /* Padding para a sombra aparecer */
+  scrollbar-width: thin;
+  scrollbar-color: var(--borda-neutra) transparent;
+}
+
+.thumbnail-wrapper {
+  flex-shrink: 0;
+  width: 180px;
+  height: 180px;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.thumbnail-wrapper:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 25px var(--sombra-cor);
+}
+
+.portfolio-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+  SEÇÃO DE AVALIAÇÕES
+   ========================================================================== */
+.avaliacoes-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 40px 0;
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid var(--conectin-gray);
-  border-radius: 50%;
-  border-top-color: var(--conectin-blue);
-  border-right-color: var(--conectin-yellow);
-  animation: spin 1s linear infinite;
-  margin-bottom: 15px;
-}
-
-.avaliacoes-section {
-  margin-top: 40px;
-  padding-top: 25px;
-  border-top: 1px solid var(--conectin-gray);
-}
-
-.avaliacoes-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.avaliacoes-header h3 {
-  color: var(--conectin-blue);
-  font-size: 20px;
-  margin: 0;
-}
-
-.filtro-ordenacao label {
-  margin-right: 8px;
-  font-size: 14px;
-  color: #555;
+  gap: 15px;
+  margin-bottom: 25px;
 }
 
 .filtro-ordenacao select {
-  padding: 6px 10px;
-  border: 1px solid var(--conectin-gray);
-  border-radius: 6px;
-  background-color: var(--conectin-white);
+  padding: 8px 12px;
+  border: 1px solid var(--borda-neutra);
+  border-radius: 8px;
+  background-color: var(--fundo-primario);
   font-size: 14px;
+  cursor: pointer;
+}
+
+.filtro-ordenacao select:focus {
+  outline: none;
+  border-color: var(--amarelo-destaque);
 }
 
 .avaliacao-card {
-  background-color: var(--conectin-light-gray);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 15px;
-  border-left: 4px solid var(--conectin-yellow);
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  background-color: var(--fundo-primario);
+  border-radius: 16px;
+  padding: 25px;
+  margin-bottom: 20px;
+  border: 1px solid var(--borda-neutra);
+  transition: all 0.3s ease;
+}
+
+.avaliacao-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--azul-principal);
+  box-shadow: 0 8px 25px var(--sombra-cor);
 }
 
 .avaliador-info {
@@ -565,8 +629,6 @@ h1::after {
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--conectin-white);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .avaliador-detalhes {
@@ -576,55 +638,36 @@ h1::after {
 
 .avaliador-nome {
   font-weight: bold;
-  color: var(--conectin-blue-dark);
+  color: var(--texto-principal);
 }
 
 .avaliacao-data {
-  font-size: 12px;
-  color: #777;
+  font-size: 0.8rem;
+  color: var(--texto-secundario);
 }
 
-.avaliacao-conteudo .nota-estrelas {
-  margin-bottom: 8px;
-  color: var(--conectin-yellow);
-  font-size: 18px;
+.avaliacao-conteudo {
+  margin-top: 15px;
+  border-top: 1px solid var(--borda-neutra);
+  padding-top: 15px;
+}
+
+.nota-estrelas {
+  font-size: 1.2rem;
 }
 
 .nota-estrelas .estrela {
   color: #ccc;
-  /* Estrela vazia */
 }
 
 .nota-estrelas .estrela.preenchida {
-  color: var(--conectin-yellow);
-  /* Estrela cheia */
+  color: var(--amarelo-destaque);
 }
 
 .comentario-texto {
-  margin: 0;
+  margin: 10px 0 0 0;
   line-height: 1.6;
-  color: #333;
-}
-
-.sem-avaliacoes,
-.loading-avaliacoes {
-  text-align: center;
-  padding: 20px;
-  background-color: var(--conectin-light-gray);
-  border-radius: 8px;
-  color: #777;
-}
-
-.loading-spinner-small {
-  width: 25px;
-  height: 25px;
-  border: 3px solid var(--conectin-gray);
-  border-radius: 50%;
-  border-top-color: var(--conectin-blue);
-  animation: spin 1s linear infinite;
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: 10px;
+  color: var(--texto-secundario);
 }
 
 .avaliador-info-link {
@@ -641,99 +684,41 @@ h1::after {
   /* Efeito sutil de zoom no hover */
 }
 
-/* ================== NOVOS ESTILOS PARA O PORTFÓLIO HORIZONTAL ================== */
-
-.portfolio-section {
-  display: flex;
-    display: flex;
-  /* ESSENCIAL: Alinha os filhos (fotos) lado a lado */
-  overflow-x: auto;
-  /* ESSENCIAL: Adiciona a barra de rolagem horizontal */
-  gap: 15px;
-  /* Cria um espaço entre as fotos */
-  scrollbar-width: thin;
-  /* Barra de rolagem mais fina (Firefox) */
-  scrollbar-color: var(--conectin-gray) transparent;
-  padding: 5px 0 15px 0;
-  margin-top: 40px;
-  padding-top: 25px;
-  border-top: 1px solid var(--conectin-gray);
+/* ==========================================================================
+   ESTADOS (LOADING, SEM RESULTADOS) E GALERIA
+   ========================================================================== */
+.loading,
+.sem-avaliacoes,
+.loading-avaliacoes,
+.portfolio-section p {
+  text-align: center;
+  padding: 40px;
+  color: var(--texto-secundario);
+  font-style: italic;
 }
 
-.portfolio-section h3 {
-  color: var(--conectin-blue);
-  margin-bottom: 25px;
-  font-size: 20px;
-  position: relative;
-  padding-left: 16px;
+.loading-spinner,
+.loading-spinner-small {
+  border: 4px solid var(--sombra-cor);
+  border-radius: 50%;
+  border-top-color: var(--amarelo-destaque);
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin: 0 auto;
 }
 
-.portfolio-section h3::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 8px;
-  height: 20px;
-  background-color: var(--conectin-yellow);
-  border-radius: 4px;
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 15px;
 }
 
-.portfolio-item-container {
-  margin-bottom: 35px;
-  /* Espaço entre diferentes projetos do portfólio */
+.loading-spinner-small {
+  width: 25px;
+  height: 25px;
+  margin: 0 10px 0 0;
+  vertical-align: middle;
 }
-
-.portfolio-item-container:last-child {
-  margin-bottom: 0;
-}
-
-.portfolio-item-title {
-  font-size: 1.2em;
-  font-weight: 500;
-  color: var(--conectin-blue-dark);
-  margin: 0 0 5px 0;
-}
-
-.portfolio-item-description {
-  margin: 0 0 15px 0;
-  /* Espaço entre a descrição e as fotos */
-  color: #555;
-  line-height: 1.5;
-}
-
-/* 2. O WRAPPER DE CADA FOTO */
-.thumbnail-wrapper {
-  flex-shrink: 0;
-  /* CRÍTICO: Impede que as fotos encolham ou quebrem a linha */
-  width: 150px;
-  /* Largura fixa da miniatura */
-  height: 150px;
-  /* Altura fixa da miniatura */
-  border-radius: 8px;
-  overflow: hidden;
-  /* Garante que a imagem respeite o border-radius */
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.thumbnail-wrapper:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 15px rgba(30, 122, 197, 0.15);
-}
-
-/* 3. A IMAGEM DENTRO DO WRAPPER */
-.portfolio-thumbnail {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  /* Garante que a imagem preencha o espaço sem distorcer */
-}
-
-/* ================== FIM DOS NOVOS ESTILOS ================== */
-
 
 /* ======================= ESTILOS PARA A GALERIA EXPANDIDA ====================== */
 .galeria-overlay {
@@ -822,6 +807,35 @@ h1::after {
 
   .perfil-header h2 {
     margin-bottom: 10px;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVIDADE
+   ========================================================================== */
+@media (max-width: 768px) {
+  .perfil-box {
+    padding: 0;
+    border-radius: 0;
+  }
+
+  .perfil-content {
+    padding: 25px;
+  }
+
+  .perfil-foto {
+    width: 120px;
+    height: 120px;
+  }
+
+  .perfil-header h2 {
+    font-size: 1.8rem;
   }
 }
 </style>

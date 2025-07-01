@@ -121,20 +121,171 @@ const handleAcaoTerciaria = () => {
 </script>
 
 <style scoped>
-/* Adicione estilos específicos se necessário, mas a maioria virá do BaseModal */
+/* ==========================================================================
+   PALETA DE CORES CONECTIN - APLICADA AO MODAL
+   ========================================================================== */
+:root {
+    --azul-principal: #1E7AC5;
+    --azul-escuro: #155e8f;
+    --amarelo-destaque: #F8B617;
+    --amarelo-escuro: #e0a800;
+    --fundo-secundario: #F7F9FC;
+    --texto-principal: #2c3e50;
+    --texto-secundario: #5A6A7B;
+    --borda-neutra: #E0E6ED;
+}
+
+/* ==========================================================================
+   ESTILO DO CONTEÚDO DO MODAL
+   ========================================================================== */
 p {
-    font-size: 1.1em;
+    color: var(--texto-secundario);
+    font-size: 1.1rem;
+    line-height: 1.6;
     text-align: center;
-    margin-bottom: 15px;
+    margin: 15px 0 25px 0;
+    /* Mais espaço para respiro */
+}
+
+/* 
+  Estiliza o conteúdo injetado por v-html.
+  :deep() é um seletor do Vue que permite estilizar
+  elementos filhos de um componente com escopo.
+*/
+:deep(b) {
+    color: var(--azul-escuro);
+    font-weight: 600;
+}
+
+:deep(i) {
+    color: var(--azul-principal);
+    font-style: normal;
+    /* Remove itálico para um visual mais limpo */
+}
+
+/* ==========================================================================
+   ESTILO DOS BOTÕES DE AÇÃO DO FOOTER
+   ========================================================================== */
+
+.login-btn {
+    width: 100%;
+    padding: 15px;
+    background-color: #F8B617;
+    /* **MUDANÇA PRINCIPAL:** Botão de login é amarelo */
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.login-btn:hover {}
+
+.login-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.7s;
+}
+
+.login-btn:hover:before {
+    left: 100%;
+}
+
+.login-btn::active {
+    transform: translateY(0);
 }
 
 .btn-primary {
-    /* Reutilizando classes do BaseModal ou definindo novas */
-    background-color: #28a745;
-    /* Verde para confirmação */
+    width: 100%;
+    padding: 15px;
+    background-color: #F8B617;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
 }
 
 .btn-primary:hover {
-    background-color: #218838;
+    background-color: #1E7AC5;
+    /* **MUDANÇA:** Hover state agora é o azul principal */
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-2px);
 }
+
+/* .btn-primary:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.7s;
+} */
+
+/* .btn-primary:hover:before {
+    left: 100%;
+}
+
+.btn-primary::active {
+    transform: translateY(0);
+} */
+
+.btn-secondary {
+    width: 100%;
+    padding: 15px;
+    background-color: #F8B617;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.btn-secondary:hover {
+    background-color: #1E7AC5;
+    /* **MUDANÇA:** Hover state agora é o azul principal */
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-2px);
+}
+
+/* .btn-secondary:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.7s;
+} */
+
+/* .btn-secondary:hover:before {
+    left: 10%;
+}
+
+.btn-secondary::active {
+    transform: translateY(0);
+} */
 </style>

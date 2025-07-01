@@ -548,17 +548,23 @@ export default {
 <style scoped>
 /* SEU CSS EXISTENTE VAI AQUI (NÃO PRECISA MUDAR NADA NO CSS) */
 .editar-perfil-container {
-  max-width: 600px;
+  max-width: 800px;
   margin: 50px auto;
   font-family: 'Inter', sans-serif;
 }
 
 .editar-perfil-box {
-  padding: 30px;
+  /* padding: 30px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   background-color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); */
+  padding: 30px;
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(26, 119, 181, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
 .editar-perfil-box h1 {
@@ -581,18 +587,24 @@ export default {
 
 .input-field {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  padding: 14px 16px;
+  border: 1px solid #E0E6ED;
+  border-radius: 8px;
+  font-size: 16px;
   box-sizing: border-box;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-field::placeholder {
+  color: #aab5c0;
 }
 
 .input-field:focus {
-  border-color: #007bff;
   outline: none;
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  border-color: #F8B617; /* **MUDANÇA:** Borda de foco amarela */
+  box-shadow: 0 0 0 4px rgba(248, 182, 23, 0.2); /* Sombra de foco amarela */
 }
+
 
 textarea.input-field {
   min-height: 100px;
@@ -712,60 +724,72 @@ textarea.input-field {
 }
 
 .add-btn {
-  background-color: #2ecc71;
-  color: white;
+  width: 100%;
+  padding: 15px;
+  background-color: #1E7AC5;
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
   border: none;
-  padding: 12px 18px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease, opacity 0.2s ease;
+  transition: all 0.3s ease;
+  margin-top: 10px;
 }
 
 .add-btn:hover {
-  background-color: #27ae60;
-}
-
-.add-btn:disabled {
-  background-color: #bdc3c7;
-  color: #7f8c8d;
-  cursor: not-allowed;
-  opacity: 0.7;
+  background-color: #F8B617; 
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-2px);
 }
 
 .alterar-senha-btn {
-  background-color: #5bc0de;
-  color: white;
+  width: 20%;
+  padding: 15px;
+  background-color: #F8B617; /* **MUDANÇA PRINCIPAL:** Botão de login é amarelo */
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
   border: none;
-  padding: 10px 18px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-  display: inline-block;
-  margin-bottom: 10px;
+  transition: all 0.3s ease;
+  margin-top: 10px;
 }
 
 .alterar-senha-btn:hover {
-  background-color: #31b0d5;
+  background-color: #1E7AC5; /* **MUDANÇA:** Hover state agora é o azul principal */
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-2px);
 }
 
 .save-btn {
   width: 100%;
-  padding: 14px;
-  background-color: #007bff;
-  color: white;
+  padding: 15px;
+  background-color: #1E7AC5; 
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 1.1em;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-  margin-top: 20px;
+  transition: all 0.3s ease;
+  margin-top: 10px;
 }
 
 .save-btn:hover {
-  background-color: #0056b3;
+  background-color: #F8B617;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-2px);
 }
 
 /* CSS para a nova Seção de Portfólio */
@@ -898,22 +922,26 @@ textarea.input-field {
 }
 
 .save-item-btn {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.2s ease;
-    margin-top: 15px;
+  width: 100%;
+  padding: 15px;
+  background-color: #F8B617; /* **MUDANÇA PRINCIPAL:** Botão de login é amarelo */
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
 }
+
 .save-item-btn:hover {
-    background-color: #218838;
-}
-.save-item-btn:disabled {
-    background-color: #bdc3c7;
-    cursor: not-allowed;
+  background-color: #1E7AC5; /* **MUDANÇA:** Hover state agora é o azul principal */
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-2px);
 }
 
 /* Estilos do Modal de Imagem */

@@ -133,14 +133,16 @@ const submeterAvaliacao = async () => {
     align-items: center;
     min-height: 80vh;
     padding: 20px;
-    background-color: #f4f4f9;
+    background-color: #FFFFFF;
 }
 
 .evaluation-form-card {
-    background: white;
     padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(26, 119, 181, 0.15);
+    position: relative;
+    overflow: hidden;
     width: 100%;
     max-width: 500px;
 }
@@ -154,8 +156,8 @@ const submeterAvaliacao = async () => {
 .service-details {
     margin-bottom: 25px;
     padding: 15px;
-    background-color: #eef;
-    border-left: 4px solid #6f42c1;
+    /* background-color: #eef; */
+    /* border-left: 4px solid #6f42c1; */
     border-radius: 4px;
 }
 
@@ -170,26 +172,110 @@ label {
 }
 
 textarea {
-    width: 100%;
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    font-family: inherit;
-    resize: vertical;
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #E0E6ED;
+  border-radius: 8px;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+textarea::placeholder {
+  color: #aab5c0;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #F8B617; /* **MUDANÇA:** Borda de foco amarela */
+  box-shadow: 0 0 0 4px rgba(248, 182, 23, 0.2); /* Sombra de foco amarela */
 }
 
 .star-rating {
-    font-size: 2.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    font-size: 3.5rem;
+    /* Estrelas bem grandes e clicáveis */
     cursor: pointer;
+    line-height: 1;
+    /* Garante que não haja espaçamento extra */
 }
 
 .star {
-    color: #ccc;
+    color: var(--borda-neutra);
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    /* Transição suave */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    /* Sombra sutil para profundidade */
 }
 
+/* EFEITO DE HOVER: a estrela atual e as anteriores se iluminam */
+.star-rating:hover .star {
+    color: #ffc107;
+    transform: scale(1.2);
+}
+
+/* As estrelas seguintes à que está em hover voltam ao estado normal */
+.star-rating .star:hover~.star {
+    color: var(--borda-neutra);
+    transform: scale(1.0);
+}
+
+/* Estrela SELECIONADA (clicada) */
 .star.filled {
     color: #ffc107;
+    transform: scale(1.1);
+    text-shadow: 0 0 15px rgba(248, 182, 23, 0.5);
+    /* Brilho amarelo ao redor */
 }
+
+
+
+.submit-btn {
+  width: 100%;
+  padding: 15px;
+  background-color: #F8B617; /* **MUDANÇA PRINCIPAL:** Botão de login é amarelo */
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.submit-btn:hover {
+  background-color: #1E7AC5; /* **MUDANÇA:** Hover state agora é o azul principal */
+  transform: translateY(-3px);
+  box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.submit-btn:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.7s;
+}
+
+.submit-btn:hover:before {
+  left: 100%;
+}
+
+.submit-btn::active {
+  transform: translateY(0);
+}
+
+
+/* 
 
 .submit-btn {
     width: 100%;
@@ -211,7 +297,7 @@ textarea {
 .submit-btn:disabled {
     background-color: #ccc;
     cursor: not-allowed;
-}
+} */
 
 .error-message {
     color: red;

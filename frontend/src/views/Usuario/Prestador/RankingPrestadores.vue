@@ -9,11 +9,12 @@
         </div>
         <h1>Ranking de Prestadores</h1>
       </div>
-      
+
       <p class="intro-text">
         Conheça os melhores prestadores da plataforma.
         <span v-if="!categoria && !cidade && !searchTerm">
-          Use a busca abaixo para encontrar um prestador específico ou selecione uma categoria e cidade na página inicial para refinar.
+          Use a busca abaixo para encontrar um prestador específico ou selecione uma categoria e cidade na página
+          inicial para refinar.
         </span>
         <span v-else>
           Use a busca abaixo para refinar ainda mais os resultados.
@@ -31,8 +32,8 @@
             <span v-if="cidade" class="filtro-valor">Cidade: {{ cidade }}</span>
           </div>
         </div>
-         <button v-if="categoria || cidade || searchTerm" class="limpar-filtro-geral" @click="limparFiltros">
-            Limpar Filtros e Busca
+        <button v-if="categoria || cidade || searchTerm" class="limpar-filtro-geral" @click="limparFiltros">
+          Limpar Filtros e Busca
         </button>
         <p v-else-if="!searchTerm && !categoria && !cidade" class="intro-text filtro-status">
           Nenhum filtro ou busca ativa. Mostrando ranking geral.
@@ -40,12 +41,8 @@
 
         <!-- Barra de Busca Local -->
         <div class="busca-local-container">
-          <input
-            type="text"
-            v-model="searchTerm"
-            placeholder="Buscar por nome, categoria ou cidade nos resultados..."
-            class="busca-input"
-          />
+          <input type="text" v-model="searchTerm" placeholder="Buscar por nome, categoria ou cidade nos resultados..."
+            class="busca-input" />
           <button v-if="searchTerm" @click="limparBusca" class="limpar-busca-btn icon-btn" title="Limpar busca">
             ×
           </button>
@@ -62,10 +59,10 @@
       <div v-else-if="prestadoresFiltrados.length === 0" class="sem-resultados">
         <div class="empty-state-icon">🔍</div>
         <p v-if="categoria || cidade || searchTerm">
-            Nenhum prestador encontrado com os filtros e/ou busca aplicados.
+          Nenhum prestador encontrado com os filtros e/ou busca aplicados.
         </p>
         <p v-else>
-            Ainda não há prestadores cadastrados no ranking.
+          Ainda não há prestadores cadastrados no ranking.
         </p>
       </div>
 
@@ -78,12 +75,12 @@
             <div class="prestador-details">
               <p class="categorias" v-if="prestador.categorias && prestador.categorias.length">
                 <span class="detail-icon">📋</span>
-                <span class="detail-label">Categorias:</span> 
-                {{ prestador.categorias.map(c => c.nome).join(', ') }}
+                <span class="detail-label">Categorias:</span>
+                {{prestador.categorias.map(c => c.nome).join(', ')}}
               </p>
               <p class="cidade">
                 <span class="detail-icon">📍</span>
-                <span class="detail-label">Cidade:</span> 
+                <span class="detail-label">Cidade:</span>
                 {{ prestador.cidade || 'Não informada' }}
               </p>
               <p class="avaliacao">
@@ -95,12 +92,12 @@
               </p>
               <p class="disponibilidade">
                 <span class="detail-icon">🕒</span>
-                <span class="detail-label">Disponibilidade:</span> 
+                <span class="detail-label">Disponibilidade:</span>
                 {{ prestador.disponibilidade || 'Não informado' }}
               </p>
             </div>
           </div>
-          <router-link :to="{ name: 'PerfilPrestador', params: { id: prestador.id }}" class="ver-perfil-btn">
+          <router-link :to="{ name: 'PerfilPrestador', params: { id: prestador.id } }" class="ver-perfil-btn">
             Ver Perfil
           </router-link>
         </div>
@@ -121,8 +118,8 @@ export default {
       prestadores: [],
       categoria: '',
       cidade: '',
-      searchTerm: '', 
-      carregando: true, 
+      searchTerm: '',
+      carregando: true,
     };
   },
   setup() {
@@ -159,7 +156,7 @@ export default {
           );
           // NOVO: Adiciona busca pela string de cidades do prestador
           const matchCidadeDisplay = prestador.cidade && prestador.cidade.toLowerCase().includes(lowerSearchTerm);
-          
+
           return matchNome || matchCategoriasPrestador || matchCidadeDisplay;
         });
       }
@@ -181,8 +178,8 @@ export default {
   },
   methods: {
     atualizarFiltrosDaRota() {
-        this.categoria = this.$route.query.categoria || localStorage.getItem('selectedCategory') || '';
-        this.cidade = this.$route.query.cidade || localStorage.getItem('selectedCity') || '';
+      this.categoria = this.$route.query.categoria || localStorage.getItem('selectedCategory') || '';
+      this.cidade = this.$route.query.cidade || localStorage.getItem('selectedCity') || '';
     },
 
     async fetchPrestadores() {
@@ -193,7 +190,7 @@ export default {
           this.toast.error('Ranking de prestadores não retornou dados.');
           this.prestadores = [];
           this.carregando = false;
-          return; 
+          return;
         }
 
         this.prestadores = response.data.map(prestadorDto => {
@@ -201,7 +198,7 @@ export default {
           let cidadesDoPrestadorParaFiltro = [];
 
           if (prestadorDto.cidades && prestadorDto.cidades.length > 0) {
-            cidadeDisplay = prestadorDto.cidades.map(c => c.nome).join(', '); 
+            cidadeDisplay = prestadorDto.cidades.map(c => c.nome).join(', ');
             cidadesDoPrestadorParaFiltro = prestadorDto.cidades;
           }
 
@@ -228,14 +225,14 @@ export default {
       localStorage.removeItem('selectedCity');
       this.categoria = '';
       this.cidade = '';
-      this.searchTerm = ''; 
+      this.searchTerm = '';
 
       if (Object.keys(this.$route.query).length > 0) {
         this.$router.push({ path: this.$route.path });
       }
     },
 
-    limparBusca() { 
+    limparBusca() {
       this.searchTerm = '';
     }
   }
@@ -259,15 +256,20 @@ export default {
 
 /* Estilos globais */
 .ranking-container {
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 0 15px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f7f9fc;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 100%;
+  min-height: calc(100vh - 80px);
+  padding: 40px 20px;
+  font-family: 'Roboto', 'Arial', sans-serif;
 }
 
 .ranking-box {
+  width: 60%;
   padding: 30px;
-  background-color: var(--conectin-white);
+  background-color: #FFFFFF;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(26, 119, 181, 0.15);
   position: relative;
@@ -283,7 +285,7 @@ export default {
   position: relative;
 }
 
-.logo-container { 
+.logo-container {
   margin-bottom: 15px;
 }
 
@@ -323,7 +325,8 @@ h1:after {
   color: #666;
   font-style: italic;
   margin-bottom: 15px;
-  text-align: center; /* Adicionado para centralizar */
+  text-align: center;
+  /* Adicionado para centralizar */
 }
 
 /* Container para filtros e busca */
@@ -335,9 +338,10 @@ h1:after {
 .filtros {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center; /* Centraliza os filtros de categoria/cidade */
+  justify-content: center;
+  /* Centraliza os filtros de categoria/cidade */
   align-items: center;
-  margin-bottom: 15px; 
+  margin-bottom: 15px;
   padding: 15px 20px;
   background-color: rgba(26, 119, 181, 0.05);
   border-radius: 10px;
@@ -377,10 +381,13 @@ h1:after {
   transition: all 0.3s ease;
   font-weight: 500;
   box-shadow: 0 2px 5px rgba(231, 76, 60, 0.2);
-  width: 100%; 
-  max-width: 300px; /* Limita a largura máxima */
-  display: block; /* Para que margin auto funcione */
-  margin: 15px auto 20px auto; /* Centraliza e adiciona margens */
+  width: 100%;
+  max-width: 300px;
+  /* Limita a largura máxima */
+  display: block;
+  /* Para que margin auto funcione */
+  margin: 15px auto 20px auto;
+  /* Centraliza e adiciona margens */
 }
 
 .limpar-filtro-geral:hover {
@@ -403,7 +410,8 @@ h1:after {
   flex-grow: 1;
   padding: 10px 15px;
   font-size: 1rem;
-  border: 1px solid var(--conectin-gray);
+  border: 0.5px solid #1A77B5;
+  box-shadow: #1A77B5;
   border-radius: 6px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -416,13 +424,13 @@ h1:after {
 
 .limpar-busca-btn.icon-btn {
   background-color: transparent;
-  color: #888; 
+  color: #888;
   border: none;
   padding: 0;
-  width: 38px; 
+  width: 38px;
   height: 38px;
-  font-size: 1.8rem; 
-  line-height: 38px; 
+  font-size: 1.8rem;
+  line-height: 38px;
   text-align: center;
   border-radius: 50%;
   cursor: pointer;
@@ -457,8 +465,13 @@ h1:after {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Sem resultados */
@@ -528,7 +541,7 @@ h1:after {
 .prestador-info {
   flex: 1;
   min-width: 250px;
-  padding-left: 10px; 
+  padding-left: 10px;
 }
 
 .prestador-info h3 {
@@ -546,7 +559,10 @@ h1:after {
   gap: 8px;
 }
 
-.categorias, .cidade, .avaliacao, .disponibilidade {
+.categorias,
+.cidade,
+.avaliacao,
+.disponibilidade {
   margin: 0;
   font-size: 0.95rem;
   color: var(--conectin-text);
@@ -594,7 +610,7 @@ h1:after {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.7s;
 }
 
@@ -619,25 +635,28 @@ h1:after {
   .ranking-box {
     padding: 20px 15px;
   }
-  
+
   .prestador-card {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .ver-perfil-btn {
     width: 100%;
     margin-top: 10px;
   }
-  
+
   .filtros {
     flex-direction: column;
-    align-items: center; /* Centraliza os filtros em mobile */
+    align-items: center;
+    /* Centraliza os filtros em mobile */
   }
-  
+
   .limpar-filtro-geral {
-     width: 90%; /* Ajusta a largura em mobile */
-     max-width: none; /* Remove a largura máxima para mobile */
+    width: 90%;
+    /* Ajusta a largura em mobile */
+    max-width: none;
+    /* Remove a largura máxima para mobile */
   }
 }
 </style>

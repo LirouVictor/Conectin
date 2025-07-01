@@ -78,7 +78,8 @@ public class PrestadorController {
         dto.setId(prestador.getId());
         dto.setUsuarioId(prestador.getUsuario().getId());
         dto.setNome(prestador.getUsuario().getNome());
-        dto.setTelefone(prestador.getUsuario().getTelefone()); // <<< ADICIONAR ESTA LINHA
+        dto.setFotoPerfil(prestador.getUsuario().getFotoPerfil()); 
+        dto.setTelefone(prestador.getUsuario().getTelefone()); 
         dto.setDescricao(prestador.getDescricao());
         dto.setDisponibilidade(prestador.getDisponibilidade());
         dto.setAvaliacaoMedia(prestador.getAvaliacaoMedia());
