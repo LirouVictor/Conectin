@@ -72,23 +72,27 @@ const handleVisibilityChange = (value) => {
 }
 
 .categoria-btn {
-    padding: 12px 15px;
-    border: 1px solid var(--conectin-gray, #e1e5eb);
-    background-color: #fff;
-    color: var(--conectin-blue-dark, #156cb2);
-    border-radius: 6px;
+    width: 100%;
+    padding: 15px;
+    background-color: #F8B617;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
-    text-align: left;
-    font-size: 1em;
-    transition:
-        background-color 0.2s ease,
-        color 0.2s ease;
+    transition: all 0.3s ease;
+    margin-top: 10px;
 }
 
 .categoria-btn:hover {
-    background-color: var(--conectin-blue-light, #e0f0ff);
-    /* Cor de hover mais suave */
-    border-color: var(--conectin-blue, #1e7ac5);
+    background-color: #1E7AC5;
+    /* **MUDANÇA:** Hover state agora é o azul principal */
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-2px);
 }
 
 p {
@@ -98,12 +102,27 @@ p {
 }
 
 .btn-secondary {
-    /* Estilo para o botão de cancelar no footer */
-    background-color: #6c757d;
-    color: white;
+    width: 100%;
+    padding: 15px;
+    background-color: #1E7AC5;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
 }
 
 .btn-secondary:hover {
-    background-color: #5a6268;
+    background-color: #F8B617;
+    /* **MUDANÇA:** Hover state agora é o azul principal */
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(30, 122, 197, 0.3);
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-2px);
 }
+
 </style>

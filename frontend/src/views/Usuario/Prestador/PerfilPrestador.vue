@@ -744,7 +744,7 @@ h3::after {
 }
 
 .galeria-content {
-  background-color: #fff;
+  background-color: transparent;
   padding: 30px;
   border-radius: 12px;
   max-width: 95vw;
@@ -752,7 +752,8 @@ h3::after {
   overflow-y: auto;
   /* Permite scroll se as fotos não couberem */
   position: relative;
-  width: 100%;
+  width: 40%;
+  height: 100%;
 }
 
 .galeria-close-btn {
@@ -761,29 +762,31 @@ h3::after {
   right: 15px;
   background: none;
   border: none;
-  color: #333;
+  color: #ffffff;
   font-size: 2.5em;
   cursor: pointer;
   line-height: 1;
 }
 
-.galeria-title {
+/* .galeria-title {
   margin-top: 0;
   margin-bottom: 25px;
   color: var(--conectin-blue, #1e7ac5);
   padding-bottom: 10px;
   border-bottom: 1px solid #eee;
-}
+} */
 
 .galeria-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  max-width: 800px;
+  max-height: 800px;
+  height: 100%;
+  width: 100%;
+  margin: auto;
 }
 
 .galeria-image-wrapper {
   width: 100%;
-  height: 250px;
+  height: 100%;
   border-radius: 8px;
   overflow: hidden;
 }
